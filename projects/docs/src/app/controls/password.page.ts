@@ -1,11 +1,19 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { StarFooterTemplate, StarHeaderTemplate, StarIconTemplate } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarPassword, StarPasswordRule } from '@star-ng/ui/password';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-password-page',
-  imports: [DOCS, StarPassword, StarField],
+  imports: [
+    DOCS,
+    StarPassword,
+    StarIconTemplate,
+    StarHeaderTemplate,
+    StarFooterTemplate,
+    StarField,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -45,12 +53,40 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Strength and templates"
+        source="password/templates"
+        note="thresholds sets the shares of the rules met from which the strength is fair, good and strong. starIcon show and hide replace the icons of the show / hide button; starHeader and starFooter add content above and below the strength feedback."
+      >
+        <star-password
+          [(value)]="templated"
+          feedback
+          [thresholds]="[0.4, 0.6, 0.8]"
+          ariaLabel="Account password"
+        >
+          <ng-template starIcon="show"><i class="ph-bold ph-lock-simple-open"></i></ng-template>
+          <ng-template starIcon="hide"><i class="ph-bold ph-lock-simple"></i></ng-template>
+          <ng-template starHeader><p>Pick a password you do not use elsewhere.</p></ng-template>
+          <ng-template starFooter><p>A password manager can make one for you.</p></ng-template>
+        </star-password>
+      </docs-example>
+
+      <docs-example
+        heading="Without the show button"
+        source="password/no-toggle"
+        note="toggleMask false removes the show / hide button, for example when a policy does not allow plain text. The default is true: the button has a name, aria-pressed and keeps the focus."
+      >
+        <star-password [(value)]="hiddenOnly" [toggleMask]="false" ariaLabel="PIN" />
+      </docs-example>
+
       <docs-api [of]="['StarPassword']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class PasswordPage {
+  protected readonly hiddenOnly = signal('');
   protected readonly current = signal('');
+  protected readonly templated = signal('');
   protected readonly created = signal('');
   protected readonly phrase = signal('');
   protected readonly rules: readonly StarPasswordRule[] = [

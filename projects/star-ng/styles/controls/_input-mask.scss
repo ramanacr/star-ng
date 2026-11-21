@@ -44,3 +44,17 @@
     border-color: var(--star-danger);
   }
 }
+// Clear button (`showClear`) at the inline end of the field.
+.star-mask--clear {
+  position: relative;
+
+  .star-mask__input {
+    padding-inline-end: 2.5rem;
+  }
+}
+.star-mask__clear {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0.25rem;
+  margin-block: auto;
+}

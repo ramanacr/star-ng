@@ -3621,6 +3621,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
         "name": "ariaDescribedBy",
         "type": "string | null",
         "default": "null",
@@ -3888,6 +3895,41 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Color picker (PrimeNG `p-colorpicker`): preset swatches, a custom color panel and a hex field. Value: `#rrggbb`.",
     "inputs": [
       {
+        "name": "inline",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the saturation / brightness area and the hue slider in place, without the custom color tile and its popup (same keys and slider roles). PrimeNG `inline`."
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
+      },
+      {
+        "name": "format",
+        "type": "'hex' | 'rgb' | 'hsb'",
+        "default": "'hex'",
+        "required": false,
+        "description": "Text format of the value that the control writes. PrimeNG `format`."
+      },
+      {
         "name": "swatches",
         "type": "readonly string[] | undefined",
         "default": "undefined",
@@ -3907,6 +3949,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A color is needed (`aria-required` on the swatch group); also bound from Signal Forms `required()`."
       },
       {
         "name": "pt",
@@ -3931,7 +3987,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "'#4f46e5'",
         "required": false,
-        "description": "The color, as `#rrggbb`."
+        "description": "The color: `#rrggbb` (`format=\"hex\"`), `rgb(r, g, b)` (`'rgb'`) or `hsb(h, s%, b%)` (`'hsb'`). The control reads all three."
       }
     ],
     "outputs": [
@@ -3948,6 +4004,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "The color that the user chose: a swatch, a typed hex value, the custom color panel or the eye dropper. A value that the application sets does not emit. PrimeNG `onChange`."
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The custom color panel opened. PrimeNG `onShow`."
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The custom color panel closed. PrimeNG `onHide`."
       }
     ],
     "parts": [
@@ -3958,14 +4028,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "pickButton",
       "pickIcon",
       "hexInput",
+      "valueInput",
       "panel",
+      "barPanel",
+      "barButton",
       "areaPanel",
       "thumbnail",
       "hueTrack",
-      "barPanel",
       "previewText",
-      "codeText",
-      "barButton"
+      "codeText"
     ]
   },
   "StarColumnCellTemplate": {
@@ -8553,6 +8624,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarFooterRowTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starFooterRow]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the data cells of the footer row: `<ng-template starFooterRow let-columns let-rows=\"rows\">` with `<td>` cells (one per column, or one with `colspan`). The table keeps the `<tfoot>` row and its lead and trail cells; the row shows also when no column has a `footer` or a `summary`.",
+    "inputs": [
+      {
+        "name": "starFooterRowOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type the context in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarFooterTemplate": {
     "kind": "directive",
     "selector": "ng-template[starFooter]",
@@ -9025,6 +9113,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Emits when an interactive gauge loses the focus."
       }
     ]
+  },
+  "StarGroupFooterTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starGroupFooter]",
+    "entry": "@star-ng/ui/table",
+    "description": "A footer row below each group of `groupBy`: `<ng-template starGroupFooter let-label let-rows=\"rows\">` with `<td>` cells. Without it, `groupSummary` draws the summary cells; with it, the template replaces them.",
+    "inputs": [
+      {
+        "name": "starGroupFooterOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type `let-rows` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarGroupTemplate": {
     "kind": "directive",
@@ -9940,7 +10045,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-input-mask",
     "entry": "@star-ng/ui/input-mask",
-    "description": "Masked text field (PrimeNG `p-inputmask`): fixed-format entry such as phone numbers, postal codes or serial numbers. Mask tokens: `9` digit, `a` letter, `*` letter or digit; other characters are literals. The value is the masked text, or the raw slots with `unmask`.",
+    "description": "Masked text field (PrimeNG `p-inputmask`): fixed-format entry such as phone numbers, postal codes or serial numbers. Mask tokens: `9` digit, `a` letter, `*` letter or digit; other characters are literals. The value is the masked text, or the raw slots with `unmask`. `characterPattern` changes what an `a` slot takes (PrimeNG `characterPattern`). With `keepCharPositions`, deleting a character leaves its slot empty and the later characters stay in place. `showClear` adds a clear button; `variant` is `outlined` or `filled`.",
     "inputs": [
       {
         "name": "mask",
@@ -9971,6 +10076,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Keep a partly filled value on blur (default clears it)."
       },
       {
+        "name": "characterPattern",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Pattern of one character of an `a` slot, as regular expression source (default: any letter). For example `[A-F]` for upper-case hex letters. PrimeNG `characterPattern`."
+      },
+      {
         "name": "placeholder",
         "type": "string | null",
         "default": "null",
@@ -9983,6 +10095,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A clear button while the field has a value. PrimeNG `showClear`."
+      },
+      {
+        "name": "keepCharPositions",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Deleting a character leaves its slot empty; the later characters keep their places. PrimeNG `keepCharPositions`."
+      },
+      {
+        "name": "variant",
+        "type": "StarInputVariant",
+        "default": "'outlined'",
+        "required": false,
+        "description": "Look: border on every side, or a filled surface. Default: `inputVariant` of `provideStarNg`, else `outlined`. PrimeNG `variant`."
       },
       {
         "name": "inputId",
@@ -10077,7 +10217,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "input"
+      "input",
+      "clearButton",
+      "clearIcon"
     ]
   },
   "StarInputNumber": {
@@ -10099,6 +10241,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'USD'",
         "required": false,
         "description": "ISO 4217 code for `mode=\"currency\"`, for example `EUR`."
+      },
+      {
+        "name": "currencyDisplay",
+        "type": "'symbol' | 'narrowSymbol' | 'code' | 'name'",
+        "default": "'symbol'",
+        "required": false,
+        "description": "How `mode=\"currency\"` shows the currency: `'symbol'` (default, `€`), `'narrowSymbol'`, `'code'` (`EUR`) or `'name'` (`euros`). PrimeNG `currencyDisplay`."
+      },
+      {
+        "name": "format",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "`false` shows the plain number at all times (no grouping, currency or unit text), also when the field does not have the focus. Default `true`. PrimeNG `format`."
+      },
+      {
+        "name": "localeMatcher",
+        "type": "'lookup' | 'best fit'",
+        "default": "'best fit'",
+        "required": false,
+        "description": "Locale matching algorithm of `Intl.NumberFormat`. PrimeNG `localeMatcher`."
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A clear button while the field has a value. PrimeNG `showClear`."
       },
       {
         "name": "unit",
@@ -10185,6 +10355,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "buttonLayout",
+        "type": "'horizontal' | 'stacked' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "Place of the step buttons: `'horizontal'` (default; minus before, plus after the field), `'stacked'` (up and down at the end) or `'vertical'` (plus above, minus below). PrimeNG `buttonLayout`."
+      },
+      {
+        "name": "allowEmpty",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "`false`: an empty field is not a value. On blur it takes the last value, else `min`, else `0`. Default `true` (an empty field is `null`). PrimeNG `allowEmpty`."
+      },
+      {
+        "name": "highlightOnFocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Selects the whole text when the field gets the focus."
+      },
+      {
         "name": "placeholder",
         "type": "string | null",
         "default": "null",
@@ -10197,6 +10388,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
       },
       {
         "name": "inputId",
@@ -10285,9 +10483,12 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "controlPanel",
+      "input",
+      "clearButton",
+      "clearIcon",
+      "stepPanel",
       "stepButton",
-      "stepIcon",
-      "input"
+      "stepIcon"
     ]
   },
   "StarInputOtp": {
@@ -10469,6 +10670,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "At least one tag is needed (`aria-required`); also bound from Signal Forms `required()`."
+      },
+      {
         "name": "inputId",
         "type": "string",
         "default": "(generated id)",
@@ -10579,6 +10794,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "clearIcon",
       "errorText"
     ]
+  },
+  "StarInputTagTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starInputTag]",
+    "entry": "@star-ng/ui/input-tags",
+    "description": "Replaces the text of each chip of `star-input-tags`: `<ng-template starInputTag let-tag let-index=\"index\">…</ng-template>`. PrimeNG `#item` (chip) template. The chip and its remove button stay; do not add focusable elements.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarItemTemplate": {
     "kind": "directive",
@@ -10837,11 +11061,60 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "`{value}` is replaced by the number, for example `{value}%`."
       },
       {
+        "name": "strokeWidth",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Width of the track and the value arc, in units of the 100 × 100 view box (1 to 20; the arc radius is 40). Default: the stylesheet width (10). PrimeNG `strokeWidth`."
+      },
+      {
+        "name": "showValue",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the value text in the middle. Default `true`. PrimeNG `showValue`."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`)."
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
       },
       {
         "name": "disabled",
@@ -10897,7 +11170,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "graphic",
       "track",
       "valueItem",
-      "text"
+      "text",
+      "valueInput"
     ]
   },
   "StarLinearGauge": {
@@ -14952,6 +15226,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "endPanel"
     ]
   },
+  "StarPaginatorEndTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starPaginatorEnd]",
+    "entry": "@star-ng/ui/table",
+    "description": "Content at the end of the table paginator: `<ng-template starPaginatorEnd let-state>`. PrimeNG `#paginatorright` template (here logical: end).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarPaginatorOption": {
     "kind": "directive",
     "selector": "ng-template[starPaginatorOption]",
@@ -14966,6 +15249,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
+    "models": [],
+    "outputs": []
+  },
+  "StarPaginatorStartTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starPaginatorStart]",
+    "entry": "@star-ng/ui/table",
+    "description": "Content at the start of the table paginator: `<ng-template starPaginatorStart let-state>`. PrimeNG `#paginatorleft` template (here logical: start).",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -15194,6 +15486,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Length rule; also bound from a Signal Forms `minLength()` validator. Default 12."
       },
       {
+        "name": "thresholds",
+        "type": "readonly [number, number, number]",
+        "default": "[0.375, 0.625, 0.875]",
+        "required": false,
+        "description": "Shares of the rules met (0 to 1) from which the strength is fair, good and strong. Default `[0.375, 0.625, 0.875]` (the share rounded to quarters). Below the first share it is weak."
+      },
+      {
+        "name": "toggleMask",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The show / hide button (default `true`). It has a name (\"Show password\"), `aria-pressed`, keeps the focus and takes the `show` / `hide` icon slots. PrimeNG `toggleMask`."
+      },
+      {
         "name": "placeholder",
         "type": "string | null",
         "default": "null",
@@ -15213,6 +15519,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
       },
       {
         "name": "inputId",
@@ -16499,11 +16812,74 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`)."
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
+      },
+      {
         "name": "disabled",
         "type": "boolean",
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`'vertical'`: low at the bottom, high at the top. PrimeNG `orientation`."
+      },
+      {
+        "name": "minStepsBetweenHandles",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Smallest gap between the handles, in steps. PrimeNG `minStepsBetweenHandles`."
+      },
+      {
+        "name": "disabledMinHandle",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Locks the low handle. PrimeNG `disabledMinHandle`."
+      },
+      {
+        "name": "disabledMaxHandle",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Locks the high handle. PrimeNG `disabledMaxHandle`."
       },
       {
         "name": "pt",
@@ -16538,6 +16914,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "slideEnd",
+        "type": "readonly [number, number]",
+        "default": null,
+        "required": false,
+        "description": "The value when a drag or a key press ends (the native `change`). PrimeNG `onSlideEnd`."
       }
     ],
     "parts": [
@@ -16561,11 +16944,67 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "cancel",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A first option that clears the rating (value `null`). PrimeNG `cancel`."
+      },
+      {
+        "name": "allowHalf",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Half stars: each star has two options (`2.5`, `3`), the keys step by 0.5. PrimeNG `allowHalf`."
+      },
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`'vertical'` stacks the stars (layout only). PrimeNG `orientation`."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the rating. PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A rating is needed (`aria-required`); also bound from Signal Forms `required()`."
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
       },
       {
         "name": "disabled",
@@ -16618,7 +17057,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
+      "cancelItem",
+      "cancelIcon",
       "rateItem",
+      "halfLabel",
       "rateIcon"
     ]
   },
@@ -17052,6 +17494,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root"
     ]
+  },
+  "StarRowTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starRow]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the data cells of each body row: `<ng-template starRow let-row let-columns=\"columns\">` with one `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">` per column. The table keeps the `<tr>` (its keys, selection, row click and context menu), the lead cells (reorder, expander, selection) and the row actions cell, so the grid semantics of cell navigation stay. `starTableCell` gives each cell its grid attributes (`data-field`, the roving `tabindex`, `aria-colindex`, `aria-selected`). The table does not draw the editors of the cells in this template.",
+    "inputs": [
+      {
+        "name": "starRowOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type `let-row` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarScheduler": {
     "kind": "component",
@@ -17884,6 +18343,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A choice is needed: `aria-required` on the radio group (single mode); also bound from Signal Forms `required()`."
+      },
+      {
         "name": "disabled",
         "type": "boolean",
         "default": "false",
@@ -18233,11 +18706,53 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`)."
+      },
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`'vertical'` draws the slider from bottom (min) to top (max). PrimeNG `orientation`."
+      },
+      {
         "name": "inputId",
         "type": "string",
         "default": "(generated id)",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
       },
       {
         "name": "disabled",
@@ -18280,6 +18795,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "slideEnd",
+        "type": "number",
+        "default": null,
+        "required": false,
+        "description": "The value when a drag or a key press ends (the native `change`). PrimeNG `onSlideEnd`."
+      },
       {
         "name": "touch",
         "type": "void",
@@ -19385,10 +19907,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [
       {
         "name": "selectionMode",
-        "type": "'single' | 'multiple' | 'cell' | 'range' | null",
+        "type": "'single' | 'multiple' | 'cell' | 'range' | 'column' | null",
         "default": "null",
         "required": false,
-        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`.",
+        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`. `'column'` selects whole columns (`columnSelection`): each header gets a select button; a click selects that column, Ctrl / Cmd + click adds or removes it, Shift + click selects the columns from the last clicked one. Ctrl+C copies the selected columns of all filtered rows (sort order, all pages) as tab-separated text, with the headers when `copyHeaders` is set. Ignite UI `columnSelection`.",
         "inheritedFrom": "StarTableInteraction"
       },
       {
@@ -19768,6 +20290,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Batch edit: saved edits, new rows and deleted rows collect in a pending change set instead of single events. Changed cells are marked, deleted rows are struck through. `commitEdits()` emits `batchSave`, `discardEdits()` drops the set, `undo()` / `redo()` (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z in the table) step through it. With `lazy`, set `dataKey`: the change set keys rows by `dataKey`, and a new page has new row objects. Ignite `batchEditing`."
       },
       {
+        "name": "filterDelay",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Delay in milliseconds before typed filter text applies: the text field of the filter row and of the filter menu (without Apply), and `globalFilter`. `0` (default) applies at once. PrimeNG `filterDelay`."
+      },
+      {
+        "name": "advancedFilter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows an \"Advanced filter\" button above the table. It opens a dialog with `star-query-builder` over all columns; Apply sets `advancedQuery`. Ignite UI advanced filtering dialog."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -19920,6 +20456,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "[]",
         "required": false,
         "description": "Keys (`dataKey`) of the rows in edit with `editMode=\"row\"`. Two-way. PrimeNG `editingRowKeys`."
+      },
+      {
+        "name": "pinnedRows",
+        "type": "StarRowPins",
+        "default": "{}",
+        "required": false,
+        "description": "Pinned rows: row keys (`dataKey` value, else the row object) at the `top` or the `bottom` of the body. A pinned row leaves the paged rows and stays in view in its own part of the body (below the sticky header, or above the footer), also with virtual scroll. It still follows the filters; in lazy mode the table keeps the last row object it saw (from the loaded rows or `pinRow()`), so the row shows on every page. A pinned row also shows while its group is closed. With virtual scroll it has `aria-rowindex` (top pins after the header rows, bottom pins after the body rows). Two-way. `pinRow()`, `unpinRow()` and the context menu items `'pinRowTop'`, `'pinRowBottom'` and `'unpinRow'` change it. Ignite UI `pinRow`, AG Grid `pinnedTopRowData` / `pinnedBottomRowData`."
+      },
+      {
+        "name": "advancedQuery",
+        "type": "StarQueryGroup",
+        "default": "{ operator: 'and', rules: [] }",
+        "required": false,
+        "description": "Rules of the advanced filter (`StarQueryGroup`), applied with `starQueryToPredicate` after the column filters. Two-way; it works also without the `advancedFilter` button. In lazy mode the table does not filter and `lazyLoad` does not carry it: the owner reads this model and filters on the server."
+      },
+      {
+        "name": "columnSelection",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Selected column fields with `selectionMode=\"column\"`, in display order. Two-way."
       }
     ],
     "outputs": [
@@ -19953,6 +20510,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "The user (or `pinColumn()`) pinned or unpinned a column. AG Grid `columnPinned`."
+      },
+      {
+        "name": "rowPin",
+        "type": "StarRowPinEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "The user (or `pinRow()` / `unpinRow()`) pinned or unpinned a row. Ignite UI `rowPinned`."
       },
       {
         "name": "rowClick",
@@ -20077,6 +20641,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "toolsPanel",
+      "advancedFilterButton",
       "columnList",
       "columnItem",
       "columnsText",
@@ -20098,12 +20663,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "sortButton",
       "sortIcon",
       "sortRankText",
+      "columnSelectButton",
+      "columnSelectIcon",
       "resizerText",
       "rowActionCell",
       "filtersRow",
       "filtersCell",
       "filterInput",
       "rangePanel",
+      "pinnedTopPanel",
       "body",
       "scrollBodyRow",
       "loadingItem",
@@ -20118,6 +20686,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "groupCountText",
       "groupFooterRow",
       "groupFooterCell",
+      "emptyCell",
+      "emptyIcon",
+      "pinnedBottomPanel",
+      "foot",
+      "footer",
+      "footerCell",
+      "summaryLabel",
+      "markText",
+      "text",
+      "advancedButtonsPanel",
       "expandIcon",
       "radioInput",
       "cellInput",
@@ -20129,16 +20707,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "saveIcon",
       "cancelIcon",
       "expansionRow",
-      "expansionCell",
-      "emptyCell",
-      "emptyIcon",
-      "foot",
-      "footer",
-      "footerCell",
-      "summaryLabel",
-      "markText",
-      "text"
+      "expansionCell"
     ]
+  },
+  "StarTableCell": {
+    "kind": "directive",
+    "selector": "td[starTableCell]",
+    "entry": "@star-ng/ui/table",
+    "description": "A data cell of a `starRow` template: `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">`. It sets the grid attributes that the built-in cells have, so cell navigation, cell selection, the context menu and paste work in the custom row.",
+    "inputs": [
+      {
+        "name": "starTableCell",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "`field` of the column of the cell."
+      },
+      {
+        "name": "starTableCellRow",
+        "type": "unknown",
+        "default": null,
+        "required": true,
+        "description": "The row of the cell."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarTableFilterMenu": {
     "kind": "component",
@@ -20196,6 +20790,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Most rules that \"Add rule\" allows (PrimeNG `maxConstraints`)."
       },
       {
+        "name": "checklist",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Excel-style list of a `'multiselect'` filter: a search box that narrows the choices (case- and accent-insensitive `contains`, or a `contains` mode of `StarFilterService`), Select all and Clear (of the shown choices)."
+      },
+      {
         "name": "showApply",
         "type": "boolean",
         "default": "true",
@@ -20241,9 +20842,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "input",
       "valueOption",
       "filterAllOption",
+      "valueSearchInput",
+      "checklistButtonsPanel",
+      "selectAllButton",
+      "clearAllButton",
       "choicesPanel",
       "choiceLabel",
       "choiceInput",
+      "moreText",
       "rangePanel",
       "removeButton",
       "removeIcon",
@@ -20258,10 +20864,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [
       {
         "name": "selectionMode",
-        "type": "'single' | 'multiple' | 'cell' | 'range' | null",
+        "type": "'single' | 'multiple' | 'cell' | 'range' | 'column' | null",
         "default": "null",
         "required": false,
-        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`."
+        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`. `'column'` selects whole columns (`columnSelection`): each header gets a select button; a click selects that column, Ctrl / Cmd + click adds or removes it, Shift + click selects the columns from the last clicked one. Ctrl+C copies the selected columns of all filtered rows (sort order, all pages) as tab-separated text, with the headers when `copyHeaders` is set. Ignite UI `columnSelection`."
       },
       {
         "name": "cellNavigation",
@@ -21389,7 +21995,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-toggle-button",
     "entry": "@star-ng/ui/select-button",
-    "description": "Two-state button (PrimeNG `p-togglebutton`): `aria-pressed`, on / off labels and icons. `<star-toggle-button [(checked)]=\"starred\" onLabel=\"Starred\" offLabel=\"Star\" onIcon=\"ph-fill ph-star\" offIcon=\"ph-bold ph-star\" />`",
+    "description": "Two-state button (PrimeNG `p-togglebutton`): `aria-pressed`, on / off labels and icons. `iconPos` puts the icon before or after the label. Slots: `<ng-template starIcon=\"on\">` and `starIcon=\"off\"` replace the icons (PrimeNG `#icon`), `starToggleButtonContent` the whole content (PrimeNG `#content`). `required` feeds the forms only: a button takes no `aria-required`. `<star-toggle-button [(checked)]=\"starred\" onLabel=\"Starred\" offLabel=\"Star\" onIcon=\"ph-fill ph-star\" offIcon=\"ph-bold ph-star\" />`",
     "inputs": [
       {
         "name": "onLabel",
@@ -21420,11 +22026,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "iconPos",
+        "type": "'start' | 'end'",
+        "default": "'start'",
+        "required": false,
+        "description": "Icon before (`'start'`) or after (`'end'`) the label. PrimeNG `iconPos` (logical sides)."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The button must be on; feeds Signal Forms `required()` (a button takes no `aria-required`)."
       },
       {
         "name": "disabled",
@@ -21478,9 +22105,18 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "item",
-      "itemIcon",
-      "itemText"
+      "itemText",
+      "itemIcon"
     ]
+  },
+  "StarToggleButtonContentTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starToggleButtonContent]",
+    "entry": "@star-ng/ui/select-button",
+    "description": "Replaces the icon and the label of `star-toggle-button`: `<ng-template starToggleButtonContent let-checked>…</ng-template>`. PrimeNG `#content`. The button and its `aria-pressed` stay; do not add focusable elements.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarToggleSwitch": {
     "kind": "component",
@@ -21545,6 +22181,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The switch must be on; also bound from Signal Forms `required()`."
+      },
+      {
+        "name": "onLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "State text shown while on (PrimeNG toggle button `onLabel`)."
+      },
+      {
+        "name": "offLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "State text shown while off."
+      },
+      {
         "name": "hasLabel",
         "type": "boolean",
         "default": "true",
@@ -21592,6 +22256,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "input",
       "track",
       "thumbnail",
+      "stateText",
       "text"
     ]
   },
@@ -22281,6 +22946,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The rows are loading: the body shows one loading row (the `starLoading` slot, else a spinner and the loading text) and the table has `aria-busy`. PrimeNG `loading`."
+      },
+      {
         "name": "selectionMode",
         "type": "'single' | 'multiple' | 'checkbox' | null",
         "default": "null",
@@ -22498,8 +23170,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "filtersCell",
       "filterInput",
       "body",
+      "foot",
+      "footer",
       "spacerRow",
       "spacerCell",
+      "loadingRow",
+      "busyCell",
+      "loadingIcon",
       "emptyRow",
       "emptyCell",
       "emptyIcon",
@@ -22511,6 +23188,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "row",
       "rowCell",
       "expandButton",
+      "toggleIcon",
       "boxPanel",
       "boxIcon",
       "cellInput"
@@ -22935,6 +23613,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chat/basic": "<star-chat\n  [messages]=\"messages()\"\n  user=\"me\"\n  [typing]=\"typing()\"\n  [loading]=\"loadingOlder()\"\n  [hasMore]=\"hasMore()\"\n  locale=\"en-US\"\n  ariaLabel=\"Support conversation\"\n  (send)=\"post($event.text)\"\n  (loadMore)=\"loadOlder()\"\n/>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
+  "checkbox/icon": "<star-checkbox [(checked)]=\"iconChecked\">\n  Send a copy\n  <ng-template starIcon=\"check\" let-checked>\n    <i [class]=\"checked ? 'ph-bold ph-heart' : 'ph-bold ph-minus'\"></i>\n  </ng-template>\n</star-checkbox>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",
   "checkbox/states": "<star-checkbox [checked]=\"true\" disabled>Disabled</star-checkbox>\n<star-checkbox [checked]=\"true\" readonly>Read-only</star-checkbox>",
   "chip/area": "<div class=\"docs-stack\">\n  <star-chips-area ariaLabel=\"Sort order\" [(items)]=\"sortOrder\" removable />\n  <p class=\"docs-output\" role=\"status\">Sort by: {{ sortOrder().join(', ') || 'none' }}</p>\n</div>",
@@ -22942,6 +23621,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chip/removable": "<div class=\"docs-row\">\n  @for (name of names(); track name) {\n    <star-chip [label]=\"name\" removable (removed)=\"remove(name)\" />\n  }\n</div>\n<p class=\"docs-output\" role=\"status\">{{ names().length }} chips left.</p>",
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
   "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
+  "color-picker/format": "<star-color-picker [(value)]=\"rgbColor\" format=\"rgb\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ rgbColor() }}</p>",
+  "color-picker/inline": "<star-color-picker [(value)]=\"inlineColor\" inline ariaLabel=\"Theme color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ inlineColor() }}</p>",
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
   "command-palette/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"open.set(true)\">\n      Open command palette\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"commands\"\n    [(visible)]=\"open\"\n    (commandRun)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
   "command-palette/templates": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"peopleOpen.set(true)\">\n      Find a person\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"people\"\n    [(visible)]=\"peopleOpen\"\n    [hotkey]=\"null\"\n    [maxRecent]=\"0\"\n    placeholder=\"Search people\"\n    ariaLabel=\"Find a person\"\n    (commandRun)=\"person.set($event.label)\"\n  >\n    <ng-template starCommand let-command>\n      <i class=\"ph-bold ph-user-circle\" aria-hidden=\"true\"></i>\n      <span class=\"option\">\n        <span>{{ command.label }}</span>\n        <small>{{ command.group }} · {{ command.keywords?.[0] }}</small>\n      </span>\n    </ng-template>\n    <ng-template starEmpty let-query>No person matches “{{ query }}”.</ng-template>\n  </star-command-palette>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ person() }}</p>\n</div>",
@@ -23081,16 +23762,22 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "input-group/addons": "<div class=\"docs-stack\">\n  <star-field label=\"Website\">\n    <star-input-group>\n      <star-input-group-addon>https://</star-input-group-addon>\n      <input starInput placeholder=\"example.com\" />\n    </star-input-group>\n  </star-field>\n  <star-input-group ariaLabel=\"Weight\">\n    <input starInput inputmode=\"decimal\" aria-label=\"Weight\" placeholder=\"0.0\" />\n    <star-input-group-addon>kg</star-input-group-addon>\n  </star-input-group>\n</div>",
   "input-group/button": "<div class=\"docs-stack\">\n  <star-input-group ariaLabel=\"Coupon\">\n    <input starInput aria-label=\"Coupon code\" placeholder=\"Coupon code\" />\n    <star-button variant=\"secondary\">Apply</star-button>\n  </star-input-group>\n</div>",
   "input-group/icon": "<div class=\"docs-stack\">\n  <star-icon-field icon=\"ph-bold ph-magnifying-glass\">\n    <input starInput type=\"search\" placeholder=\"Search orders\" aria-label=\"Search orders\" />\n  </star-icon-field>\n  <star-icon-field icon=\"ph-bold ph-envelope-simple\" iconPosition=\"end\">\n    <input starInput type=\"email\" placeholder=\"name@example.com\" aria-label=\"Email\" />\n  </star-icon-field>\n</div>",
+  "input-mask/options": "<star-input-mask\n  mask=\"9999-9999\"\n  [(value)]=\"card\"\n  showClear\n  keepCharPositions\n  variant=\"filled\"\n  ariaLabel=\"Member number\"\n/>",
+  "input-mask/pattern": "<star-input-mask\n  mask=\"aa-9999\"\n  characterPattern=\"[A-F]\"\n  [(value)]=\"batch\"\n  ariaLabel=\"Batch code\"\n/>\n<p class=\"docs-output\" role=\"status\">Value: {{ batch() || 'empty' }}</p>",
   "input-mask/phone": "<div class=\"docs-stack\">\n  <star-field label=\"Phone\">\n    <star-input-mask mask=\"(999) 999-9999\" [(value)]=\"phone\" />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Value: {{ phone() || '(empty)' }}</p>\n</div>",
   "input-mask/unmask": "<div class=\"docs-stack\">\n  <star-field label=\"Serial number\">\n    <star-input-mask mask=\"aa-9999-**\" unmask slotChar=\"#\" [(value)]=\"serial\" />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Value: {{ serial() || '(empty)' }}</p>\n</div>",
   "input-number/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Quantity\">\n    <star-input-number [(value)]=\"quantity\" [min]=\"0\" [max]=\"20\" showButtons />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Quantity: {{ quantity() }}</p>\n</div>",
   "input-number/currency": "<div class=\"docs-stack\">\n  <star-input-number\n    [(value)]=\"price\"\n    mode=\"currency\"\n    currency=\"EUR\"\n    locale=\"de-DE\"\n    ariaLabel=\"Price in euro\"\n  />\n  <star-input-number\n    [(value)]=\"price\"\n    mode=\"currency\"\n    currency=\"USD\"\n    locale=\"en-US\"\n    ariaLabel=\"Price in dollars\"\n  />\n</div>",
+  "input-number/currency-display": "<star-input-number\n  [(value)]=\"fee\"\n  mode=\"currency\"\n  currency=\"EUR\"\n  currencyDisplay=\"code\"\n  showClear\n  ariaLabel=\"Fee\"\n/>",
+  "input-number/layouts": "<div class=\"docs-row\">\n  <star-input-number\n    [(value)]=\"stacked\"\n    showButtons\n    buttonLayout=\"stacked\"\n    [allowEmpty]=\"false\"\n    highlightOnFocus\n    ariaLabel=\"Stacked\"\n  />\n  <star-input-number\n    [(value)]=\"vertical\"\n    showButtons\n    buttonLayout=\"vertical\"\n    [min]=\"0\"\n    ariaLabel=\"Vertical\"\n  >\n    <ng-template starIcon=\"increment\"><i class=\"ph-bold ph-arrow-up\"></i></ng-template>\n    <ng-template starIcon=\"decrement\"><i class=\"ph-bold ph-arrow-down\"></i></ng-template>\n  </star-input-number>\n</div>",
   "input-number/modes": "<div class=\"docs-stack\">\n  <star-input-number [(value)]=\"share\" mode=\"percent\" locale=\"en-US\" ariaLabel=\"Share\" />\n  <star-input-number\n    [(value)]=\"weight\"\n    mode=\"unit\"\n    unit=\"kilogram\"\n    locale=\"en-US\"\n    ariaLabel=\"Weight\"\n  />\n  <star-input-number [(value)]=\"items\" suffix=\" items\" locale=\"en-US\" ariaLabel=\"Items\" />\n</div>",
+  "input-number/plain": "<star-input-number\n  [(value)]=\"plain\"\n  [format]=\"false\"\n  localeMatcher=\"lookup\"\n  ariaLabel=\"Plain amount\"\n/>",
   "input-number/states": "<div class=\"docs-stack\">\n  <star-input-number [value]=\"12\" disabled ariaLabel=\"Disabled number\" />\n  <star-input-number [value]=\"12\" readonly ariaLabel=\"Read-only number\" />\n</div>",
   "input-otp/basic": "<star-input-otp\n  [(value)]=\"code\"\n  integerOnly\n  ariaLabel=\"Verification code\"\n  (completed)=\"done.set($event)\"\n/>\n<p class=\"docs-output\" role=\"status\">\n  Value: {{ code() || '(empty)' }}. Completed: {{ done() || 'no' }}\n</p>",
   "input-otp/disabled": "<star-input-otp value=\"123456\" disabled ariaLabel=\"Used code\" />",
   "input-otp/masked": "<star-input-otp [(value)]=\"pin\" [length]=\"4\" mask ariaLabel=\"PIN\" />",
   "input-tags/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Labels\" hint=\"Press Enter or a comma to add a label.\">\n    <star-input-tags [(value)]=\"labels\" showClear />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">{{ labels().join(', ') || '(none)' }}</p>\n</div>",
+  "input-tags/chips": "<star-input-tags [(value)]=\"chipTags\" ariaLabel=\"Topics\" showClear>\n  <ng-template starInputTag let-tag><i class=\"ph-bold ph-hash\"></i>{{ tag }}</ng-template>\n  <ng-template starIcon=\"remove\"><i class=\"ph-bold ph-trash\"></i></ng-template>\n</star-input-tags>",
   "input-tags/disabled": "<div class=\"docs-stack\">\n  <star-input-tags [value]=\"['north', 'south']\" disabled ariaLabel=\"Regions\" />\n</div>",
   "input-tags/validate": "<div class=\"docs-stack\">\n  <star-field label=\"Recipients\" hint=\"Email addresses, three at most.\">\n    <star-input-tags\n      [(value)]=\"recipients\"\n      [validate]=\"isEmail\"\n      [maxTags]=\"3\"\n      (rejected)=\"rejected.set($event.tag + ': ' + $event.reason)\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Rejected: {{ rejected() || '(nothing)' }}</p>\n</div>",
   "kanban/basic": "<div class=\"docs-stack\">\n  <star-kanban\n    [columns]=\"columns\"\n    [items]=\"tasks()\"\n    columnKey=\"status\"\n    itemKey=\"id\"\n    order=\"rank\"\n    itemLabel=\"title\"\n    (itemMove)=\"onMove($event)\"\n  >\n    <ng-template starKanbanCard [starKanbanCardOf]=\"tasks()\" let-task>\n      <span class=\"card-title\">{{ task.title }}</span>\n      <span class=\"card-meta\">\n        <span>{{ task.owner }}</span>\n        <star-tag [value]=\"task.id\" severity=\"secondary\" />\n      </span>\n    </ng-template>\n  </star-kanban>\n  <p class=\"docs-output\" role=\"status\">{{ lastMove() }}</p>\n</div>",
@@ -23099,6 +23786,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
   "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
   "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",
+  "knob/stroke": "<div class=\"docs-row\">\n  <star-knob [(value)]=\"thick\" [strokeWidth]=\"14\" ariaLabel=\"Thick knob\" />\n  <star-knob [(value)]=\"thick\" [showValue]=\"false\" ariaLabel=\"Knob without text\" />\n</div>",
   "list/action": "<div class=\"docs-stack\">\n  <star-list mode=\"action\" dense ariaLabel=\"Projects\">\n    @for (project of projects; track project.id) {\n      <star-list-item\n        [active]=\"opened() === project.id\"\n        (activated)=\"opened.set(project.id)\"\n      >\n        {{ project.name }}\n        <span starListItemEnd>{{ project.tasks }} tasks</span>\n      </star-list-item>\n    }\n    <star-list-item disabled>\n      Archive\n      <span starListItemEnd>Read only</span>\n    </star-list-item>\n  </star-list>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
   "list/basic": "<star-list ariaLabel=\"Warehouses\" divider>\n  <star-list-subheader>Portugal</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph-bold ph-warehouse\" aria-hidden=\"true\"></i>\n    Lisbon\n    <span starListItemSubtitle>Main warehouse</span>\n    <span starListItemEnd>1,240 orders</span>\n  </star-list-item>\n  <star-list-item>\n    <i starListItemStart class=\"ph-bold ph-warehouse\" aria-hidden=\"true\"></i>\n    Porto\n    <span starListItemSubtitle>Returns</span>\n    <span starListItemEnd>310 orders</span>\n  </star-list-item>\n  <star-list-subheader>Spain</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph-bold ph-warehouse\" aria-hidden=\"true\"></i>\n    Valencia\n    <span starListItemSubtitle>Cross-dock</span>\n    <star-tag starListItemEnd severity=\"success\" value=\"Open\" />\n  </star-list-item>\n</star-list>",
   "list/empty": "<star-list ariaLabel=\"Recent orders\">\n  <ng-template starEmpty>No recent orders.</ng-template>\n</star-list>",
@@ -23172,7 +23860,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "panel/toggler": "<div class=\"docs-stack\">\n  <star-panel\n    header=\"Delivery address\"\n    toggleable\n    toggler=\"header\"\n    (beforeToggle)=\"toggleLog.set('before: ' + ($event.collapsed ? 'collapsed' : 'open'))\"\n    (afterToggle)=\"\n      toggleLog.set(toggleLog() + ', after: ' + ($event.collapsed ? 'collapsed' : 'open'))\n    \"\n  >\n    12 Harbor Road, Lakeside.\n  </star-panel>\n  <star-panel header=\"Invoice notes\" toggleable iconPos=\"start\">\n    Send the invoice at the end of the month.\n  </star-panel>\n  <p class=\"docs-output\" role=\"status\">{{ toggleLog() || 'No toggle yet' }}</p>\n</div>",
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
+  "password/no-toggle": "<star-password [(value)]=\"hiddenOnly\" [toggleMask]=\"false\" ariaLabel=\"PIN\" />",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
+  "password/templates": "<star-password\n  [(value)]=\"templated\"\n  feedback\n  [thresholds]=\"[0.4, 0.6, 0.8]\"\n  ariaLabel=\"Account password\"\n>\n  <ng-template starIcon=\"show\"><i class=\"ph-bold ph-lock-simple-open\"></i></ng-template>\n  <ng-template starIcon=\"hide\"><i class=\"ph-bold ph-lock-simple\"></i></ng-template>\n  <ng-template starHeader><p>Pick a password you do not use elsewhere.</p></ng-template>\n  <ng-template starFooter><p>A password manager can make one for you.</p></ng-template>\n</star-password>",
   "pick-list/basic": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"available\" [(target)]=\"chosen\" />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "pick-list/filter-drag": "<div class=\"docs-stack\">\n  <star-pick-list\n    [(source)]=\"cities\"\n    [(target)]=\"route\"\n    filter\n    filterMatchMode=\"startsWith\"\n    dragdrop\n    showTargetControls\n    stripedRows\n    sourceHeader=\"Cities\"\n    targetHeader=\"Route\"\n    sourceFilterPlaceholder=\"Find a city\"\n    targetFilterPlaceholder=\"Find a stop\"\n    (moveToTarget)=\"lastMove.set('to the route: ' + names($event))\"\n    (moveAllToTarget)=\"lastMove.set('all to the route: ' + names($event))\"\n    (moveToSource)=\"lastMove.set('back to the cities: ' + names($event))\"\n    (moveAllToSource)=\"lastMove.set('all back: ' + names($event))\"\n    (targetReorder)=\"lastMove.set('route reordered: ' + names($event))\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last move: {{ lastMove() || 'none' }}</p>\n</div>",
   "pick-list/item": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"people\" [(target)]=\"team\" optionLabel=\"name\">\n    <ng-template starItem [starItemOf]=\"people()\" let-member let-list=\"list\">\n      {{ member.name }}\n      @if (list === 'target') {\n        <small style=\"color: var(--star-text-muted)\">on the team</small>\n      }\n    </ng-template>\n  </star-pick-list>\n</div>",
@@ -23199,7 +23889,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",
   "rating/basic": "<star-rating [(value)]=\"score\" ariaLabel=\"Service rating\" />\n<p class=\"docs-output\" role=\"status\">Rating: {{ score() ?? 'none' }}</p>",
+  "rating/cancel": "<star-rating [(value)]=\"hearts\" cancel ariaLabel=\"Delivery\">\n  <ng-template starIcon=\"on\"><i class=\"ph-fill ph-heart\"></i></ng-template>\n  <ng-template starIcon=\"off\"><i class=\"ph-bold ph-heart\"></i></ng-template>\n</star-rating>\n<p class=\"docs-output\" role=\"status\">Rating: {{ hearts() ?? 'none' }}</p>",
   "rating/count": "<star-rating [(value)]=\"detail\" [count]=\"10\" ariaLabel=\"Detailed rating\" />",
+  "rating/half": "<div class=\"docs-row\">\n  <star-rating [(value)]=\"halfScore\" allowHalf ariaLabel=\"Half stars\" />\n  <star-rating [(value)]=\"halfScore\" orientation=\"vertical\" ariaLabel=\"Vertical rating\" />\n</div>\n<p class=\"docs-output\" role=\"status\">Rating: {{ halfScore() ?? 'none' }}</p>",
   "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
   "ribbon/collapsed": "<star-ribbon [(collapsed)]=\"collapsed\" (command)=\"run($event)\">\n  <star-ribbon-tab key=\"home\" label=\"Home\">\n    <star-ribbon-group label=\"Clipboard\" [items]=\"clipboard\" />\n  </star-ribbon-tab>\n  <star-ribbon-tab key=\"review\" label=\"Review\">\n    <star-ribbon-group label=\"Comments\" [items]=\"comments\" />\n  </star-ribbon-tab>\n</star-ribbon>",
   "ribbon/editor": "<div class=\"docs-stack\">\n  <star-ribbon [(selectedTab)]=\"tab\" (command)=\"run($event)\">\n    <star-ribbon-backstage>\n      <p class=\"backstage\">Recent documents: Order summary, Project plan, Invoice notes.</p>\n    </star-ribbon-backstage>\n    <star-ribbon-tab key=\"home\" label=\"Home\" keyTip=\"H\">\n      <star-ribbon-group\n        label=\"Clipboard\"\n        icon=\"ph-bold ph-clipboard\"\n        [items]=\"clipboard\"\n        dialogLauncher=\"clipboard-options\"\n      />\n      <star-ribbon-group\n        label=\"Font\"\n        icon=\"ph-bold ph-text-aa\"\n        [items]=\"font()\"\n        dialogLauncher=\"font-options\"\n      >\n        <ng-template starRibbonItem=\"font-size\" let-item>\n          <select class=\"size\" [attr.aria-label]=\"item.label\" (change)=\"size($event)\">\n            <option>11</option>\n            <option>12</option>\n            <option>14</option>\n          </select>\n        </ng-template>\n      </star-ribbon-group>\n      <star-ribbon-group\n        label=\"Paragraph\"\n        icon=\"ph-bold ph-paragraph\"\n        [items]=\"paragraph()\"\n      />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"insert\" label=\"Insert\">\n      <star-ribbon-group label=\"Tables\" icon=\"ph-bold ph-table\" [items]=\"tables\" />\n      <star-ribbon-group label=\"Media\" icon=\"ph-bold ph-image\" [items]=\"media\" />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"review\" label=\"Review\">\n      <star-ribbon-group label=\"Comments\" icon=\"ph-bold ph-chat-text\" [items]=\"comments\" />\n    </star-ribbon-tab>\n  </star-ribbon>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
@@ -23217,6 +23909,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select-button/objects": "<star-select-button\n  [options]=\"views\"\n  optionLabel=\"label\"\n  optionValue=\"id\"\n  optionIcon=\"icon\"\n  [(value)]=\"view\"\n  [allowEmpty]=\"false\"\n  ariaLabel=\"View\"\n/>",
   "select-button/single": "<star-select-button\n  [options]=\"['Day', 'Week', 'Month']\"\n  [(value)]=\"period\"\n  ariaLabel=\"Period\"\n/>\n<p class=\"docs-output\" role=\"status\">Period: {{ period() }}</p>",
   "select-button/toggle": "<star-toggle-button\n  [(checked)]=\"pinned\"\n  onLabel=\"Pinned\"\n  offLabel=\"Pin\"\n  onIcon=\"ph-fill ph-push-pin\"\n  offIcon=\"ph-bold ph-push-pin\"\n/>\n<star-toggle-button [checked]=\"true\" disabled onLabel=\"Locked\" offLabel=\"Lock\" />",
+  "select-button/toggle-icons": "<div class=\"docs-row\">\n  <star-toggle-button [(checked)]=\"pinToggle\" onLabel=\"Pinned\" offLabel=\"Pin\" iconPos=\"end\">\n    <ng-template starIcon=\"on\"><i class=\"ph-fill ph-push-pin\"></i></ng-template>\n    <ng-template starIcon=\"off\"><i class=\"ph-bold ph-push-pin\"></i></ng-template>\n  </star-toggle-button>\n  <star-toggle-button [(checked)]=\"muted\">\n    <ng-template starToggleButtonContent let-checked>\n      <i [class]=\"checked ? 'ph-bold ph-speaker-x' : 'ph-bold ph-speaker-high'\"></i>\n      {{ checked ? 'Muted' : 'Sound on' }}\n    </ng-template>\n  </star-toggle-button>\n</div>",
   "select/basic": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"countries\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"country\"\n    placeholder=\"Select a country\"\n    ariaLabel=\"Country\"\n  />\n  <p class=\"docs-output\" role=\"status\">Country: {{ country() ?? 'none' }}</p>\n</div>",
   "select/disabled-options": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionDisabled=\"closed\"\n  [(value)]=\"open\"\n  placeholder=\"Offices (one is closed)\"\n  ariaLabel=\"Office\"\n/>",
   "select/editable": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"editedCity\"\n    editable\n    allowCustomValue\n    showClear\n    placeholder=\"Type or choose a city\"\n    ariaLabel=\"City, editable\"\n    (customValue)=\"lastCustom.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Value: {{ editedCity() ?? 'none' }}. Last custom text: {{ lastCustom() ?? 'none' }}\n  </p>\n</div>",
@@ -23243,6 +23936,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
   "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
   "slider/range": "<div class=\"docs-stack\">\n  <star-range-slider\n    [(value)]=\"price\"\n    [bounds]=\"[0, 500]\"\n    [step]=\"10\"\n    showValue\n    ariaLabel=\"Price range\"\n  />\n  <p class=\"docs-output\" role=\"status\">From {{ price()[0] }} to {{ price()[1] }}</p>\n</div>",
+  "slider/range-options": "<div class=\"docs-row\">\n  <star-range-slider\n    [(value)]=\"span\"\n    orientation=\"vertical\"\n    [minStepsBetweenHandles]=\"10\"\n    ariaLabel=\"Span\"\n    (slideEnd)=\"spanEnd.set($event)\"\n  />\n  <star-range-slider [(value)]=\"span\" disabledMinHandle ariaLabel=\"Upper limit\" />\n  <p class=\"docs-output\" role=\"status\">Last end: {{ spanEnd()?.join(' to ') ?? 'none' }}</p>\n</div>",
+  "slider/vertical": "<div class=\"docs-row\">\n  <star-slider\n    [(value)]=\"height\"\n    orientation=\"vertical\"\n    ariaLabel=\"Height\"\n    showValue\n    (slideEnd)=\"ended.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last end: {{ ended() ?? 'none' }}</p>\n</div>",
   "sparkline/line": "<p>\n  Weekly sales <star-sparkline [data]=\"sales\" [highlight]=\"['last']\" /> rose to 21.5\n  thousand.\n</p>",
   "sparkline/markers": "<star-sparkline\n  [data]=\"load\"\n  [highlight]=\"['min', 'max', 'last']\"\n  [referenceLine]=\"70\"\n  [min]=\"0\"\n  [max]=\"100\"\n  [width]=\"200\"\n  [height]=\"40\"\n  ariaLabel=\"Server load, target 70 percent\"\n/>",
   "sparkline/table": "<star-table\n  [value]=\"regions\"\n  [columns]=\"columns\"\n  dataKey=\"region\"\n  ariaLabel=\"Sales per region\"\n>\n  <ng-template starCell=\"trend\" [starCellOf]=\"regions\" let-row>\n    <star-sparkline [data]=\"row.trend\" [highlight]=\"['last']\" />\n  </ng-template>\n</star-table>",
@@ -23290,9 +23985,12 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-interaction/range": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"stockRows\"\n      [columns]=\"viewColumns\"\n      dataKey=\"sku\"\n      ariaLabel=\"Stock with range selection\"\n      selectionMode=\"range\"\n      [pinnedColumns]=\"{ sku: 'start' }\"\n      [(cellSelection)]=\"cells\"\n      paginator\n      [rows]=\"8\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ cells().length }} {{ cells().length === 1 ? 'cell' : 'cells' }}\n  </p>\n</div>",
   "table-interaction/search": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <input\n      starInput\n      type=\"search\"\n      aria-label=\"Find in stock\"\n      placeholder=\"Find in stock\"\n      [value]=\"search()\"\n      (input)=\"search.set($any($event.target).value)\"\n      (keydown.enter)=\"found.findNext()\"\n    />\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"found.findPrevious()\">\n      Previous\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"found.findNext()\">\n      Next\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"found.clearSearch()\">\n      Clear\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #found\n      [value]=\"stockRows\"\n      [columns]=\"viewColumns\"\n      dataKey=\"sku\"\n      ariaLabel=\"Stock with search\"\n      [(searchText)]=\"search\"\n      paginator\n      [rows]=\"8\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Matches: {{ found.searchMatches().count }}, active:\n    {{ found.searchMatches().active + 1 || 'none' }}\n  </p>\n</div>",
   "table-layout/column-groups": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"salesColumns\"\n    [columnGroups]=\"salesGroups\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales by region and quarter\"\n    columnToggle\n    reorderableColumns\n  >\n    <ng-template starColumnGroupHeader=\"Q2\" let-group let-span=\"span\">\n      {{ group.header }}, {{ span }} months\n    </ng-template>\n  </star-table>\n</docs-fill>",
+  "table-layout/custom-rows": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 5)\"\n    [columns]=\"customRowColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with custom rows\"\n    cellNavigation\n  >\n    <ng-template starRow [starRowOf]=\"orders\" let-row let-columns=\"columns\">\n      <td [starTableCell]=\"columns[0].field\" [starTableCellRow]=\"row\">\n        <strong>{{ row.id }}</strong>\n      </td>\n      <td [starTableCell]=\"columns[1].field\" [starTableCellRow]=\"row\">\n        {{ row.customer }} <small>({{ row.region }})</small>\n      </td>\n      <td [starTableCell]=\"columns[2].field\" [starTableCellRow]=\"row\">\n        {{ money(row.total) }}\n      </td>\n    </ng-template>\n    <ng-template starFooterRow [starFooterRowOf]=\"orders\" let-columns let-rows=\"rows\">\n      <td [attr.colspan]=\"columns.length\">{{ rows.length }} orders</td>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-layout/expansion": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-toggle-switch [(checked)]=\"single\">One row open at a time</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.collapseAll()\">\n      Collapse all\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #detailed\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with detail\"\n      [rowExpandMode]=\"single() ? 'single' : 'multiple'\"\n      [(expandedKeys)]=\"expanded\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n        <dl class=\"detail\">\n          <dt>Email</dt>\n          <dd>{{ row.email }}</dd>\n          <dt>Quantity</dt>\n          <dd>{{ row.quantity }} x {{ row.product }}</dd>\n        </dl>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Open: {{ expanded().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"footerColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with totals\"\n  />\n</docs-fill>",
+  "table-layout/group-footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 8)\"\n    [columns]=\"customRowColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with group footers\"\n    groupBy=\"region\"\n  >\n    <ng-template\n      starGroupFooter\n      [starGroupFooterOf]=\"orders\"\n      let-label\n      let-rows=\"rows\"\n      let-columns=\"columns\"\n    >\n      <td [attr.colspan]=\"columns.length\">{{ label }}: {{ rows.length }} orders</td>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-layout/groups": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"grouped\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 12)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders in groups\"\n      [groupBy]=\"grouped() ? 'region' : null\"\n      [(collapsedGroups)]=\"closed\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
+  "table-layout/pinned-rows": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"customRowColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with pinned rows\"\n      [(pinnedRows)]=\"pinnedRows\"\n      [contextMenuDefaults]=\"['pinRowTop', 'pinRowBottom', 'unpinRow']\"\n      stickyHeader\n      scrollHeight=\"16rem\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Top: {{ pinnedRows().top?.join(', ') || 'none' }}. Bottom:\n    {{ pinnedRows().bottom?.join(', ') || 'none' }}\n  </p>\n</div>",
   "table-layout/rowspan": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"rowSpanColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales with merged regions\"\n    groupBy=\"region\"\n    rowGroupMode=\"rowspan\"\n    selectionMode=\"multiple\"\n  />\n</docs-fill>",
   "table-layout/stack": "<div class=\"docs-stack docs-stack--narrow\">\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders stacked\"\n    responsiveLayout=\"stack\"\n  />\n</div>",
   "table-layout/summaries": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"summaryGroups\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"sales\"\n      [columns]=\"summaryColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sales with summaries\"\n      locale=\"en-US\"\n      [groupBy]=\"summaryGroups() ? 'region' : null\"\n      groupSummary\n    />\n  </docs-fill>\n</div>",
@@ -23303,15 +24001,20 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-layout/virtual-stack": "<docs-fill>\n  <star-table\n    [value]=\"stackedTickets\"\n    [columns]=\"ticketColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Tickets stacked\"\n    responsiveLayout=\"stack\"\n    virtualScroll\n    scrollHeight=\"24rem\"\n  />\n</docs-fill>",
   "table-paging/client": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Paged orders\"\n      paginator\n      [(first)]=\"first\"\n      [(rows)]=\"rows\"\n      [rowsPerPageOptions]=\"[5, 10, 20]\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">first = {{ first() }}, rows = {{ rows() }}</p>\n</div>",
   "table-paging/lazy": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"lazyRows()\"\n      [columns]=\"lazyColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders from the server\"\n      lazy\n      paginator\n      [rows]=\"5\"\n      [rowsPerPageOptions]=\"[5, 10]\"\n      [totalRecords]=\"lazyTotal()\"\n      [loading]=\"lazyLoading()\"\n      (lazyLoad)=\"load($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Last request: {{ request() }}</p>\n</div>",
+  "table-paging/paginator-slots": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with paginator content\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starPaginatorStart let-state>\n      <span>Page {{ state.page + 1 }} of {{ state.pageCount }}</span>\n    </ng-template>\n    <ng-template starPaginatorEnd>\n      <span>{{ orders.length }} orders</span>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-selection/actions": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"actionOrders()\"\n      [columns]=\"actionColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with actions\"\n      selectionMode=\"single\"\n      [(selection)]=\"actionSelection\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"actions\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-button\n          size=\"sm\"\n          variant=\"secondary\"\n          [disabled]=\"row.status === 'Cancelled'\"\n          (pressed)=\"cancel(row)\"\n        >\n          Cancel {{ row.id }}\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ actionSelection()[0]?.id ?? 'none' }}\n  </p>\n</div>",
   "table-selection/checkbox": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with selectable rows\"\n      selectionMode=\"multiple\"\n      [(selectionKeys)]=\"keys\"\n      [rowSelectable]=\"notCancelled\"\n      [selectionPageOnly]=\"false\"\n      (selectionChanging)=\"limit($event)\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ keys()?.length ?? 0 }} selected{{ refused() ? ', more than 20 refused' : '' }}\n  </p>\n</div>",
   "table-selection/click": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 5)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with row click\"\n      (rowClick)=\"opened.set($event.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
+  "table-selection/columns": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columnPickColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column selection\"\n      selectionMode=\"column\"\n      [(columnSelection)]=\"pickedColumns\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Columns: {{ pickedColumns().join(', ') || 'none' }}\n  </p>\n</div>",
   "table-selection/meta": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 8)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with meta-key selection\"\n      selectionMode=\"multiple\"\n      metaKeySelection\n      [(selection)]=\"metaSelected\"\n      (rowSelect)=\"lastEvent.set('Selected ' + $event.row.id)\"\n      (rowUnselect)=\"lastEvent.set('Cleared ' + $event.row.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ metaSelected().length }} selected. {{ lastEvent() }}\n  </p>\n</div>",
   "table-selection/multiple": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selectOpen()\">\n      Select open orders\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selected.set([])\">\n      Clear selection\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with checkboxes\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
   "table-selection/single": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with one choice\"\n      selectionMode=\"single\"\n      [(selection)]=\"chosen\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen()[0]?.id ?? 'none' }}</p>\n</div>",
+  "table-sort-filter/advanced": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with an advanced filter\"\n      advancedFilter\n      [(advancedQuery)]=\"advancedQuery\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Rules: {{ advancedQuery().rules.length }}</p>\n</div>",
   "table-sort-filter/columns": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"filtered.clearFilters()\">\n    Clear filters\n  </star-button>\n  <docs-fill>\n    <star-table\n      #filtered\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column filters\"\n      [(filters)]=\"filters\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Filters: {{ filterText() }}</p>\n</div>",
   "table-sort-filter/combined": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search combined orders\"\n    placeholder=\"Search combined orders\"\n    [value]=\"combinedQuery()\"\n    (input)=\"combinedQuery.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with search, filters and sort\"\n      [globalFilter]=\"combinedQuery()\"\n      size=\"sm\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-sort-filter/custom": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"customColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with a custom match mode\"\n      filterDisplay=\"menu\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/delay": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders after a pause\"\n    placeholder=\"Search orders after a pause\"\n    [value]=\"delayQuery()\"\n    (input)=\"delayQuery.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders filtered after a pause\"\n      [globalFilter]=\"delayQuery()\"\n      [filterDelay]=\"400\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/excel": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"excelColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with an Excel-style filter\"\n    paginator\n    [rows]=\"4\"\n  />\n</docs-fill>",
   "table-sort-filter/global": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"query()\"\n    (input)=\"query.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Searchable orders\"\n      [globalFilter]=\"query()\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-sort-filter/menu": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"menuColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Invoices with filter menus\"\n      filterDisplay=\"menu\"\n      [(filters)]=\"menuFilters\"\n      (filter)=\"menuCount.set($event.filteredValue.length)\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ menuCount() ?? orders.length }} invoices match. Filters: {{ menuText() }}\n  </p>\n</div>",
   "table-sort-filter/multi": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders sorted by several columns\"\n      multiSort\n      [(sortMeta)]=\"sortMeta\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Sorts: {{ sortText() }}</p>\n</div>",
@@ -23360,6 +24063,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "toast/sticky": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"sticky()\">Sticky message</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"quick()\"\n  >Two second message</star-button\n>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear()\">Clear all</star-button>",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",
   "toggle-switch/disabled": "<star-toggle-switch [checked]=\"true\" disabled\n  >Two-step sign-in (set by your admin)</star-toggle-switch\n>",
+  "toggle-switch/labels": "<star-toggle-switch [(checked)]=\"lights\" onLabel=\"On\" offLabel=\"Off\">\n  Lights\n  <ng-template starIcon=\"on\"><i class=\"ph-bold ph-check\"></i></ng-template>\n  <ng-template starIcon=\"off\"><i class=\"ph-bold ph-x\"></i></ng-template>\n</star-toggle-switch>",
   "toggle-switch/small": "<star-toggle-switch size=\"sm\" [(checked)]=\"compact\">Compact rows</star-toggle-switch>",
   "toolbar/basic": "<div class=\"docs-stack\">\n  <star-toolbar ariaLabel=\"Order actions\">\n    <ng-container starToolbarStart>\n      <star-button size=\"sm\" leadingIcon=\"ph-bold ph-plus\" (pressed)=\"last.set('New')\">\n        New\n      </star-button>\n      <star-button\n        size=\"sm\"\n        variant=\"secondary\"\n        leadingIcon=\"ph-bold ph-pencil-simple\"\n        (pressed)=\"last.set('Edit')\"\n      >\n        Edit\n      </star-button>\n    </ng-container>\n    <ng-container starToolbarEnd>\n      <star-button\n        size=\"sm\"\n        variant=\"ghost\"\n        leadingIcon=\"ph-bold ph-export\"\n        (pressed)=\"last.set('Export')\"\n      >\n        Export\n      </star-button>\n    </ng-container>\n  </star-toolbar>\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "toolbar/center": "<div class=\"docs-stack\">\n  <star-toolbar ariaLabel=\"Page controls\">\n    <ng-container starToolbarStart>\n      <star-button size=\"sm\" variant=\"secondary\">Back</star-button>\n    </ng-container>\n    <ng-container starToolbarCenter>\n      <star-button size=\"sm\" variant=\"ghost\">Day</star-button>\n      <star-divider layout=\"vertical\" />\n      <star-button size=\"sm\" variant=\"ghost\">Week</star-button>\n    </ng-container>\n    <ng-container starToolbarEnd>\n      <star-button size=\"sm\">Save</star-button>\n    </ng-container>\n  </star-toolbar>\n</div>",
@@ -23383,6 +24087,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-table/lazy": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"folders()\"\n    [columns]=\"folderColumns\"\n    [(expanded)]=\"folderOpen\"\n    lazy\n    (nodeExpand)=\"loadFolder($event.node)\"\n    ariaLabel=\"Folders\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ folderQueue().length ? 'Loading ' + folderQueue()[0] : 'Idle' }}\n  </p>\n</div>",
   "tree-table/slots": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [expanded]=\"allOpen\"\n    ariaLabel=\"Departments with slots\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Budget by department</p>\n    </ng-template>\n    <ng-template starNode [starNodeOf]=\"departments\" let-node let-level=\"level\">\n      <strong [style.color]=\"level === 1 ? 'var(--star-text)' : 'var(--star-text-muted)'\">\n        {{ node.label }}\n      </strong>\n      <small>(level {{ level }})</small>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Figures in millions.</p>\n    </ng-template>\n  </star-tree-table>\n  <star-tree-table [nodes]=\"[]\" [columns]=\"columns\" ariaLabel=\"Empty departments\">\n    <ng-template starEmpty let-text>No departments yet.</ng-template>\n  </star-tree-table>\n</div>",
   "tree-table/sort-filter": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"projects\"\n    [columns]=\"projectColumns\"\n    [(expanded)]=\"projectOpen\"\n    [(sortField)]=\"sortField\"\n    [(sortOrder)]=\"sortOrder\"\n    multiSort\n    filter\n    [(globalFilter)]=\"query\"\n    [filterMode]=\"strict() ? 'strict' : 'lenient'\"\n    paginator\n    [rows]=\"5\"\n    [rowsPerPageOptions]=\"[5, 10]\"\n    ariaLabel=\"Projects\"\n  />\n  <label class=\"docs-output\">\n    <input type=\"checkbox\" [checked]=\"strict()\" (change)=\"strict.set(!strict())\" />\n    Strict filter mode\n  </label>\n  <p class=\"docs-output\" role=\"status\">\n    Sort: {{ sortField() ?? 'none' }} {{ sortOrder() === 1 ? 'ascending' : 'descending' }},\n    search: {{ query() || 'none' }}\n  </p>\n</div>",
+  "tree-table/table-slots": "<star-tree-table\n  [nodes]=\"projects\"\n  [columns]=\"projectColumns\"\n  [(expanded)]=\"slotOpen\"\n  selectionMode=\"checkbox\"\n  filter\n  paginator\n  [rows]=\"3\"\n  [rowsPerPageOptions]=\"[3, 6]\"\n  ariaLabel=\"Projects with table slots\"\n>\n  <strong starTableCaption>Projects this quarter</strong>\n  <ng-template starHeaderCell=\"hours\" let-column>{{ column.header }} (h)</ng-template>\n  <ng-template starCell=\"hours\" [starCellOf]=\"projects\" let-value=\"value\">\n    <strong>{{ value }}</strong>\n  </ng-template>\n  <ng-template starFooterRow [starFooterRowOf]=\"projects\" let-columns let-rows=\"rows\">\n    <td [attr.colspan]=\"columns.length\">{{ rows.length }} projects</td>\n  </ng-template>\n  <ng-template starIcon=\"toggle\" let-open>\n    <i [class]=\"open ? 'ph-bold ph-minus-square' : 'ph-bold ph-plus-square'\"></i>\n  </ng-template>\n  <ng-template starIcon=\"sort\" let-ascending>\n    <i\n      [class]=\"\n        ascending === undefined\n          ? 'ph-bold ph-arrows-down-up'\n          : ascending\n            ? 'ph-bold ph-arrow-up'\n            : 'ph-bold ph-arrow-down'\n      \"\n    ></i>\n  </ng-template>\n  <ng-template starPaginatorStart let-state>\n    <span>Page {{ state.page + 1 }} of {{ state.pageCount }}</span>\n  </ng-template>\n</star-tree-table>",
   "tree-table/virtual": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"large.nodes\"\n    [columns]=\"virtualColumns\"\n    [(expanded)]=\"largeOpen\"\n    virtualScroll\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Stock by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} rows, {{ largeOpen().length }} branches open\n  </p>\n</div>",
   "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
   "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",

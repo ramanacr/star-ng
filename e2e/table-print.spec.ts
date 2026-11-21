@@ -712,6 +712,8 @@ test.describe('table print: state of the table', () => {
     const page = await context.newPage();
     await stubFramePrint(page);
     await openPage(page, '/controls/table-export', 'Table export');
+    // The page is prerendered: typing before hydration is lost.
+    await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
     const live = example(page, 'Print a long table');
     await live.getByLabel('Filter by Customer').fill('ben');
     const amount = live.getByRole('columnheader', { name: 'Amount' });

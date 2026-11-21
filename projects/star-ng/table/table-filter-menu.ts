@@ -15,6 +15,7 @@ import {
 import { StarButton } from '@star-ng/ui/button';
 import {
   STAR_UI_TEXT,
+  starFilterMatch,
   StarFilterService,
   StarStyled,
   StarUiText,
@@ -33,6 +34,9 @@ import {
   starIsFilterConstraint,
   StarTableMatchMode,
 } from './table-filter';
+
+/** Most choices that a check list draws (a column with more values needs the search). */
+const MAX_CHOICES = 1000;
 
 /** UI text of each built-in match mode. */
 const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
@@ -144,13 +148,42 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
                 }
               </select>
             } @else if (type() === 'multiselect') {
+              @if (checklist()) {
+                <input
+                  data-star-part="valueSearchInput"
+                  type="search"
+                  class="star-input star-input--sm"
+                  [attr.aria-label]="text.filterPlaceholder"
+                  [attr.placeholder]="text.filterPlaceholder"
+                  [value]="search()"
+                  (input)="search.set($any($event.target).value)"
+                />
+                <div data-star-part="checklistButtonsPanel" class="star-table-filter__list-buttons">
+                  <star-button
+                    data-star-part="selectAllButton"
+                    size="sm"
+                    variant="ghost"
+                    (pressed)="setShownChoices(i, true)"
+                  >
+                    {{ text.selectAll }}
+                  </star-button>
+                  <star-button
+                    data-star-part="clearAllButton"
+                    size="sm"
+                    variant="ghost"
+                    (pressed)="setShownChoices(i, false)"
+                  >
+                    {{ text.clear }}
+                  </star-button>
+                </div>
+              }
               <div
                 data-star-part="choicesPanel"
                 class="star-table-filter__choices"
                 role="group"
                 [attr.aria-label]="text.filterBy(header())"
               >
-                @for (choice of choices(); track choice) {
+                @for (choice of renderedChoices(); track choice) {
                   <label data-star-part="choiceLabel" class="star-table-filter__choice">
                     <input
                       data-star-part="choiceInput"
@@ -162,6 +195,11 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
                   </label>
                 }
               </div>
+              @if (shownChoices().length > renderedChoices().length) {
+                <p data-star-part="moreText" class="star-table-filter__more" aria-live="polite">
+                  {{ text.moreChoices(renderedChoices().length, shownChoices().length) }}
+                </p>
+              }
             } @else if (rule.matchMode === 'between') {
               <span data-star-part="rangePanel" class="star-table-filter__range">
                 <input
@@ -245,6 +283,12 @@ export class StarTableFilterMenu {
   readonly choices = input<readonly string[]>([]);
   /** Most rules that "Add rule" allows (PrimeNG `maxConstraints`). */
   readonly maxRules = input(2);
+  /**
+   * Excel-style list of a `'multiselect'` filter: a search box that narrows the choices (case- and
+   * accent-insensitive `contains`, or a `contains` mode of `StarFilterService`), Select all and
+   * Clear (of the shown choices).
+   */
+  readonly checklist = input(false, { transform: booleanAttribute });
   /** Apply button; without it every change applies at once (PrimeNG `showApplyButton`). */
   readonly showApply = input(true, { transform: booleanAttribute });
 
@@ -256,6 +300,19 @@ export class StarTableFilterMenu {
   protected readonly operator = signal<'and' | 'or'>('and');
 
   protected readonly active = computed(() => starIsActiveFilter(this.value()));
+  /** Search text of the check list. */
+  protected readonly search = signal('');
+  /** The choices that match the search text. */
+  protected readonly shownChoices = computed(() => {
+    const query = this.search().trim();
+    const choices = this.choices();
+    if (!this.checklist() || !query) return choices;
+    // A `contains` mode registered with `StarFilterService` wins over the built-in match.
+    const own = this.service.get('contains')?.fn;
+    return choices.filter((choice) =>
+      own ? own(choice, query, null) : starFilterMatch(choice, query, 'contains'),
+    );
+  });
   protected readonly inputType = computed(() =>
     this.type() === 'number' ? 'number' : this.type() === 'date' ? 'date' : 'text',
   );
@@ -294,7 +351,14 @@ export class StarTableFilterMenu {
   }
 
   /** Copies the current value into the draft rules of the menu. */
+  /** The choices that the list draws: at most `MAX_CHOICES`; the search finds the others. */
+  protected readonly renderedChoices = computed(() => {
+    const shown = this.shownChoices();
+    return shown.length > MAX_CHOICES ? shown.slice(0, MAX_CHOICES) : shown;
+  });
+
   private load(): void {
+    this.search.set('');
     const value = this.value();
     const mode = this.firstMode();
     this.operator.set('and');
@@ -366,6 +430,15 @@ export class StarTableFilterMenu {
     this.update(index, (rule) => {
       const list = this.listOf(rule).filter((item) => item !== choice);
       return { ...rule, value: checked ? [...list, choice] : list };
+    });
+  }
+
+  /** Select all (`true`) or Clear (`false`) for the choices that the search shows. */
+  protected setShownChoices(index: number, checked: boolean): void {
+    const shown = this.shownChoices();
+    this.update(index, (rule) => {
+      const list = this.listOf(rule).filter((item) => !shown.includes(item));
+      return { ...rule, value: checked ? [...list, ...shown] : list };
     });
   }
 

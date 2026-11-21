@@ -262,6 +262,22 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - File upload: owner-driven upload hooks without built-in HTTP: `uploadHandler` (`{ files }`) from an Upload button (`showUploadButton`) or right after the choice (`auto`), a Cancel button (`showCancelButton`, output `cleared`, public `clear()`), the output `fileRemove`, `imageError` of a thumbnail, `mode="basic"` (one button that shows the file names), `chooseLabel`, `uploadLabel`, `cancelLabel`, `chooseIcon`, `uploadIcon`, `cancelIcon`, `previewWidth`, `name`, public `choose()` and `upload()`, and the slots `starHeader`, `starFileUploadTemplate` (`toolbar`, `content`, `fileLabel`) and `starIcon` (`choose`, `upload`, `cancel`) (PrimeNG `p-fileupload`).
 
+#### Form inputs
+
+- Checkbox: `starIcon="check"` slot for the check and the indeterminate icon (PrimeNG `#icon`).
+- Color picker: `opened` and `closed` outputs of the custom color panel; `format` (`hex`, `rgb`, `hsb`) of the value, read back without loss; `inline` (the panel in the page, without the tile and popup); `invalid`, `touched` and `name` (PrimeNG `onShow`, `onHide`, `format`, `inline`).
+- Input mask: `characterPattern`, `showClear`, `keepCharPositions` (Backspace, Delete, typing and paste keep the other characters in place) and `variant` (PrimeNG names).
+- Input number: `buttonLayout` (`horizontal`, `stacked`, `vertical`), `allowEmpty`, `highlightOnFocus`, `currencyDisplay`, `showClear`, `format` (plain number when `false`), `localeMatcher` and the `starIcon` slots `increment` and `decrement` (PrimeNG `buttonLayout`, `allowEmpty`, `currencyDisplay`, `showClear`, `format`, `localeMatcher`, `#incrementbuttonicon`, `#decrementbuttonicon`).
+- Input tags: `starInputTag` chip slot (`StarInputTagTemplate`, `StarInputTagContext`) and the `starIcon` slots `remove` and `clear`.
+- Knob: `strokeWidth` (1 to 20, through `--star-knob-stroke-width`), `showValue`, `invalid`, `touched` and `name` (PrimeNG `strokeWidth`, `showValue`).
+- Password: `toggleMask` (the show / hide button, default on; PrimeNG `toggleMask`); `thresholds` of the strength levels; `starIcon` slots `show` and `hide`; `starHeader` and `starFooter` around the strength feedback (PrimeNG `#showicon`, `#hideicon`).
+- Range slider: `orientation`, `slideEnd`, `minStepsBetweenHandles` (kept inside the bounds), `disabledMinHandle`, `disabledMaxHandle`, `invalid`, `touched` and `name` (PrimeNG names).
+- Rating: `invalid`, `touched`, `name`, `cancel`, `allowHalf` (half steps with the arrow keys, labels in the locale number format), `orientation` and the `starIcon` slots `on`, `off` and `cancel` (PrimeNG `cancel`, `allowHalf`, `orientation`, `#onicon`, `#officon`, `#cancelicon`).
+- Slider: `orientation="vertical"`, `invalid`, `touched`, `name` and the `slideEnd` output (PrimeNG `orientation`, `onSlideEnd`).
+- Toggle switch: `onLabel` / `offLabel` state text and `starIcon` `on` / `off` in the handle (PrimeNG `#handle`). Toggle button: `starIcon` `on` / `off`, `iconPos` and `starToggleButtonContent` (`StarToggleButtonContentTemplate`; PrimeNG `#icon`, `#content`, `iconPos`).
+- `ariaLabelledBy` and `required` on password, input mask, input tags, input number, checkbox, toggle switch, toggle button, rating, slider, range slider, knob, color picker and select button (`aria-required` where the role takes it; Signal Forms `required()` binds to `required`).
+- Core: new `StarIconSlotName` values `sort`, `on`, `off`, `increment`, `decrement`, `remove`, `show` and `hide`.
+
 #### Galleria
 
 - Galleria: `thumbnailsPosition` (`bottom`, `top`, `left`, `right`), `numVisible` and `responsiveOptions` (a window of thumbnails that follows the image), `showThumbnailNavigators`, `verticalThumbnailViewPortHeight`, `showThumbnails`, `showItemNavigators`, `showItemNavigatorsOnHover`, `circular`, indicators (`showIndicators`, `showIndicatorsOnItem`, `indicatorsPosition`, `changeItemOnIndicatorHover`), `autoPlay` with `transitionInterval` and `shouldStopAutoplayByClick` (a pause button; it pauses on hover and focus and does not advance with reduced motion), and a full-screen mode in a modal dialog (`fullScreen` and the `visible` model). While autoplay runs, the image counter is not a live region; a closed full-screen gallery does not advance. Slots: `starGalleriaTemplate` (`item`, `caption`, `thumbnail`, `indicator`), `starHeader`, `starFooter` and `starIcon` (`previous`, `next`, `previousThumbnail`, `nextThumbnail`) (PrimeNG `p-galleria`). The galleria moves to its own file in `@star-ng/ui/media`.
@@ -416,6 +432,13 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: keyboard and scroll API: `focusCell(rowKey, field)`, `navigateTo(rowIndex, field)`, `scrollToRow(rowKeyOrIndex, { align })` and `scrollToColumn(field, { align })` (`'nearest'`, `'start'`, `'center'`, `'end'`; `StarScrollOptions`, `StarScrollAlign`). They open the page of a client paginator, render virtual rows and columns first and scroll smoothly unless motion is reduced.
 - UI texts `copiedCells`, `pastedCells`, `skippedCells`, `copyWithHeaders`, `sortAscending`, `sortDescending`, `hideColumn` and `exportCsv` (English, German, Spanish).
 - Table: `StarTablePasteEvent` (the `beforePaste` payload) has `readonly canceled: boolean` next to `cancel()`, like the other cancelable events. Code that builds this object itself must add the member.
+- Table: template slots `starRow` (the data cells of each row, with the new `td[starTableCell]` directive that keeps the grid attributes of cell navigation; context `StarRowSlotContext`), `starFooterRow`, `starGroupFooter`, `starPaginatorStart` and `starPaginatorEnd` (PrimeNG `#paginatorleft`, `#paginatorright`).
+- Table: row pinning. Two-way `pinnedRows` (`StarRowPins`: row keys at the `top` or the `bottom`), `pinRow(row, side)`, `unpinRow(row)`, `rowPin` output (`StarRowPinEvent`) and the context menu items `pinRowTop`, `pinRowBottom` and `unpinRow`. Pinned rows leave the paged rows and stay in view in sticky body parts, also with virtual scroll (with `aria-rowindex`), also while their group is closed, and in lazy mode on every page (Ignite UI row pinning).
+- Table: `filterDelay` waits before typed filter text (filter row, filter menu without Apply, `globalFilter`) applies (PrimeNG `filterDelay`).
+- Table: Excel-style filter (`excelFilter` on a `'multiselect'` column): a header menu with a search box, Select all, Clear and a value check list (Ignite UI excel style filtering).
+- Table: advanced filter. `advancedFilter` adds a button that opens a dialog with `star-query-builder` over all columns; two-way `advancedQuery` (`StarQueryGroup`) filters the rows after the column filters (Ignite UI advanced filtering).
+- Table: column selection (`selectionMode="column"`, two-way `columnSelection`): a select button in each header; click, Ctrl / Cmd + click and Shift + click; Ctrl+C copies the selected columns of the filtered rows as TSV (with `copyHeaders`, a header line) (Ignite UI column selection).
+- UI texts `pinRowTop`, `pinRowBottom`, `unpinRow`, `advancedFilter` and `selectColumn` (English, German, Spanish).
 
 #### Tabs
 
@@ -458,6 +481,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tree table: frozen, resizable and reorderable columns (`columnWidths`, `columnOrder`).
 - Tree table: cell edit (`editable`, `editor`, `cellEdit`) with treegrid cell navigation (`cellNavigation`).
 - Tree table: row context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
+- Tree table: the table slots `starHeaderCell`, `starCell`, `starRow` (with `starTableCell`; the tree column stays), `starFooterRow`, `starLoading`, `starPaginatorStart` and `starPaginatorEnd`; `starIcon` for the `toggle`, `check`, `sort` (new icon name) and `filter` icons; `starTableCaption` and `starTableSummary` content; a `loading` input with `aria-busy` (PrimeNG `p-treeTable` templates and `loading`).
 
 #### Utility
 

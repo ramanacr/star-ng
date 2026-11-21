@@ -16,7 +16,8 @@
 .star-knob__track,
 .star-knob__value {
   fill: none;
-  stroke-width: 10;
+  // `strokeWidth` of the knob sets the custom property.
+  stroke-width: var(--star-knob-stroke-width, 10);
   stroke-linecap: round;
 }
 .star-knob__track {
@@ -149,4 +150,18 @@
   width: 6.5rem;
   font-family: var(--star-font-mono);
   text-transform: lowercase;
+}
+// Invalid state (`invalid` after `touched`).
+.star-knob--invalid .star-knob__track {
+  stroke: var(--star-danger);
+}
+.star-color--invalid .star-color__swatches {
+  outline: 2px solid var(--star-danger);
+  outline-offset: 2px;
+  border-radius: var(--star-radius-md);
+}
+// `inline`: the panel stands in the page, below the swatches.
+.star-color__panel--inline {
+  flex: 1 1 100%;
+  box-shadow: none;
 }

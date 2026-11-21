@@ -56,11 +56,46 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Vertical slider"
+        source="slider/vertical"
+        note="orientation vertical draws the slider from bottom (min) to top (max). slideEnd emits the value when a drag or a key press ends."
+      >
+        <div class="docs-row">
+          <star-slider
+            [(value)]="height"
+            orientation="vertical"
+            ariaLabel="Height"
+            showValue
+            (slideEnd)="ended.set($event)"
+          />
+          <p class="docs-output" role="status">Last end: {{ ended() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         A native range input runs from right to left in a right-to-left page: the minimum is on the
         right and the track fill follows. Arrow left raises the value. See the Right-to-left guide.
       </p>
+
+      <docs-example
+        heading="Range slider options"
+        source="slider/range-options"
+        note="orientation vertical, minStepsBetweenHandles (the smallest gap between the handles, in steps), disabledMinHandle or disabledMaxHandle (lock one handle) and slideEnd (the value when a drag or key press ends)."
+      >
+        <div class="docs-row">
+          <star-range-slider
+            [(value)]="span"
+            orientation="vertical"
+            [minStepsBetweenHandles]="10"
+            ariaLabel="Span"
+            (slideEnd)="spanEnd.set($event)"
+          />
+          <star-range-slider [(value)]="span" disabledMinHandle ariaLabel="Upper limit" />
+          <p class="docs-output" role="status">Last end: {{ spanEnd()?.join(' to ') ?? 'none' }}</p>
+        </div>
+      </docs-example>
 
       <docs-api
         [of]="['StarSlider', 'StarRangeSlider']"
@@ -71,7 +106,11 @@ import { DOCS, DocsRow } from '../shared/docs';
   `,
 })
 export class SliderPage {
+  protected readonly span = signal<readonly [number, number]>([20, 60]);
+  protected readonly spanEnd = signal<readonly [number, number] | null>(null);
   protected readonly volume = signal(40);
+  protected readonly height = signal(60);
+  protected readonly ended = signal<number | null>(null);
   protected readonly discount = signal(15);
   protected readonly price = signal<readonly [number, number]>([100, 300]);
   protected readonly percent = (value: number) => `${value} %`;

@@ -1,11 +1,17 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { StarColumn, StarLazyLoadEvent, StarTable } from '@star-ng/ui/table';
+import {
+  StarColumn,
+  StarLazyLoadEvent,
+  StarPaginatorEndTemplate,
+  StarPaginatorStartTemplate,
+  StarTable,
+} from '@star-ng/ui/table';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatMoney, Order, orderColumns, ORDERS } from './table-demo';
 
 @Component({
   selector: 'docs-table-paging-page',
-  imports: [DOCS, StarTable, DocsFill],
+  imports: [DOCS, StarTable, StarPaginatorStartTemplate, StarPaginatorEndTemplate, DocsFill],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -34,6 +40,30 @@ import { DocsFill, formatMoney, Order, orderColumns, ORDERS } from './table-demo
           </docs-fill>
           <p class="docs-output" role="status">first = {{ first() }}, rows = {{ rows() }}</p>
         </div>
+      </docs-example>
+
+      <docs-example
+        heading="Paginator content"
+        source="table-paging/paginator-slots"
+        note="An ng-template with starPaginatorStart or starPaginatorEnd puts content at the start or the end of the paginator (logical sides, so they swap in right-to-left). The context is the page state: first, rows, page and pageCount."
+      >
+        <docs-fill>
+          <star-table
+            [value]="orders"
+            [columns]="columns"
+            dataKey="id"
+            ariaLabel="Orders with paginator content"
+            paginator
+            [rows]="5"
+          >
+            <ng-template starPaginatorStart let-state>
+              <span>Page {{ state.page + 1 }} of {{ state.pageCount }}</span>
+            </ng-template>
+            <ng-template starPaginatorEnd>
+              <span>{{ orders.length }} orders</span>
+            </ng-template>
+          </star-table>
+        </docs-fill>
       </docs-example>
 
       <docs-example

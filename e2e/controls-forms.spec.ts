@@ -153,6 +153,8 @@ test.describe('tag, badge and spinner', () => {
 test.describe('forms guide', () => {
   test('Reactive Forms group follows a Signal Forms rule', async ({ page }) => {
     await openPage(page, '/guides/forms', 'Forms');
+    // The page is prerendered: a click before hydration is lost.
+    await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
     const live = example(page, 'Reactive Forms');
     const confirmed = live.getByRole('checkbox', { name: 'Confirmed' });
     await confirmed.check();

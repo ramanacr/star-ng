@@ -26,6 +26,8 @@ export interface StarTableClipboardHost<T> {
   readonly cellSelection: () => readonly StarTableCellRef[];
   readonly rowSelectionMode: () => 'single' | 'multiple' | null;
   readonly selection: () => readonly T[];
+  /** Selected column fields with `selectionMode="column"`, else empty. */
+  readonly columnFields: () => readonly string[];
   readonly active: () => StarTableCellRef | null;
   /** Rows that the keys move between (page rows outside closed groups). */
   readonly navRows: () => readonly T[];
@@ -92,6 +94,16 @@ export class StarTableClipboardActions<T> {
   private block(cell: CellOf<T> = null): CopyBlock<T> | null {
     const host = this.host;
     const columns = host.visibleColumns();
+    const fields = new Set(host.columnFields());
+    if (fields.size) {
+      // Column selection: every filtered row (all pages, in sort order) of the selected
+      // visible columns, in display order.
+      const picked = columns.filter((column) => fields.has(column.field));
+      const rows = host.withAdded();
+      if (picked.length && rows.length) {
+        return { rows, columns: picked, has: () => true, count: rows.length * picked.length };
+      }
+    }
     if (host.cellSelectionMode() && host.cellSelection().length) {
       const rows = host.navRows();
       const rowIndexes = rows.flatMap((row, i) => (host.hasSelectedCells(row) ? [i] : []));
@@ -135,7 +147,10 @@ export class StarTableClipboardActions<T> {
     if (!ctrl || event.altKey || event.shiftKey || event.key.toLowerCase() !== 'c') return false;
     const target = event.target as Element;
     const body = this.host.body();
-    if (!body?.contains(target) || target.closest(OWN_KEYS)) return false;
+    // With selected columns the copy works from anywhere in the grid (a header button too).
+    const scope = this.host.columnFields().length ? body?.parentElement : body;
+    if (!scope?.contains(target)) return false;
+    if (target.closest(OWN_KEYS)) return false;
     // Text that the user selected on the page: the browser copies it.
     const selected = this.host.document.getSelection?.();
     if (selected && !selected.isCollapsed && selected.toString()) return false;

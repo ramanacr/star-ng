@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, validate } from '@angular/forms/signals';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
+import { StarIconTemplate } from '@star-ng/ui/core';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-checkbox-page',
-  imports: [DOCS, StarCheckbox, FormField],
+  imports: [DOCS, StarCheckbox, StarIconTemplate, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -36,12 +37,26 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-checkbox [checked]="true" readonly>Read-only</star-checkbox>
       </docs-example>
 
+      <docs-example
+        heading="Custom icon"
+        source="checkbox/icon"
+        note="An ng-template with starIcon check replaces the check and the dash. Its context is true when the box is checked and false when it is indeterminate."
+      >
+        <star-checkbox [(checked)]="iconChecked">
+          Send a copy
+          <ng-template starIcon="check" let-checked>
+            <i [class]="checked ? 'ph-bold ph-heart' : 'ph-bold ph-minus'"></i>
+          </ng-template>
+        </star-checkbox>
+      </docs-example>
+
       <docs-api [of]="['StarCheckbox']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class CheckboxPage {
   protected readonly subscribed = signal(true);
+  protected readonly iconChecked = signal(true);
   protected readonly all = signal(false);
   protected readonly some = signal(true);
   protected readonly model = signal({ accept: false });

@@ -1182,6 +1182,38 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with the Excel-style filter open',
+    path: 'controls/table-sort-filter',
+    open: async (page) => {
+      await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      await example(page, 'Excel-style filter')
+        .getByRole('button', { name: 'Filter Status' })
+        .click();
+      await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toBeVisible();
+    },
+  },
+  {
+    name: 'table with the advanced filter dialog open',
+    path: 'controls/table-sort-filter',
+    open: async (page) => {
+      await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      await example(page, 'Advanced filter')
+        .getByRole('button', { name: 'Advanced filter' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Advanced filter' })).toBeVisible();
+    },
+  },
+  {
+    name: 'table with selected columns and pinned rows',
+    path: 'controls/table-selection',
+    open: async (page) => {
+      await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Column selection');
+      await live.getByRole('button', { name: 'Select column Customer' }).click();
+      await expect(live.getByRole('status')).toHaveText('Columns: customer');
+    },
+  },
+  {
     name: 'table with a filter text',
     path: 'controls/table-sort-filter',
     open: async (page) => {

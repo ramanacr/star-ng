@@ -42,7 +42,54 @@ class SwatchHost {
   readonly swatches = signal<readonly string[] | undefined>(undefined);
 }
 
+@Component({
+  imports: [StarKnob, StarColorPicker],
+  template: `
+    <star-knob [value]="10" name="k" [disabled]="true" />
+    <star-color-picker [value]="'#112233'" name="c" [disabled]="true" />
+    <star-color-picker [value]="'#112233'" inline [disabled]="dis()" />
+  `,
+})
+class DisabledHost {
+  readonly dis = signal(true);
+}
+
 describe('Knob, color picker', () => {
+  it('disabled controls do not submit their hidden value input', async () => {
+    const fixture = TestBed.createComponent(DisabledHost);
+    await fixture.whenStable();
+    const inputs = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLInputElement>(
+      '[data-star-part=valueInput]',
+    );
+    expect(inputs.length).toBe(2);
+    inputs.forEach((i) => expect(i.disabled).toBe(true));
+  });
+
+  it('inline color picker ignores openPanel and disables its sliders', async () => {
+    const fixture = TestBed.createComponent(DisabledHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const picker = fixture.debugElement
+      .queryAll((d) => d.componentInstance instanceof StarColorPicker)
+      .map((d) => d.componentInstance as StarColorPicker)[1];
+    picker.openPanel();
+    expect(picker['open']()).toBe(false);
+    const sliders = el.querySelectorAll<HTMLElement>(
+      '.star-color--inline [data-star-part=areaPanel], .star-color--inline [data-star-part=hueTrack]',
+    );
+    expect(sliders.length).toBe(2);
+    sliders.forEach((s) => {
+      expect(s.getAttribute('aria-disabled')).toBe('true');
+      expect(s.getAttribute('tabindex')).toBe('-1');
+    });
+    fixture.componentInstance.dis.set(false);
+    await fixture.whenStable();
+    sliders.forEach((s) => {
+      expect(s.getAttribute('aria-disabled')).toBeNull();
+      expect(s.getAttribute('tabindex')).toBe('0');
+    });
+  });
+
   it('knob is a slider with keyboard steps and limits', async () => {
     const fixture = TestBed.createComponent(DialHost);
     await fixture.whenStable();

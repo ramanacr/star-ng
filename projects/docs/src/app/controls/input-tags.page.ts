@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { StarIconTemplate } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
-import { StarInputTags } from '@star-ng/ui/input-tags';
+import { StarInputTags, StarInputTagTemplate } from '@star-ng/ui/input-tags';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-input-tags-page',
-  imports: [DOCS, StarInputTags, StarField],
+  imports: [DOCS, StarInputTags, StarInputTagTemplate, StarIconTemplate, StarField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -47,12 +48,24 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Custom chips"
+        source="input-tags/chips"
+        note="An ng-template with starInputTag replaces the text of each chip (context: the tag and its index). starIcon remove and clear replace the remove and clear icons."
+      >
+        <star-input-tags [(value)]="chipTags" ariaLabel="Topics" showClear>
+          <ng-template starInputTag let-tag><i class="ph-bold ph-hash"></i>{{ tag }}</ng-template>
+          <ng-template starIcon="remove"><i class="ph-bold ph-trash"></i></ng-template>
+        </star-input-tags>
+      </docs-example>
+
       <docs-api [of]="['StarInputTags']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class InputTagsPage {
   protected readonly labels = signal<readonly string[]>(['urgent', 'billing']);
+  protected readonly chipTags = signal<readonly string[]>(['design', 'review']);
   protected readonly recipients = signal<readonly string[]>(['avery@example.com']);
   protected readonly rejected = signal('');
   protected readonly isEmail = (tag: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(tag);

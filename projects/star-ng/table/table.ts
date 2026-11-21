@@ -59,9 +59,16 @@ import {
   ɵstarStartColumnResize,
   ɵstarUnchangedEdit,
 } from '@star-ng/ui/core';
+import { StarDialog } from '@star-ng/ui/dialog';
 import { StarContextMenu, StarMenu } from '@star-ng/ui/menu';
-import { StarPaginator } from '@star-ng/ui/paginator';
+import { StarPaginator, StarPaginatorTemplate } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
+import {
+  StarQueryBuilder,
+  StarQueryField,
+  StarQueryGroup,
+  starQueryToPredicate,
+} from '@star-ng/ui/query-builder';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
 import {
@@ -131,6 +138,15 @@ import {
   StarPinSide,
   StarTablePinCell,
 } from './table-pinning';
+import {
+  nextColumnSelection,
+  rowPinSide,
+  splitPinnedRows,
+  StarRowPinEvent,
+  StarRowPins,
+  StarRowPinSide,
+  withRowPin,
+} from './table-row-pins';
 import { rowSpans } from './table-row-span';
 import type { StarTableTextPart } from './table-search';
 import {
@@ -139,7 +155,17 @@ import {
   StarTableSelection,
   StarTableSelectionChangingEvent,
 } from './table-selection';
-import type { StarHeaderCellContext, StarRowEditActionsContext } from './table-slots';
+import {
+  ɵSTAR_TABLE_CELL_HOST,
+  type StarFooterRowContext,
+  type StarGroupFooterContext,
+  type StarHeaderCellContext,
+  type StarRowEditActionsContext,
+  type StarRowSlotContext,
+  type StarTablePaginatorContext,
+  type ɵStarTableCellHost,
+  type ɵStarTableCellState,
+} from './table-slots';
 import {
   StarColumnSummary,
   StarSummaryCell,
@@ -203,6 +229,12 @@ export interface StarColumn<T> extends StarColumnRules<T> {
    * value in the filter row. Default: the first mode of the type (`contains`, `equals`, `dateIs`).
    */
   readonly filterMatchMode?: StarTableMatchMode;
+  /**
+   * Excel-style filter of a `'multiselect'` column: a filter button in the header opens a menu
+   * with a search box, Select all, Clear and a check list of the values (also with
+   * `filterDisplay="row"`). Ignite UI excel style filtering.
+   */
+  readonly excelFilter?: boolean;
   /** Choices of a `'select'` or `'multiselect'` filter (default: the distinct display texts in `value`, sorted). */
   readonly filterOptions?: readonly string[];
   /** `false` leaves the column out of every export (CSV, Excel, print). */
@@ -462,16 +494,22 @@ export class StarRowExpansionTemplate<T = unknown> {
   selector: 'star-table',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTable) }],
+  providers: [
+    { provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTable) },
+    { provide: ɵSTAR_TABLE_CELL_HOST, useExisting: forwardRef(() => StarTable) },
+  ],
   imports: [
     StarPart,
     NgTemplateOutlet,
     StarButton,
     StarCheckbox,
     StarContextMenu,
+    StarDialog,
     StarMenu,
     StarMultiSelect,
     StarPaginator,
+    StarPaginatorTemplate,
+    StarQueryBuilder,
     StarSelect,
     StarPopover,
     StarSkeleton,
@@ -489,6 +527,8 @@ export class StarRowExpansionTemplate<T = unknown> {
     '[class.star-table--virtual-columns]': 'virtualColumns()',
     '[class.star-table--stack]': "responsiveLayout() === 'stack'",
     '[style.--star-table-row-height.px]': 'virtualScroll() ? virtualRowHeight() : null',
+    '[style.--star-table-head-height.px]':
+      'pinnedTop().length && stickyHeader() ? headHeight() : null',
     // Pinned columns: the selection, expander and reorder columns stick at the start too, and
     // the row actions column at the end.
     '[class.star-table--pin-lead]': 'pinnedSides().start || pinnedSides().end',
@@ -502,7 +542,7 @@ export class StarRowExpansionTemplate<T = unknown> {
   },
   templateUrl: './table.html',
 })
-export class StarTable<T> extends StarTableInteraction<T> {
+export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTableCellHost {
   protected readonly text = inject(STAR_UI_TEXT);
   /** Defaults from `provideStarTableDefaults`, then `provideStarNg`. */
   protected readonly defaults = injectStarControlDefaults(
@@ -784,6 +824,45 @@ export class StarTable<T> extends StarTableInteraction<T> {
    */
   readonly batchEdit = input(false, { transform: booleanAttribute });
 
+  /**
+   * Pinned rows: row keys (`dataKey` value, else the row object) at the `top` or the `bottom` of
+   * the body. A pinned row leaves the paged rows and stays in view in its own part of the body
+   * (below the sticky header, or above the footer), also with virtual scroll. It still follows the
+   * filters; in lazy mode the table keeps the last row object it saw (from the loaded rows or
+   * `pinRow()`), so the row shows on every page. A pinned row also shows while its group is closed.
+   * With virtual scroll it has `aria-rowindex` (top pins after the header rows, bottom pins after
+   * the body rows). Two-way. `pinRow()`,
+   * `unpinRow()` and the context menu items `'pinRowTop'`, `'pinRowBottom'` and `'unpinRow'`
+   * change it. Ignite UI `pinRow`, AG Grid `pinnedTopRowData` / `pinnedBottomRowData`.
+   */
+  readonly pinnedRows = model<StarRowPins>({});
+  /** The user (or `pinRow()` / `unpinRow()`) pinned or unpinned a row. Ignite UI `rowPinned`. */
+  readonly rowPin = output<StarRowPinEvent<T>>();
+
+  /**
+   * Delay in milliseconds before typed filter text applies: the text field of the filter row and
+   * of the filter menu (without Apply), and `globalFilter`. `0` (default) applies at once.
+   * PrimeNG `filterDelay`.
+   */
+  readonly filterDelay = input(0);
+
+  /**
+   * Shows an "Advanced filter" button above the table. It opens a dialog with `star-query-builder`
+   * over all columns; Apply sets `advancedQuery`. Ignite UI advanced
+   * filtering dialog.
+   */
+  readonly advancedFilter = input(false, { transform: booleanAttribute });
+  /**
+   * Rules of the advanced filter (`StarQueryGroup`), applied with `starQueryToPredicate` after
+   * the column filters. Two-way; it works also without the `advancedFilter` button. In lazy mode
+   * the table does not filter and `lazyLoad` does not carry it: the owner reads this model and
+   * filters on the server.
+   */
+  readonly advancedQuery = model<StarQueryGroup>({ operator: 'and', rules: [] });
+
+  /** Selected column fields with `selectionMode="column"`, in display order. Two-way. */
+  readonly columnSelection = model<readonly string[]>([]);
+
   readonly rowClick = output<T>();
   readonly rowReorder = output<StarRowReorderEvent<T>>();
   /**
@@ -867,6 +946,27 @@ export class StarTable<T> extends StarTableInteraction<T> {
     this,
     'rowEditActions',
   );
+  protected readonly rowSlot = starSlot<StarRowSlotContext<T>>(this.slots, this, 'row');
+  protected readonly footerRowSlot = starSlot<StarFooterRowContext<T>>(
+    this.slots,
+    this,
+    'footerRow',
+  );
+  protected readonly groupFooterSlot = starSlot<StarGroupFooterContext<T>>(
+    this.slots,
+    this,
+    'groupFooter',
+  );
+  protected readonly paginatorStartSlot = starSlot<StarTablePaginatorContext>(
+    this.slots,
+    this,
+    'paginatorStart',
+  );
+  protected readonly paginatorEndSlot = starSlot<StarTablePaginatorContext>(
+    this.slots,
+    this,
+    'paginatorEnd',
+  );
   private readonly expansion = contentChild(StarRowExpansionTemplate);
   protected readonly expansionTemplate = computed(
     () => (this.expansion()?.template as TemplateRef<StarRowContext<T>> | undefined) ?? null,
@@ -907,7 +1007,9 @@ export class StarTable<T> extends StarTableInteraction<T> {
 
   /** The second header row with the column filters (`filterDisplay="row"`). */
   protected readonly hasColumnFilters = computed(
-    () => this.filterDisplay() === 'row' && this.visibleColumns().some((column) => column.filter),
+    () =>
+      this.filterDisplay() === 'row' &&
+      this.visibleColumns().some((column) => column.filter && !column.excelFilter),
   );
 
   /** Columns that have a filter value now, with that value. */
@@ -919,11 +1021,47 @@ export class StarTable<T> extends StarTableInteraction<T> {
     });
   });
 
+  /** `globalFilter` after `filterDelay`. */
+  private readonly appliedGlobalFilter = signal('');
+  private globalTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly filterTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+  /**
+   * Fields of the advanced filter: every column. The type comes from the column `filter`
+   * (`'number'`, `'date'`), else from the first value (a number), else text. Text fields test the
+   * display text.
+   */
+  protected readonly queryFields = computed<StarQueryField<T>[]>(() => {
+    const first = this.value()[0];
+    return this.columns().map((column) => {
+      const numeric =
+        column.filter === 'number' ||
+        (!column.filter &&
+          first !== undefined &&
+          typeof this.cellValue(first, column) === 'number');
+      const type = numeric ? 'number' : column.filter === 'date' ? 'date' : 'text';
+      return {
+        field: column.field,
+        label: column.header,
+        type,
+        value: (row: T) =>
+          type === 'text' ? this.cellText(row, column) : this.cellValue(row, column),
+      };
+    });
+  });
+
+  private readonly advancedPredicate = computed(() => {
+    const query = this.advancedQuery();
+    if (!query.rules.length) return null;
+    return starQueryToPredicate(query, this.queryFields(), this.filterService, this.filterLocale());
+  });
+
   private readonly filtered = computed(() => {
     if (this.lazy()) return this.value();
-    const query = this.globalFilter();
+    const query = this.appliedGlobalFilter();
     const active = this.activeFilters();
-    if (!query && !active.length) return this.value();
+    const advanced = this.advancedPredicate();
+    if (!query && !active.length && !advanced) return this.value();
     const fields = this.globalFilterFields();
     const searched = fields?.length
       ? this.columns().filter((column) => fields.includes(column.field))
@@ -939,7 +1077,8 @@ export class StarTable<T> extends StarTableInteraction<T> {
             mode,
             locale,
           )) &&
-        active.every(({ column, query: value }) => this.matchesColumnFilter(row, column, value)),
+        active.every(({ column, query: value }) => this.matchesColumnFilter(row, column, value)) &&
+        (!advanced || advanced(row)),
     );
   });
 
@@ -1031,6 +1170,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
    * (null, or every value undefined), the row would be empty, so it is not drawn.
    */
   protected readonly hasFooter = computed(() => {
+    if (this.footerRowSlot()) return true;
     const columns = this.visibleColumns();
     if (columns.some((column) => column.footer !== undefined)) return true;
     if (!columns.some((column) => column.summary)) return false;
@@ -1040,7 +1180,9 @@ export class StarTable<T> extends StarTableInteraction<T> {
   });
 
   /** Summary rows below the groups (`groupBy` with `groupSummary`). */
-  private readonly groupFooters = computed(() => !!this.groupBy() && this.groupSummary());
+  private readonly groupFooters = computed(
+    () => !!this.groupBy() && (this.groupSummary() || !!this.groupFooterSlot()),
+  );
 
   /** Summary cell of a column over rows. */
   private summaryOf(column: StarColumn<T>, rows: readonly T[]): StarSummaryCell | null {
@@ -1098,7 +1240,8 @@ export class StarTable<T> extends StarTableInteraction<T> {
     () =>
       !this.lazy() &&
       !this.sorts().length &&
-      !this.globalFilter() &&
+      !this.appliedGlobalFilter() &&
+      !this.advancedPredicate() &&
       !this.activeFilters().length &&
       !this.groupBy(),
   );
@@ -1126,15 +1269,41 @@ export class StarTable<T> extends StarTableInteraction<T> {
     return top.length || bottom.length ? [...top, ...rows, ...bottom] : rows;
   });
 
+  /** The rows split into the pinned top rows, the paged rows and the pinned bottom rows. */
+  protected readonly pinSplit = computed(() => {
+    const pins = this.pinnedRows();
+    const split = splitPinnedRows(this.withAdded(), pins, (row) => this.trackKey(row));
+    if (!this.lazy()) return split;
+    // Lazy mode: a pinned row stays when its page is not loaded (the last object seen for it).
+    // A plain cache, not a signal: it only remembers row objects. Keys that are no longer pinned
+    // are dropped, so a later pin of the same key does not show an old object.
+    const seen = this.pinnedObjects;
+    const pinned = new Set([...(pins.top ?? []), ...(pins.bottom ?? [])]);
+    for (const key of [...seen.keys()]) if (!pinned.has(key)) seen.delete(key);
+    for (const row of [...split.top, ...split.bottom]) seen.set(this.trackKey(row), row);
+    const keep = (keys: readonly unknown[] | undefined) =>
+      (keys ?? []).flatMap((key) => (seen.has(key) ? [seen.get(key) as T] : []));
+    return { top: keep(pins.top), rest: split.rest, bottom: keep(pins.bottom) };
+  });
+  /** Row objects of the pinned rows by key, for lazy mode. */
+  private readonly pinnedObjects = new Map<unknown, T>();
+  protected readonly pinnedTop = computed(() => this.pinSplit().top);
+  protected readonly pinnedBottom = computed(() => this.pinSplit().bottom);
+
   protected readonly total = computed(() => {
     const { top, bottom } = this.addedRows();
+    const split = this.pinSplit();
+    const pinned = this.lazy() ? 0 : split.top.length + split.bottom.length;
     return (
-      (this.lazy() ? this.totalRecords() : this.filtered().length) + top.length + bottom.length
+      (this.lazy() ? this.totalRecords() : this.filtered().length) +
+      top.length +
+      bottom.length -
+      pinned
     );
   });
 
   protected readonly pageRows = computed(() => {
-    const rows = this.withAdded();
+    const rows = this.pinSplit().rest;
     if (this.lazy() || !this.paginator()) return rows;
     return rows.slice(this.first(), this.first() + this.rows());
   });
@@ -1197,7 +1366,8 @@ export class StarTable<T> extends StarTableInteraction<T> {
   protected readonly ariaRowCount = computed(() => {
     if (!this.virtualScroll()) return null;
     const body = this.layout()?.bodyRows ?? this.pageRows().length;
-    return this.headerRows() + body + (this.hasFooter() ? 1 : 0);
+    const pinned = this.pinnedTop().length + this.pinnedBottom().length;
+    return this.headerRows() + pinned + body + (this.hasFooter() ? 1 : 0);
   });
 
   /** Expanded row keys, for a fast look-up per row. */
@@ -1326,7 +1496,8 @@ export class StarTable<T> extends StarTableInteraction<T> {
       });
       return entries;
     }
-    const header = this.headerRows();
+    // Pinned top rows come between the header rows and the body rows.
+    const header = this.headerRows() + this.pinnedTop().length;
     const focused = this.focusedIndex();
     const variable = this.variableWindow();
     if (variable) {
@@ -1638,8 +1809,31 @@ export class StarTable<T> extends StarTableInteraction<T> {
     });
     // A new filter goes back to page 1. Lazy tables also load the first page on init.
     let firstFilter = true;
+    // `filterDelay`: the global filter text applies after the delay (the first value at once).
+    let firstGlobal = true;
     effect(() => {
-      this.globalFilter();
+      const query = this.globalFilter();
+      const delay = this.filterDelay();
+      untracked(() => {
+        if (this.globalTimer !== null) clearTimeout(this.globalTimer);
+        this.globalTimer = null;
+        if (firstGlobal || delay <= 0) this.appliedGlobalFilter.set(query);
+        else {
+          this.globalTimer = setTimeout(() => {
+            this.globalTimer = null;
+            this.appliedGlobalFilter.set(query);
+          }, delay);
+        }
+        firstGlobal = false;
+      });
+    });
+    inject(DestroyRef).onDestroy(() => {
+      if (this.globalTimer !== null) clearTimeout(this.globalTimer);
+      this.filterTimers.forEach((timer) => clearTimeout(timer));
+    });
+    effect(() => {
+      this.appliedGlobalFilter();
+      this.advancedQuery();
       this.filters();
       untracked(() => {
         this.first.set(0);
@@ -1651,6 +1845,16 @@ export class StarTable<T> extends StarTableInteraction<T> {
       });
     });
     afterRenderEffect({ read: () => this.measureHeader() });
+    // Pinned top rows stick below the sticky header: measure its height.
+    afterRenderEffect({
+      read: () => {
+        if (!this.pinnedTop().length || !this.stickyHeader()) return;
+        const head =
+          this.scroller()?.nativeElement.querySelector<HTMLElement>(':scope > table > thead');
+        const height = head ? head.getBoundingClientRect().height : 0;
+        untracked(() => this.headHeight.set(height));
+      },
+    });
     // Rows of different heights: measure the rendered rows after each render of the body.
     afterRenderEffect(() => {
       this.bodyEntries();
@@ -1743,7 +1947,10 @@ export class StarTable<T> extends StarTableInteraction<T> {
     if (state.sortField !== undefined) this.sortField.set(state.sortField);
     if (state.sortOrder === 1 || state.sortOrder === -1) this.sortOrder.set(state.sortOrder);
     if (Array.isArray(state.sortMeta)) this.sortMeta.set(state.sortMeta);
-    if (state.filters && typeof state.filters === 'object') this.filters.set(state.filters);
+    if (state.filters && typeof state.filters === 'object') {
+      this.cancelFilterTimers();
+      this.filters.set(state.filters);
+    }
     if (Array.isArray(state.columnOrder)) this.columnOrder.set(state.columnOrder);
     if (Array.isArray(state.hiddenColumns)) this.hiddenColumns.set(state.hiddenColumns);
     if (state.columnWidths && typeof state.columnWidths === 'object') {
@@ -1779,6 +1986,8 @@ export class StarTable<T> extends StarTableInteraction<T> {
 
   protected isRowCollapsed(row: T): boolean {
     if (this.rowSpanMode()) return false;
+    // A pinned row shows in its pinned part also when its group is closed.
+    if (this.pinnedTop().length + this.pinnedBottom().length && this.rowPinOf(row)) return false;
     return !!this.groupBy() && this.isGroupCollapsed(this.groupOf(row));
   }
 
@@ -2112,6 +2321,165 @@ export class StarTable<T> extends StarTableInteraction<T> {
    * Pins a column to the inline start or end, or unpins it (`null`), and emits `columnPin`.
    * Ignite UI `pinColumn` / `unpinColumn`, AG Grid `setColumnsPinned`.
    */
+  // ---------------------------------------------------------------- row pinning
+
+  /** Edge where a row is pinned, or `null`. */
+  protected rowPinOf(row: T): StarRowPinSide | null {
+    return rowPinSide(this.pinnedRows(), this.trackKey(row));
+  }
+
+  /**
+   * Pins a row at the `top` or the `bottom` of the body (`pinnedRows`), after the rows pinned
+   * there before, and emits `rowPin`. Ignite UI `pinRow`.
+   */
+  pinRow(row: T, side: StarRowPinSide): void {
+    if (this.rowPinOf(row) === side) return;
+    this.pinnedObjects.set(this.trackKey(row), row);
+    this.pinnedRows.set(withRowPin(this.pinnedRows(), this.trackKey(row), side));
+    this.rowPin.emit({ row, side });
+  }
+
+  /** Unpins a row (`pinnedRows`) and emits `rowPin` with `side: null`. Ignite UI `unpinRow`. */
+  unpinRow(row: T): void {
+    if (!this.rowPinOf(row)) return;
+    this.pinnedRows.set(withRowPin(this.pinnedRows(), this.trackKey(row), null));
+    this.pinnedObjects.delete(this.trackKey(row));
+    this.rowPin.emit({ row, side: null });
+  }
+
+  // ---------------------------------------------------------------- custom rows (`starRow`)
+
+  /** Context of the `starRow` slot for a row (`index` is `-1` for a pinned row). */
+  protected rowSlotContext(row: T, index: number): StarRowSlotContext<T> {
+    return {
+      $implicit: row,
+      row,
+      index,
+      columns: this.renderedColumns(),
+      selected: this.isSelected(row),
+      expanded: this.expandable() && this.isExpanded(row),
+      editing: this.isRowInEdit(row),
+      pinned: this.rowPinOf(row),
+    };
+  }
+
+  /** Grid attributes of a `starTableCell`. Internal (`ɵSTAR_TABLE_CELL_HOST`). */
+  ɵcellState(row: unknown, field: string): ɵStarTableCellState {
+    const item = row as T;
+    const column = this.visibleColumns().find((candidate) => candidate.field === field);
+    const keys = this.cellKeys();
+    if (!column) {
+      return {
+        field: keys ? field : null,
+        tabindex: null,
+        colindex: null,
+        selected: null,
+        columnSelected: false,
+        label: null,
+      };
+    }
+    return {
+      field: keys ? field : null,
+      tabindex: this.cellTabIndex(item, column),
+      colindex: this.colIndex(column),
+      selected:
+        this.cellMode() && this.cellSelectionMode() ? this.isCellSelected(item, column) : null,
+      columnSelected: this.isColumnSelected(column),
+      label: column.header,
+    };
+  }
+
+  /** Context of the `starFooterRow` slot. */
+  protected readonly footerRowContext = computed<StarFooterRowContext<T>>(() => {
+    const columns = this.renderedColumns();
+    return { $implicit: columns, columns, rows: this.lazy() ? this.pageRows() : this.sorted() };
+  });
+
+  /** Rows of each group by label, for the `starGroupFooter` slot. */
+  private readonly groupRows = computed(() => {
+    const groups = new Map<string, T[]>();
+    if (!this.groupFooterSlot()) return groups;
+    // Pinned rows show in their own part, not in their group.
+    for (const row of this.lazy() ? this.pageRows() : this.pinSplit().rest) {
+      const label = this.groupOf(row);
+      const rows = groups.get(label);
+      if (rows) rows.push(row);
+      else groups.set(label, [row]);
+    }
+    return groups;
+  });
+
+  /** Context of the `starGroupFooter` slot for a group. */
+  protected groupFooterContext(label: string): StarGroupFooterContext<T> {
+    return {
+      $implicit: label,
+      rows: this.groupRows().get(label) ?? [],
+      columns: this.renderedColumns(),
+    };
+  }
+
+  // ---------------------------------------------------------------- column selection
+
+  /** Column selected last without Shift: the fixed end of a Shift range. */
+  private columnAnchor: string | null = null;
+
+  /** `selectionMode="column"`. */
+  protected readonly columnSelectionMode = computed(() => this.selectionMode() === 'column');
+
+  private readonly selectedColumnSet = computed(() =>
+    this.columnSelectionMode() ? new Set(this.columnSelection()) : new Set<string>(),
+  );
+
+  /** The column is in `columnSelection` (with `selectionMode="column"`). */
+  protected isColumnSelected(column: StarColumn<T>): boolean {
+    return this.selectedColumnSet().has(column.field);
+  }
+
+  /**
+   * A click on the select button (or the header cell) of a column: selects only it, Ctrl / Cmd
+   * adds or removes it, Shift selects from the last clicked column.
+   */
+  protected onColumnSelect(column: StarColumn<T>, event: MouseEvent): void {
+    if (!this.columnSelectionMode()) return;
+    const fields = this.visibleColumns().map((item) => item.field);
+    const next = nextColumnSelection(
+      this.columnSelection(),
+      fields,
+      column.field,
+      this.columnAnchor,
+      { shift: event.shiftKey, toggle: event.ctrlKey || event.metaKey },
+    );
+    if (!event.shiftKey) this.columnAnchor = column.field;
+    this.columnSelection.set(next);
+  }
+
+  // ---------------------------------------------------------------- advanced filter
+
+  /** The advanced filter dialog is open. */
+  protected readonly advancedOpen = signal(false);
+  /** The rules in the dialog, before Apply. */
+  protected readonly advancedDraft = signal<StarQueryGroup>({ operator: 'and', rules: [] });
+
+  protected openAdvanced(): void {
+    this.advancedDraft.set(this.advancedQuery());
+    this.advancedOpen.set(true);
+  }
+
+  protected applyAdvanced(): void {
+    this.advancedQuery.set(this.advancedDraft());
+    this.advancedOpen.set(false);
+  }
+
+  protected clearAdvanced(): void {
+    const empty: StarQueryGroup = { operator: 'and', rules: [] };
+    this.advancedDraft.set(empty);
+    this.advancedQuery.set(empty);
+    this.advancedOpen.set(false);
+  }
+
+  /** The advanced filter has rules. */
+  protected readonly advancedActive = computed(() => this.advancedQuery().rules.length > 0);
+
   pinColumn(field: string, side: StarPinSide | null): void {
     const column = this.columns().find((item) => item.field === field);
     if (!column || this.sideOf(column) === side) return;
@@ -2545,7 +2913,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
    * invalid cell: announces it, opens its editor with the message and focuses it.
    */
   private batchValid(): boolean {
-    const rows = this.pageRows();
+    const rows = this.shownRows();
     const seen = new Set<unknown>();
     for (const row of rows) {
       const key = this.trackKey(row);
@@ -2709,18 +3077,73 @@ export class StarTable<T> extends StarTableInteraction<T> {
   }
 
   protected filterChoices(column: StarColumn<T>): readonly string[] {
-    if (column.filterOptions) return column.filterOptions;
-    const texts = new Set(this.value().map((row) => this.cellText(row, column)));
-    texts.delete('');
-    return [...texts].sort((a, b) => compareValues(a, b));
+    return column.filterOptions ?? this.filterChoiceMap().get(column.field) ?? [];
   }
 
+  /**
+   * The distinct display texts of each select / multiselect filter column without
+   * `filterOptions`, sorted. Computed once per `value` and `columns`, not on every check.
+   */
+  private readonly filterChoiceMap = computed(() => {
+    const rows = this.value();
+    const map = new Map<string, readonly string[]>();
+    for (const column of this.columns()) {
+      if (column.filterOptions) continue;
+      if (column.filter !== 'select' && column.filter !== 'multiselect') continue;
+      const texts = new Set(rows.map((row) => this.cellText(row, column)));
+      texts.delete('');
+      map.set(
+        column.field,
+        [...texts].sort((a, b) => compareValues(a, b)),
+      );
+    }
+    return map;
+  });
+
   protected setFilter(field: string, value: StarFilterValue): void {
+    const timer = this.filterTimers.get(field);
+    if (timer !== undefined) clearTimeout(timer);
+    this.filterTimers.delete(field);
     this.filters.update((filters) => ({ ...filters, [field]: value }));
+    this.ownFilters = this.filters();
+  }
+
+  /** The `filters` object that the table wrote last (a pending delayed filter builds on it). */
+  private ownFilters: StarColumnFilters | null = null;
+
+  /** Drops the delayed filter text that has not applied yet. */
+  private cancelFilterTimers(): void {
+    this.filterTimers.forEach((timer) => clearTimeout(timer));
+    this.filterTimers.clear();
+  }
+
+  /** `setFilter` after `filterDelay` (typed text); a newer value restarts the delay. */
+  protected setFilterDelayed(field: string, value: StarFilterValue): void {
+    const delay = this.filterDelay();
+    if (delay <= 0) {
+      this.setFilter(field, value);
+      return;
+    }
+    const timer = this.filterTimers.get(field);
+    if (timer !== undefined) clearTimeout(timer);
+    if (!this.filterTimers.size) this.ownFilters = this.filters();
+    this.filterTimers.set(
+      field,
+      setTimeout(() => {
+        // The owner, `clearFilters()` or a state restore wrote the filters in the meantime:
+        // that write wins over the old typed text.
+        if (this.filters() !== this.ownFilters) {
+          this.cancelFilterTimers();
+          return;
+        }
+        this.setFilter(field, value);
+      }, delay),
+    );
   }
 
   /** Removes every column filter. */
   clearFilters(): void {
+    this.cancelFilterTimers();
     this.filters.set({});
   }
 
@@ -2903,8 +3326,9 @@ export class StarTable<T> extends StarTableInteraction<T> {
     rowSelectable: this.rowSelectable,
     keyOf: (row) => this.trackKey(row),
     gridCell: (tr) => (this.cellMode() ? tr.querySelector('td[data-field="$select"]') : null),
-    rows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
-    pageRows: this.pageRows,
+    // The pinned rows are in view too: the page check box covers them.
+    rows: computed(() => (this.lazy() ? this.shownRows() : this.withAdded())),
+    pageRows: computed(() => this.shownRows()),
     knownRows: this.value,
     changing: this.selectionChanging,
     rowSelect: this.rowSelect,
@@ -2914,9 +3338,33 @@ export class StarTable<T> extends StarTableInteraction<T> {
   protected readonly headerState = this.select.headerState;
   protected readonly headerEnabled = this.select.headerEnabled;
   /** Rows in the DOM now (the virtual window with the focused row). */
-  protected readonly renderedRows = computed(() =>
-    this.bodyEntries().flatMap((entry) => (entry.kind === 'row' ? [entry.row] : [])),
-  );
+  protected readonly renderedRows = computed(() => [
+    ...this.pinnedTop(),
+    ...this.bodyEntries().flatMap((entry) => (entry.kind === 'row' ? [entry.row] : [])),
+    ...this.pinnedBottom(),
+  ]);
+
+  /** Height of the sticky header, for the pinned top rows. */
+  protected readonly headHeight = signal(0);
+  /**
+   * Row entry of a pinned row: no virtual item; with virtual scroll an `aria-rowindex` after the
+   * header rows (top) or after the body rows (bottom).
+   */
+  protected pinnedEntryAt(side: StarRowPinSide, position: number) {
+    if (!this.virtualScroll()) return { aria: null, item: null };
+    const header = this.headerRows();
+    if (side === 'top') return { aria: header + position + 1, item: null };
+    const body = this.layout()?.bodyRows ?? this.pageRows().length;
+    return { aria: header + this.pinnedTop().length + body + position + 1, item: null };
+  }
+
+  /** Pinned top rows, page rows, pinned bottom rows: the rows that the keys move between. */
+  protected readonly shownRows = computed(() => {
+    const top = this.pinnedTop();
+    const bottom = this.pinnedBottom();
+    const rows = this.pageRows();
+    return top.length || bottom.length ? [...top, ...rows, ...bottom] : rows;
+  });
   /** Key of the row that is the tab stop with `metaKeySelection` (default: the first row). */
   private readonly activeRow = signal<{ readonly key: unknown } | null>(null);
 
@@ -3058,7 +3506,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
       rows: this.rows(),
       field: this.sortField(),
       order: this.sortOrder(),
-      filter: this.globalFilter(),
+      filter: this.appliedGlobalFilter(),
       filters: this.filters(),
       sorts: this.sorts(),
     });

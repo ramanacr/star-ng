@@ -166,6 +166,18 @@ export interface StarUiText {
   readonly pinColumnEnd: (column: string) => string;
   /** Table Columns panel: unpin a column. */
   readonly unpinColumn: (column: string) => string;
+  /** Table context menu: pin the row at the top. */
+  readonly pinRowTop: string;
+  /** Table context menu: pin the row at the bottom. */
+  readonly pinRowBottom: string;
+  /** Table context menu: unpin the row. */
+  readonly unpinRow: string;
+  /** Table: button and dialog title of the advanced filter. */
+  readonly advancedFilter: string;
+  /** Table `selectionMode="column"`: select button of a column header. */
+  readonly selectColumn: (column: string) => string;
+  /** Table filter check list: only the first values show. */
+  readonly moreChoices: (shown: number, total: number) => string;
   /** Table summary labels. */
   readonly summarySum: string;
   readonly summaryAverage: string;
@@ -1049,6 +1061,13 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   pinColumnStart: (column) => `Pin ${column} to start`,
   pinColumnEnd: (column) => `Pin ${column} to end`,
   unpinColumn: (column) => `Unpin ${column}`,
+  pinRowTop: 'Pin row to top',
+  pinRowBottom: 'Pin row to bottom',
+  unpinRow: 'Unpin row',
+  advancedFilter: 'Advanced filter',
+  selectColumn: (column) => `Select column ${column}`,
+  moreChoices: (shown, total) =>
+    `Showing ${shown} of ${total} values. Refine the search to see more.`,
   summarySum: 'Sum',
   summaryAverage: 'Average',
   summaryMinimum: 'Minimum',
@@ -1700,6 +1719,8 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   pinColumnStart: ['column'],
   pinColumnEnd: ['column'],
   unpinColumn: ['column'],
+  selectColumn: ['column'],
+  moreChoices: ['shown', 'total'],
   hideColumn: ['column'],
   skippedCells: ['count'],
   copiedCells: ['count'],

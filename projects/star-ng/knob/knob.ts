@@ -1,6 +1,6 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -38,7 +38,12 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-knob', '[class.star-knob--disabled]': 'disabled()' },
+  host: {
+    class: 'star-knob',
+    '[class.star-knob--invalid]': 'showInvalid()',
+    '[class.star-knob--disabled]': 'disabled()',
+    '[style.--star-knob-stroke-width]': 'strokeWidthValue()',
+  },
   template: `
     <svg
       data-star-part="graphic"
@@ -56,6 +61,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       [attr.aria-valuenow]="value()"
       [attr.aria-valuetext]="text()"
       [attr.aria-disabled]="disabled() || null"
+      [attr.aria-invalid]="showInvalid() || null"
       (keydown)="onKeydown($event)"
       (pointerdown)="onPointer($event)"
       (pointermove)="$event.buttons === 1 && onPointer($event)"
@@ -63,10 +69,21 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     >
       <path data-star-part="track" class="star-knob__track" [attr.d]="arc(1)" />
       <path data-star-part="valueItem" class="star-knob__value" [attr.d]="arc(ratio())" />
-      <text data-star-part="text" class="star-knob__text" x="50" y="57" text-anchor="middle">
-        {{ text() }}
-      </text>
+      @if (showValue()) {
+        <text data-star-part="text" class="star-knob__text" x="50" y="57" text-anchor="middle">
+          {{ text() }}
+        </text>
+      }
     </svg>
+    @if (name()) {
+      <input
+        data-star-part="valueInput"
+        type="hidden"
+        [name]="name()"
+        [value]="value()"
+        [disabled]="disabled()"
+      />
+    }
   `,
 })
 export class StarKnob implements FormValueControl<number> {
@@ -77,7 +94,29 @@ export class StarKnob implements FormValueControl<number> {
   readonly size = input(120);
   /** `{value}` is replaced by the number, for example `{value}%`. */
   readonly valueTemplate = input('{value}');
+  /**
+   * Width of the track and the value arc, in units of the 100 × 100 view box (1 to 20; the arc
+   * radius is 40). Default: the stylesheet width (10). PrimeNG `strokeWidth`.
+   */
+  readonly strokeWidth = input<number | null>(null);
+  /** `strokeWidth` limited to 1–20, for the `--star-knob-stroke-width` custom property. */
+  protected readonly strokeWidthValue = computed(() => {
+    const width = this.strokeWidth();
+    return width === null ? null : String(Math.min(20, Math.max(1, width)));
+  });
+  /** Shows the value text in the middle. Default `true`. PrimeNG `showValue`. */
+  readonly showValue = input(true, { transform: booleanAttribute });
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
+  /** A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`). */
+  readonly required = input(false, { transform: booleanAttribute });
+  /** The value is not valid; it shows after `touched` (also bound from Signal Forms). */
+  readonly invalid = input(false, { transform: booleanAttribute });
+  /** The user has visited the control (Signal Forms binds it). */
+  readonly touched = input(false, { transform: booleanAttribute });
+  /** Name of the value in a native form submit. */
+  readonly name = input('');
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
@@ -85,7 +124,13 @@ export class StarKnob implements FormValueControl<number> {
   private readonly dial = viewChild.required<ElementRef<SVGSVGElement>>('dial');
   /** The parent `star-field` when it labels the knob: an SVG slider is not labelable. */
   private readonly field = injectStarFieldLink(null, () => this.focus());
-  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly labelledBy = computed(() =>
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   focus(options?: FocusOptions): void {
@@ -280,6 +325,58 @@ type StarEyeDropperType = new () => { open(): Promise<{ sRGBHex: string }> };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+/** Reads `#rgb`, `#rrggbb`, `rgb(r, g, b)` or `hsb(h, s%, b%)` as `#rrggbb`, else `null`. */
+export function ɵstarColorToHex(text: string | null | undefined): string | null {
+  const value = (text ?? '').trim().toLowerCase();
+  if (/^#[0-9a-f]{6}$/.test(value)) return value;
+  if (/^#[0-9a-f]{3}$/.test(value)) {
+    return '#' + [...value.slice(1)].map((char) => char + char).join('');
+  }
+  const numbers = (value.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+  if (value.startsWith('rgb') && numbers.length >= 3) {
+    return (
+      '#' +
+      numbers
+        .slice(0, 3)
+        .map((n) => clamp(Math.round(n), 0, 255).toString(16).padStart(2, '0'))
+        .join('')
+    );
+  }
+  if ((value.startsWith('hsb') || value.startsWith('hsv')) && numbers.length >= 3) {
+    return hsvToHex({
+      h: clamp(numbers[0], 0, 360),
+      s: clamp(numbers[1], 0, 100),
+      v: clamp(numbers[2], 0, 100),
+    });
+  }
+  return null;
+}
+
+/** Writes `#rrggbb` in the `format` of the color picker. */
+export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): string {
+  if (format === 'rgb') {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+  if (format === 'hsb') {
+    // Two decimals, so that every `#rrggbb` color reads back to itself.
+    const number = parseInt(hex.slice(1), 16);
+    const [r, g, b] = [(number >> 16) & 255, (number >> 8) & 255, number & 255].map((c) => c / 255);
+    const max = Math.max(r, g, b);
+    const delta = max - Math.min(r, g, b);
+    let h = 0;
+    if (delta) {
+      if (max === r) h = ((g - b) / delta) % 6;
+      else if (max === g) h = (b - r) / delta + 2;
+      else h = (r - g) / delta + 4;
+    }
+    const fixed = (n: number) => String(Math.round(n * 100) / 100);
+    const hue = (h * 60 + 360) % 360;
+    return `hsb(${fixed(hue)}, ${fixed(max ? (delta / max) * 100 : 0)}%, ${fixed(max * 100)}%)`;
+  }
+  return hex;
+}
+
 /**
  * Color picker (PrimeNG `p-colorpicker`): preset swatches, a custom color panel and a hex field.
  * Value: `#rrggbb`.
@@ -295,9 +392,14 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
   selector: 'star-color-picker',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, CdkConnectedOverlay, CdkOverlayOrigin],
+  imports: [StarPart, NgTemplateOutlet, CdkConnectedOverlay, CdkOverlayOrigin],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-color', '[class.star-color--open]': 'open()' },
+  host: {
+    class: 'star-color',
+    '[class.star-color--open]': 'open()',
+    '[class.star-color--inline]': 'inline()',
+    '[class.star-color--invalid]': 'showInvalid()',
+  },
   template: `
     <div
       data-star-part="swatchesPanel"
@@ -306,6 +408,8 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       [attr.aria-label]="labelledBy() ? null : (ariaLabel() ?? text.colorLabel)"
       [attr.aria-labelledby]="labelledBy()"
       [attr.aria-describedby]="fieldDescribedBy()"
+      [attr.aria-required]="required() || null"
+      [attr.aria-invalid]="showInvalid() || null"
     >
       @for (swatch of shownSwatches(); track swatch) {
         <button
@@ -314,28 +418,30 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           role="radio"
           class="star-color__swatch"
           [style.background]="swatch"
-          [attr.aria-checked]="swatch.toLowerCase() === value().toLowerCase()"
+          [attr.aria-checked]="swatch.toLowerCase() === hex()"
           [attr.aria-label]="swatch"
           [disabled]="disabled()"
           (click)="commit(swatch)"
         ></button>
       }
     </div>
-    <button
-      data-star-part="customButton"
-      #custom
-      type="button"
-      class="star-color__custom"
-      cdkOverlayOrigin
-      #origin="cdkOverlayOrigin"
-      aria-haspopup="dialog"
-      [style.background]="value()"
-      [attr.aria-label]="text.customColor"
-      [attr.aria-expanded]="open()"
-      [attr.aria-controls]="open() ? panelId : null"
-      [disabled]="disabled()"
-      (click)="togglePanel()"
-    ></button>
+    @if (!inline()) {
+      <button
+        data-star-part="customButton"
+        #custom
+        type="button"
+        class="star-color__custom"
+        cdkOverlayOrigin
+        #origin="cdkOverlayOrigin"
+        aria-haspopup="dialog"
+        [style.background]="hex()"
+        [attr.aria-label]="text.customColor"
+        [attr.aria-expanded]="open()"
+        [attr.aria-controls]="open() ? panelId : null"
+        [disabled]="disabled()"
+        (click)="togglePanel()"
+      ></button>
+    }
     @if (canEyeDrop()) {
       <button
         data-star-part="pickButton"
@@ -352,18 +458,37 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
     <input
       data-star-part="hexInput"
       class="star-input star-input--sm star-color__hex"
-      [value]="value()"
+      [value]="hex()"
       [disabled]="disabled()"
       [attr.aria-label]="text.hexValue(ariaLabel() ?? (field?.label() || text.colorLabel))"
       maxlength="7"
       (change)="onHex($any($event.target))"
       (blur)="touch.emit()"
     />
+    @if (name()) {
+      <input
+        data-star-part="valueInput"
+        type="hidden"
+        [name]="name()"
+        [value]="value()"
+        [disabled]="disabled()"
+      />
+    }
+    @if (inline()) {
+      <div
+        data-star-part="panel"
+        class="star-panel star-color__panel star-color__panel--inline"
+        role="group"
+        [attr.aria-label]="text.customColor"
+      >
+        <ng-container *ngTemplateOutlet="panelBody" />
+      </div>
+    }
 
     <ng-template
       cdkConnectedOverlay
       cdkConnectedOverlayUsePopover="inline"
-      [cdkConnectedOverlayOrigin]="origin"
+      [cdkConnectedOverlayOrigin]="originRef()!"
       [cdkConnectedOverlayOpen]="open()"
       [cdkConnectedOverlayPositions]="positions"
       (attach)="onAttached()"
@@ -379,61 +504,9 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
         [attr.aria-label]="text.customColor"
         (keydown)="onPanelKeydown($event)"
       >
-        <div
-          data-star-part="areaPanel"
-          #area
-          class="star-color__area"
-          role="slider"
-          tabindex="0"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          [style.background]="areaBackground()"
-          [attr.aria-label]="text.colorArea"
-          [attr.aria-valuenow]="hsv().s"
-          [attr.aria-valuetext]="text.colorAreaValue(hsv().s, hsv().v)"
-          (keydown)="onAreaKeydown($event)"
-          (pointerdown)="onAreaPointer($event, true)"
-          (pointermove)="$event.buttons === 1 && onAreaPointer($event, false)"
-        >
-          <span
-            data-star-part="thumbnail"
-            class="star-color__thumb"
-            [style.inset-inline-start.%]="hsv().s"
-            [style.top.%]="100 - hsv().v"
-            [style.background]="value()"
-          ></span>
-        </div>
-        <div
-          data-star-part="hueTrack"
-          class="star-color__hue"
-          role="slider"
-          tabindex="0"
-          aria-valuemin="0"
-          aria-valuemax="359"
-          aria-orientation="horizontal"
-          [style.background]="hueBackground()"
-          [attr.aria-label]="text.hue"
-          [attr.aria-valuenow]="hsv().h"
-          [attr.aria-valuetext]="text.hueValue(hsv().h)"
-          (keydown)="onHueKeydown($event)"
-          (pointerdown)="onHuePointer($event, true)"
-          (pointermove)="$event.buttons === 1 && onHuePointer($event, false)"
-        >
-          <span
-            data-star-part="thumbnail"
-            class="star-color__thumb"
-            [style.inset-inline-start.%]="(hsv().h / 359) * 100"
-            [style.background]="hueColor()"
-          ></span>
-        </div>
+        <ng-container *ngTemplateOutlet="panelBody" />
         <div data-star-part="barPanel" class="star-color__bar">
-          <span
-            data-star-part="previewText"
-            class="star-color__preview"
-            [style.background]="value()"
-            aria-hidden="true"
-          ></span>
-          <span data-star-part="codeText" class="star-color__code">{{ value() }}</span>
+          <ng-container *ngTemplateOutlet="panelBar" />
           <button
             data-star-part="barButton"
             type="button"
@@ -444,6 +517,67 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           </button>
         </div>
       </div>
+    </ng-template>
+
+    <ng-template #panelBody>
+      <div
+        data-star-part="areaPanel"
+        #area
+        class="star-color__area"
+        role="slider"
+        [attr.tabindex]="disabled() ? -1 : 0"
+        [attr.aria-disabled]="disabled() || null"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [style.background]="areaBackground()"
+        [attr.aria-label]="text.colorArea"
+        [attr.aria-valuenow]="hsv().s"
+        [attr.aria-valuetext]="text.colorAreaValue(hsv().s, hsv().v)"
+        (keydown)="onAreaKeydown($event)"
+        (pointerdown)="onAreaPointer($event, true)"
+        (pointermove)="$event.buttons === 1 && onAreaPointer($event, false)"
+      >
+        <span
+          data-star-part="thumbnail"
+          class="star-color__thumb"
+          [style.inset-inline-start.%]="hsv().s"
+          [style.top.%]="100 - hsv().v"
+          [style.background]="hex()"
+        ></span>
+      </div>
+      <div
+        data-star-part="hueTrack"
+        class="star-color__hue"
+        role="slider"
+        [attr.tabindex]="disabled() ? -1 : 0"
+        [attr.aria-disabled]="disabled() || null"
+        aria-valuemin="0"
+        aria-valuemax="359"
+        aria-orientation="horizontal"
+        [style.background]="hueBackground()"
+        [attr.aria-label]="text.hue"
+        [attr.aria-valuenow]="hsv().h"
+        [attr.aria-valuetext]="text.hueValue(hsv().h)"
+        (keydown)="onHueKeydown($event)"
+        (pointerdown)="onHuePointer($event, true)"
+        (pointermove)="$event.buttons === 1 && onHuePointer($event, false)"
+      >
+        <span
+          data-star-part="thumbnail"
+          class="star-color__thumb"
+          [style.inset-inline-start.%]="(hsv().h / 359) * 100"
+          [style.background]="hueColor()"
+        ></span>
+      </div>
+    </ng-template>
+    <ng-template #panelBar>
+      <span
+        data-star-part="previewText"
+        class="star-color__preview"
+        [style.background]="hex()"
+        aria-hidden="true"
+      ></span>
+      <span data-star-part="codeText" class="star-color__code">{{ hex() }}</span>
     </ng-template>
   `,
 })
@@ -457,8 +591,26 @@ export class StarColorPicker implements FormValueControl<string> {
   private readonly doc = inject(DOCUMENT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  /** The color, as `#rrggbb`. */
+  /**
+   * The color: `#rrggbb` (`format="hex"`), `rgb(r, g, b)` (`'rgb'`) or `hsb(h, s%, b%)`
+   * (`'hsb'`). The control reads all three.
+   */
   readonly value = model('#4f46e5');
+  /**
+   * Shows the saturation / brightness area and the hue slider in place, without the custom color
+   * tile and its popup (same keys and slider roles). PrimeNG `inline`.
+   */
+  readonly inline = input(false, { transform: booleanAttribute });
+  /** The value is not valid; it shows after `touched` (also bound from Signal Forms). */
+  readonly invalid = input(false, { transform: booleanAttribute });
+  /** The user has visited the control (Signal Forms binds it). */
+  readonly touched = input(false, { transform: booleanAttribute });
+  /** Name of the value in a native form submit. */
+  readonly name = input('');
+  /** Text format of the value that the control writes. PrimeNG `format`. */
+  readonly format = input<'hex' | 'rgb' | 'hsb'>('hex');
+  /** The value as `#rrggbb` (black when it cannot be read). */
+  protected readonly hex = computed(() => ɵstarColorToHex(this.value()) ?? '#000000');
   /**
    * The preset swatches (`#rrggbb`). When you do not set it, the swatches come from the theme:
    * after the first render, the control reads `--star-primary`, `--star-accent`, `--star-success`,
@@ -476,9 +628,23 @@ export class StarColorPicker implements FormValueControl<string> {
    * dropper. A value that the application sets does not emit. PrimeNG `onChange`.
    */
   readonly changed = output<string>();
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
+  /** A color is needed (`aria-required` on the swatch group); also bound from Signal Forms `required()`. */
+  readonly required = input(false, { transform: booleanAttribute });
+  /** The custom color panel opened. PrimeNG `onShow`. */
+  readonly opened = output<void>();
+  /** The custom color panel closed. PrimeNG `onHide`. */
+  readonly closed = output<void>();
   /** The parent `star-field` when it labels the swatch group (a group is not labelable). */
   protected readonly field = injectStarFieldLink(null, () => this.focus());
-  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly labelledBy = computed(() =>
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   /** Focuses the chosen swatch, else the first one. */
@@ -532,8 +698,9 @@ export class StarColorPicker implements FormValueControl<string> {
 
   /** Sets the value that the user chose and emits `changed`. */
   protected commit(hex: string): void {
-    this.value.set(hex);
-    this.changed.emit(hex);
+    const value = ɵstarColorFromHex(hex, this.format());
+    this.value.set(value);
+    this.changed.emit(value);
   }
   protected readonly shownSwatches = computed(
     () => this.swatches() ?? this.themeSwatches() ?? SWATCHES,
@@ -543,7 +710,9 @@ export class StarColorPicker implements FormValueControl<string> {
   protected readonly panelId = this.ids.getId('star-color-panel-');
   protected readonly open = signal(false);
 
-  private readonly custom = viewChild.required<ElementRef<HTMLButtonElement>>('custom');
+  private readonly custom = viewChild<ElementRef<HTMLButtonElement>>('custom');
+  /** The overlay origin (the custom color tile); none with `inline`. */
+  protected readonly originRef = viewChild('origin', { read: CdkOverlayOrigin });
   private readonly area = viewChild<ElementRef<HTMLElement>>('area');
 
   /**
@@ -551,7 +720,7 @@ export class StarColorPicker implements FormValueControl<string> {
    * the value is a gray, white or black, where the hex text has no hue.
    */
   protected readonly hsv = linkedSignal<string, Hsv>({
-    source: this.value,
+    source: this.hex,
     computation: (hex, previous) => {
       const before = previous?.value;
       if (before && hsvToHex(before) === hex.toLowerCase()) return before;
@@ -578,19 +747,26 @@ export class StarColorPicker implements FormValueControl<string> {
     return `linear-gradient(${end}, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)`;
   });
 
+  /** Inline panel: the direction comes from the page at each key or pointer event. */
+  private syncInlineDir(): void {
+    if (this.inline()) this.rtl.set(starIsRtl(this.host.nativeElement));
+  }
+
   /** Opens the custom color panel. The focus goes to the saturation and brightness area. */
   openPanel(): void {
-    if (this.disabled() || this.open()) return;
-    this.rtl.set(starIsRtl(this.custom().nativeElement));
+    if (this.inline() || this.disabled() || this.open()) return;
+    this.rtl.set(starIsRtl(this.host.nativeElement));
     this.open.set(true);
+    this.opened.emit();
   }
 
   /** Closes the panel; by default the focus goes back to the custom color tile. */
   closePanel(focusTile = true): void {
     if (!this.open()) return;
     this.open.set(false);
+    this.closed.emit();
     this.touch.emit();
-    if (focusTile) this.custom().nativeElement.focus();
+    if (focusTile) this.custom()?.nativeElement.focus();
   }
 
   protected togglePanel(): void {
@@ -604,7 +780,7 @@ export class StarColorPicker implements FormValueControl<string> {
   }
 
   protected onOutsideClick(event: MouseEvent): void {
-    if (this.custom().nativeElement.contains(event.target as Node)) return;
+    if (this.custom()?.nativeElement.contains(event.target as Node)) return;
     this.closePanel(false);
   }
 
@@ -618,6 +794,7 @@ export class StarColorPicker implements FormValueControl<string> {
 
   /** Arrow left / right, Home and End: saturation; Arrow up / down, Page up / down: brightness. */
   protected onAreaKeydown(event: KeyboardEvent): void {
+    this.syncInlineDir();
     const step = event.shiftKey ? 10 : 1;
     const { s, v } = this.hsv();
     const moves: Record<string, Partial<Hsv>> = {
@@ -638,6 +815,7 @@ export class StarColorPicker implements FormValueControl<string> {
 
   /** The arrow keys move the hue; Page up / down in steps of 10, Home and End to the ends. */
   protected onHueKeydown(event: KeyboardEvent): void {
+    this.syncInlineDir();
     const step = event.shiftKey ? 10 : 1;
     const { h } = this.hsv();
     const moves: Record<string, number> = {
@@ -657,6 +835,7 @@ export class StarColorPicker implements FormValueControl<string> {
   }
 
   protected onAreaPointer(event: PointerEvent, start: boolean): void {
+    this.syncInlineDir();
     const area = event.currentTarget as HTMLElement;
     if (start) this.capture(event, area);
     const box = area.getBoundingClientRect();
@@ -665,6 +844,7 @@ export class StarColorPicker implements FormValueControl<string> {
   }
 
   protected onHuePointer(event: PointerEvent, start: boolean): void {
+    this.syncInlineDir();
     const track = event.currentTarget as HTMLElement;
     if (start) this.capture(event, track);
     this.setHsv({ h: this.inlineRatio(event.clientX, track.getBoundingClientRect()) * 359 });
@@ -674,7 +854,7 @@ export class StarColorPicker implements FormValueControl<string> {
     const raw = input.value.trim();
     const hex = raw.startsWith('#') ? raw : `#${raw}`;
     if (/^#[0-9a-f]{6}$/i.test(hex)) this.commit(hex.toLowerCase());
-    else input.value = this.value();
+    else input.value = this.hex();
   }
 
   /** Keeps the pointer on the slider while it drags, and the focus on the slider. */

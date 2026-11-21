@@ -145,6 +145,13 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   pinColumnStart: (column) => `Fijar ${column} al inicio`,
   pinColumnEnd: (column) => `Fijar ${column} al final`,
   unpinColumn: (column) => `Soltar ${column}`,
+  pinRowTop: 'Fijar fila arriba',
+  pinRowBottom: 'Fijar fila abajo',
+  unpinRow: 'Soltar fila',
+  advancedFilter: 'Filtro avanzado',
+  selectColumn: (column) => `Seleccionar columna ${column}`,
+  moreChoices: (shown, total) =>
+    `Se muestran ${shown} de ${total} valores. Refine la búsqueda para ver más.`,
   summarySum: 'Suma',
   summaryAverage: 'Promedio',
   summaryMinimum: 'Mínimo',

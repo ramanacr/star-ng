@@ -40,11 +40,23 @@ import { DOCS, DocsRow } from '../shared/docs';
         and Arrow up and Arrow right add one step. See the Right-to-left guide.
       </p>
 
+      <docs-example
+        heading="Stroke width and hidden value"
+        source="knob/stroke"
+        note="strokeWidth sets the width of the track and the value arc (in units of the 100 by 100 view box). showValue false hides the value text; screen readers still read it."
+      >
+        <div class="docs-row">
+          <star-knob [(value)]="thick" [strokeWidth]="14" ariaLabel="Thick knob" />
+          <star-knob [(value)]="thick" [showValue]="false" ariaLabel="Knob without text" />
+        </div>
+      </docs-example>
+
       <docs-api [of]="['StarKnob']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class KnobPage {
+  protected readonly thick = signal(65);
   protected readonly progress = signal(60);
   protected readonly temperature = signal(21);
 

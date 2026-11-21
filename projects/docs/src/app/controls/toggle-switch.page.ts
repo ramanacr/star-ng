@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { StarIconTemplate } from '@star-ng/ui/core';
 import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-toggle-switch-page',
-  imports: [DOCS, StarToggleSwitch],
+  imports: [DOCS, StarToggleSwitch, StarIconTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -27,6 +28,18 @@ import { DOCS, DocsRow } from '../shared/docs';
         >
       </docs-example>
 
+      <docs-example
+        heading="State labels and handle icons"
+        source="toggle-switch/labels"
+        note="onLabel and offLabel show the state as text next to the switch (screen readers read the switch state). starIcon on and off draw an icon in the handle."
+      >
+        <star-toggle-switch [(checked)]="lights" onLabel="On" offLabel="Off">
+          Lights
+          <ng-template starIcon="on"><i class="ph-bold ph-check"></i></ng-template>
+          <ng-template starIcon="off"><i class="ph-bold ph-x"></i></ng-template>
+        </star-toggle-switch>
+      </docs-example>
+
       <docs-api
         [of]="['StarToggleSwitch']"
         [slots]="slots"
@@ -37,6 +50,7 @@ import { DOCS, DocsRow } from '../shared/docs';
   `,
 })
 export class ToggleSwitchPage {
+  protected readonly lights = signal(true);
   protected readonly alerts = signal(true);
   protected readonly compact = signal(false);
 
