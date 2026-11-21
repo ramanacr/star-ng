@@ -211,7 +211,10 @@ export class App {
     void this.router.navigateByUrl('/' + first.path);
   }
 
-  /** Escape closes the drawer. Slash, Ctrl+K or Cmd+K moves the focus to the page search. */
+  /**
+   * Escape closes the drawer. Slash moves the focus to the page search. Ctrl+K is left to the
+   * pages: the command palette example opens with it.
+   */
   protected onDocumentKey(event: KeyboardEvent): void {
     if (event.key === 'Escape' && this.navOpen()) {
       event.preventDefault();
@@ -219,9 +222,7 @@ export class App {
       return;
     }
     const slash = event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey;
-    const commandK =
-      event.key.toLowerCase() === 'k' && (event.ctrlKey || event.metaKey) && !event.altKey;
-    if ((!slash && !commandK) || event.defaultPrevented) return;
+    if (!slash || event.defaultPrevented) return;
     const target = event.target;
     if (target instanceof Element && target.closest(TYPING_TARGET)) return;
     event.preventDefault();
