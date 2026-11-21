@@ -93,7 +93,7 @@ interface View {
             <ng-template starIcon="on"><i class="ph-fill ph-push-pin"></i></ng-template>
             <ng-template starIcon="off"><i class="ph-bold ph-push-pin"></i></ng-template>
           </star-toggle-button>
-          <star-toggle-button [(checked)]="muted" ariaLabel="Sound">
+          <star-toggle-button [(checked)]="muted">
             <ng-template starToggleButtonContent let-checked>
               <i [class]="checked ? 'ph-bold ph-speaker-x' : 'ph-bold ph-speaker-high'"></i>
               {{ checked ? 'Muted' : 'Sound on' }}
