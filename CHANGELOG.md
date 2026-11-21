@@ -93,6 +93,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Cascade select: `beforeShow` and `beforeHide` now emit before the overlay opens or closes (the list is not in the page yet at `beforeShow`), and `show` and `hide` emit after it. In 0.4.0 all four emitted together.
 - Meter group: the `icon` of an item now shows in the legend (the field existed but was not rendered).
 - Docs site (internal; the package does not change): the library CSS of the docs now loads per route, like the page JavaScript. The global stylesheet keeps the critical CSS (tokens, base rules, unstyled mode, the controls of the shell and the docs layout), and each page loads the partials of its own controls (`<page>.scss`, written by `corepack pnpm docs:styles`). The prerendered HTML of a page contains its styles. The initial bundle of the docs goes from 999 kB to 775 kB, and the global stylesheet from 459 kB to 234 kB.
+- Docs site (internal; the package does not change): the docs load only the Phosphor icons that they use (`corepack pnpm docs:icons` writes the subset from the package CSS). The initial bundle of the docs goes from 775 kB to 640 kB, and the global stylesheet from 234 kB to 99 kB.
 
 ### Fixed
 

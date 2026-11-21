@@ -71,8 +71,7 @@
               }
             ],
             "styles": [
-              "@phosphor-icons/web/bold/style.css",
-              "@phosphor-icons/web/fill/style.css",
+              "projects/docs/src/generated/phosphor-subset.css",
               "projects/docs/src/styles.scss"
             ]
           },
