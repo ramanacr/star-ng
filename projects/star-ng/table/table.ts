@@ -2503,10 +2503,19 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
 
   protected async openAdvanced(): Promise<void> {
     if (!this.queryBuilderType()) {
-      await this.pendingTasks.run(async () => {
-        const { StarQueryBuilder } = await import('@star-ng/ui/query-builder');
-        this.queryBuilderType.set(StarQueryBuilder);
-      });
+      try {
+        await this.pendingTasks.run(async () => {
+          const { StarQueryBuilder } = await import('@star-ng/ui/query-builder');
+          this.queryBuilderType.set(StarQueryBuilder);
+        });
+      } catch (error) {
+        // The chunk did not load (offline, stale deploy): keep the dialog closed.
+        this.advancedOpen.set(false);
+        if (isDevMode()) {
+          console.error('star-table: the advanced filter could not load the query builder.', error);
+        }
+        return;
+      }
     }
     this.advancedDraft.set(this.advancedQuery());
     this.advancedOpen.set(true);
@@ -2524,6 +2533,16 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
       const changes = ref.instance.value.subscribe((value) => this.advancedDraft.set(value));
       ref.onDestroy(() => changes.unsubscribe());
       this.queryBuilderRef.set(ref);
+      // The dialog took its focus before the builder existed (a footer button). Move it in.
+      afterNextRender(
+        () => {
+          const focusable = (ref.location.nativeElement as HTMLElement).querySelector<HTMLElement>(
+            'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          );
+          focusable?.focus();
+        },
+        { injector: this.injector },
+      );
     });
     onCleanup(() => this.queryBuilderRef.set(null));
   });

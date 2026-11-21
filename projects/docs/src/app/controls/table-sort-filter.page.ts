@@ -267,7 +267,7 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS, STATUS_SEVERITY } from
         heading="Advanced filter"
         source="table-sort-filter/advanced"
         [script]="advancedScript"
-        note="advancedFilter adds an Advanced filter button above the table. It opens a dialog with the query builder over all columns; Apply sets advancedQuery, a two-way model. The rules apply after the column filters."
+        note="advancedFilter adds an Advanced filter button above the table. It opens a dialog with the query builder over all columns; Apply sets advancedQuery, a two-way model. The rules apply after the column filters. The table loads the query builder the first time the dialog opens. To use the StarQueryGroup type or starQueryToPredicate without the component, import them from @star-ng/ui/query-builder/model."
       >
         <div class="docs-stack">
           <docs-fill>
