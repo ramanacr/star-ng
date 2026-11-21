@@ -89,7 +89,7 @@ interface View {
         note="starIcon on and off replace the icons of the toggle button, and iconPos end puts them after the label. starToggleButtonContent replaces the whole content; its context is the pressed state."
       >
         <div class="docs-row">
-          <star-toggle-button [(checked)]="pinned" onLabel="Pinned" offLabel="Pin" iconPos="end">
+          <star-toggle-button [(checked)]="pinToggle" onLabel="Pinned" offLabel="Pin" iconPos="end">
             <ng-template starIcon="on"><i class="ph-fill ph-push-pin"></i></ng-template>
             <ng-template starIcon="off"><i class="ph-bold ph-push-pin"></i></ng-template>
           </star-toggle-button>
@@ -111,7 +111,7 @@ interface View {
   `,
 })
 export class SelectButtonPage {
-  protected readonly pinned = signal(false);
+  protected readonly pinToggle = signal(false);
   protected readonly muted = signal(false);
   protected readonly period = signal<string | readonly string[] | null>('Week');
   protected readonly views: readonly View[] = [
