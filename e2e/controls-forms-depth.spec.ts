@@ -89,9 +89,10 @@ test.describe('form inputs depth (wave N1)', () => {
     await field.evaluate((input: HTMLInputElement) => input.setSelectionRange(2, 2));
     await page.keyboard.press('Backspace');
     await expect(field).toHaveValue('1_34-5678');
+    await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Delete');
     await expect(field).toHaveValue('1__4-5678');
     await page.keyboard.type('9');
-    await expect(field).toHaveValue('19_4-5678');
+    await expect(field).toHaveValue('1_94-5678');
   });
 });
