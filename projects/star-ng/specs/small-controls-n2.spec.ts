@@ -104,6 +104,70 @@ describe('StarChipsArea', () => {
   });
 });
 
+interface Tag {
+  readonly id: number;
+  readonly name: string;
+}
+
+@Component({
+  imports: [StarChipsArea],
+  template: `
+    <star-chips-area
+      ariaLabel="Labels"
+      [(items)]="tags"
+      optionLabel="name"
+      [trackBy]="byId"
+      removable
+    />
+  `,
+})
+class ChipsKeyHost {
+  readonly tags = signal<readonly Tag[]>([
+    { id: 1, name: 'red' },
+    { id: 2, name: 'green' },
+    { id: 3, name: 'blue' },
+  ]);
+  readonly byId = (_: number, tag: Tag) => tag.id;
+}
+
+describe('StarChipsArea access and identity', () => {
+  it('names the remove buttons for assistive technology and keeps them out of the tab order', async () => {
+    const fixture = TestBed.createComponent(ChipsKeyHost);
+    await fixture.whenStable();
+    const remove = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
+      '[data-star-part=removeButton]',
+    );
+    expect(remove.length).toBe(3);
+    expect(remove[1].getAttribute('aria-label')).toBe('Remove green');
+    expect(remove[1].hasAttribute('aria-hidden')).toBe(false);
+    expect(remove[1].getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('keeps one chip in the tab order when the owner removes items', async () => {
+    const fixture = TestBed.createComponent(ChipsKeyHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const chips = () => [...el.querySelectorAll<HTMLElement>('[data-star-part=chipButton]')];
+    chips()[2].focus();
+    await fixture.whenStable();
+    expect(chips()[2].getAttribute('tabindex')).toBe('0');
+    fixture.componentInstance.tags.set([{ id: 1, name: 'red' }]);
+    await fixture.whenStable();
+    expect(chips().map((c) => c.getAttribute('tabindex'))).toEqual(['0']);
+  });
+
+  it('keeps the DOM of an item when the items move (trackBy)', async () => {
+    const fixture = TestBed.createComponent(ChipsKeyHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const blue = el.querySelectorAll('[data-star-part=listItem]')[2];
+    const [r, g, b] = fixture.componentInstance.tags();
+    fixture.componentInstance.tags.set([b, r, g]);
+    await fixture.whenStable();
+    expect(el.querySelectorAll('[data-star-part=listItem]')[0]).toBe(blue);
+  });
+});
+
 @Component({
   imports: [StarFluid, StarCascadeSelect],
   template: `

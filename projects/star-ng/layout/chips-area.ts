@@ -6,6 +6,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
   Directive,
   ElementRef,
@@ -88,7 +89,7 @@ export class StarChipsAreaItem<T = unknown> {
       [cdkDropListDisabled]="disabled()"
       (cdkDropListDropped)="onDrop($event)"
     >
-      @for (item of items(); track $index; let i = $index) {
+      @for (item of items(); track trackBy()($index, item); let i = $index) {
         <li data-star-part="listItem" class="star-chips-area__item" cdkDrag [cdkDragData]="item">
           <button
             data-star-part="chipButton"
@@ -104,7 +105,7 @@ export class StarChipsAreaItem<T = unknown> {
                   : 'Control+Shift+ArrowLeft Control+Shift+ArrowRight'
             "
             [disabled]="disabled()"
-            (focus)="focusIndex.set(i)"
+            (focus)="focusTarget.set(i)"
             (keydown)="onKeydown($event, i)"
           >
             @if (itemTemplate(); as custom) {
@@ -116,13 +117,14 @@ export class StarChipsAreaItem<T = unknown> {
             }
           </button>
           @if (removable() && !disabled()) {
-            <!-- The pointer way to remove; the keyboard uses Delete on the chip. -->
+            <!-- Out of the tab order (Delete on the chip removes it), but named and reachable for
+                 a screen reader on a touch device. -->
             <button
               data-star-part="removeButton"
               type="button"
               class="star-chip__remove"
               tabindex="-1"
-              aria-hidden="true"
+              [attr.aria-label]="text.removeItem(labelOf(item))"
               [title]="text.removeItem(labelOf(item))"
               (click)="remove(i)"
             >
@@ -159,8 +161,18 @@ export class StarChipsArea<T = unknown> {
   /** A chip was removed. */
   readonly removed = output<T>();
 
+  /**
+   * Identity of an item, so a chip keeps its element (and the focus and a drag) when the items
+   * move. Default: the item itself. Give one for items that can repeat or are new objects.
+   */
+  readonly trackBy = input<(index: number, item: T) => unknown>((_index: number, item: T) => item);
+
   protected readonly itemTemplate = contentChild(StarChipsAreaItem);
-  protected readonly focusIndex = signal(0);
+  /** The chip in the tab order; it stays inside the items when the owner removes some. */
+  private readonly focusTarget = signal(0);
+  protected readonly focusIndex = computed(() =>
+    Math.max(0, Math.min(this.focusTarget(), this.items().length - 1)),
+  );
 
   protected labelOf(item: T): string {
     return optionText(item, this.optionLabel());
@@ -222,7 +234,7 @@ export class StarChipsArea<T = unknown> {
 
   /** Focuses the chip at `index` after the render. */
   private focusChip(index: number): void {
-    this.focusIndex.set(index);
+    this.focusTarget.set(index);
     afterNextRender(
       () =>
         this.host.nativeElement
