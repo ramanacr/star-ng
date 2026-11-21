@@ -4,7 +4,7 @@ import {
   starThemeFirstPaintElement,
   starThemeFirstPaintScript,
 } from '../projects/star-ng/theme/first-paint';
-import { openPage } from './support';
+import { collectErrors, openPage } from './support';
 
 /** Records every CSP violation of the page (events and console messages). */
 async function trackViolations(page: Page): Promise<() => Promise<string[]>> {
@@ -30,10 +30,39 @@ test.describe('Content Security Policy of the docs application', () => {
     const policy = await page
       .locator('meta[http-equiv="Content-Security-Policy"]')
       .getAttribute('content');
-    const script = /(?:^|;)\s*script-src ([^;]*)/.exec(policy ?? '')?.[1];
-    expect(script).toBe("'self'");
+    const script = /(?:^|;)\s*script-src ([^;]*)/.exec(policy ?? '')?.[1] ?? '';
+    // 'self', plus (in the production build) the hashes of the event replay scripts that
+    // tools/csp-hashes.mjs adds. Never 'unsafe-inline'.
+    const [first, ...hashes] = script.trim().split(/\s+/);
+    expect(first).toBe("'self'");
+    for (const hash of hashes) expect(hash).toMatch(/^'sha256-[A-Za-z0-9+/]+=*'$/);
     await expect(page.locator('head script:not([src])')).toHaveCount(0);
     await expect(page.locator('head script[src="star-theme-first-paint.js"]')).toHaveCount(1);
+  });
+
+  test('the policy of a prerendered page has the hash of each inline script', async ({ page }) => {
+    test.skip(!process.env['E2E_STATIC_DIR'], 'needs the production build (prerender)');
+    await page.goto('/controls/gantt');
+    const result = await page.evaluate(async () => {
+      const policy =
+        document
+          .querySelector('meta[http-equiv="Content-Security-Policy"]')
+          ?.getAttribute('content') ?? '';
+      const missing: string[] = [];
+      const scripts = [...document.querySelectorAll('script:not([src])')].filter((script) =>
+        /^(|text\/javascript|module)$/.test(script.getAttribute('type') ?? ''),
+      );
+      for (const script of scripts) {
+        const bytes = new TextEncoder().encode(script.textContent ?? '');
+        const digest = await crypto.subtle.digest('SHA-256', bytes);
+        const hash = btoa(String.fromCharCode(...new Uint8Array(digest)));
+        if (!policy.includes(`'sha256-${hash}'`)) missing.push(script.id || 'replay');
+      }
+      return { count: scripts.length, missing };
+    });
+    // The event contract and the replay call of incremental hydration.
+    expect(result.count).toBe(2);
+    expect(result.missing).toEqual([]);
   });
 
   test('the dark mode guide shows the current hash and the three forms', async ({ page }) => {
@@ -51,9 +80,15 @@ test.describe('Content Security Policy of the docs application', () => {
     ['/', 'StarNG'],
     ['/controls/image-compare', 'Image compare'],
     ['/controls/dialog', 'Dialog'],
+    ['/controls/table', 'Table'],
+    ['/controls/gantt', 'Gantt chart'],
+    ['/controls/editor', 'Editor'],
+    ['/controls/tabs', 'Tabs'],
+    ['/guides/forms', 'Forms'],
   ] as const) {
-    test(`no policy violation on ${path}`, async ({ page }) => {
+    test(`no policy violation and no hydration error on ${path}`, async ({ page }) => {
       const violations = await trackViolations(page);
+      const errors = collectErrors(page);
       await openPage(page, path, heading);
       // Open a menu and the theme switch: they add elements and styles at run time.
       await page
@@ -62,6 +97,8 @@ test.describe('Content Security Policy of the docs application', () => {
         .click();
       await page.waitForTimeout(300);
       expect(await violations()).toEqual([]);
+      // A hydration mismatch (NG0500 to NG0507) or any other console error fails the page.
+      expect(errors).toEqual([]);
     });
   }
 });

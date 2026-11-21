@@ -3,12 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
+  input,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import {
   StarTab,
@@ -322,11 +321,10 @@ moveBoard(event: StarTabReorderEvent): void {
     'December',
   ];
 
-  private readonly view = toSignal(inject(ActivatedRoute).queryParamMap, {
-    initialValue: null,
-  });
+  /** The query parameter `view` of the page address (router input binding). */
+  readonly view = input<string>();
   protected readonly viewText = computed(() => {
-    const view = this.view()?.get('view');
+    const view = this.view();
     if (view === 'lines') return 'Lines: 3 items, 12 units.';
     if (view === 'notes') return 'Notes: deliver after 10:00.';
     return 'Summary: order 1042, packed.';
