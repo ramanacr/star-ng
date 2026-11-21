@@ -264,8 +264,8 @@ describe('form controls depth, part 2 (N1)', () => {
 
   it('knob: strokeWidth and showValue', async () => {
     const { fixture, host, root } = await setup();
-    expect(q(root, '.kn [data-star-part="valueItem"]').getAttribute('stroke-width')).toBe('12');
-    expect(q(root, '.kn [data-star-part="track"]').getAttribute('stroke-width')).toBe('12');
+    // The stylesheet reads the width from a custom property (a presentation attribute loses to CSS).
+    expect(q(root, '.kn').style.getPropertyValue('--star-knob-stroke-width')).toBe('12');
     expect(q(root, '.kn text')).not.toBeNull();
     host.showValue.set(false);
     await fixture.whenStable();

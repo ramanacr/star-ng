@@ -95,4 +95,16 @@ test.describe('form inputs depth (wave N1)', () => {
     await page.keyboard.type('9');
     await expect(field).toHaveValue('1_94-5678');
   });
+
+  test('knob: strokeWidth changes the drawn width', async ({ page }) => {
+    await openPage(page, '/controls/knob', 'Knob');
+    const knobs = example(page, 'Stroke width and hidden value').locator('star-knob');
+    const width = (index: number) =>
+      knobs
+        .nth(index)
+        .locator('[data-star-part="valueItem"]')
+        .evaluate((path) => getComputedStyle(path).strokeWidth);
+    expect(await width(0)).toBe('14px');
+    expect(await width(1)).toBe('10px');
+  });
 });

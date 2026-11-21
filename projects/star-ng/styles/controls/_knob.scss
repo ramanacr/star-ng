@@ -16,7 +16,8 @@
 .star-knob__track,
 .star-knob__value {
   fill: none;
-  stroke-width: 10;
+  // `strokeWidth` of the knob sets the custom property.
+  stroke-width: var(--star-knob-stroke-width, 10);
   stroke-linecap: round;
 }
 .star-knob__track {

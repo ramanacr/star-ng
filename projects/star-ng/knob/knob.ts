@@ -38,7 +38,11 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-knob', '[class.star-knob--disabled]': 'disabled()' },
+  host: {
+    class: 'star-knob',
+    '[class.star-knob--disabled]': 'disabled()',
+    '[style.--star-knob-stroke-width]': 'strokeWidthValue()',
+  },
   template: `
     <svg
       data-star-part="graphic"
@@ -61,18 +65,8 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       (pointermove)="$event.buttons === 1 && onPointer($event)"
       (blur)="touch.emit()"
     >
-      <path
-        data-star-part="track"
-        class="star-knob__track"
-        [attr.d]="arc(1)"
-        [attr.stroke-width]="strokeWidth()"
-      />
-      <path
-        data-star-part="valueItem"
-        class="star-knob__value"
-        [attr.d]="arc(ratio())"
-        [attr.stroke-width]="strokeWidth()"
-      />
+      <path data-star-part="track" class="star-knob__track" [attr.d]="arc(1)" />
+      <path data-star-part="valueItem" class="star-knob__value" [attr.d]="arc(ratio())" />
       @if (showValue()) {
         <text data-star-part="text" class="star-knob__text" x="50" y="57" text-anchor="middle">
           {{ text() }}
@@ -89,8 +83,16 @@ export class StarKnob implements FormValueControl<number> {
   readonly size = input(120);
   /** `{value}` is replaced by the number, for example `{value}%`. */
   readonly valueTemplate = input('{value}');
-  /** Width of the track and the value arc, in units of the 100 × 100 view box. PrimeNG `strokeWidth`. */
+  /**
+   * Width of the track and the value arc, in units of the 100 × 100 view box (1 to 20; the arc
+   * radius is 40). Default: the stylesheet width (10). PrimeNG `strokeWidth`.
+   */
   readonly strokeWidth = input<number | null>(null);
+  /** `strokeWidth` limited to 1–20, for the `--star-knob-stroke-width` custom property. */
+  protected readonly strokeWidthValue = computed(() => {
+    const width = this.strokeWidth();
+    return width === null ? null : String(Math.min(20, Math.max(1, width)));
+  });
   /** Shows the value text in the middle. Default `true`. PrimeNG `showValue`. */
   readonly showValue = input(true, { transform: booleanAttribute });
   readonly ariaLabel = input<string | null>(null);
