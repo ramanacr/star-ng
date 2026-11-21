@@ -344,6 +344,10 @@ describe('form controls depth, part 2 (N1)', () => {
     // A typed character that the slot does not take is ignored.
     await press('insertText', 0, 0, 'x');
     expect(input.value).toBe('19-56');
+    // A caret after the last slot (a click at the end) types into the first empty slot.
+    await press('deleteContentBackward', 2);
+    await press('insertText', 5, 5, '7');
+    expect(input.value).toBe('17-56');
     // Backspace over a selection empties all of its slots.
     await press('deleteContentBackward', 0, 5);
     expect(input.value).toBe('__-__');

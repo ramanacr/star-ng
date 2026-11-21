@@ -257,6 +257,13 @@ export class StarInputMask implements FormValueControl<string> {
       const data = event.data ?? event.dataTransfer?.getData('text/plain') ?? '';
       if (to > from) for (let i = from; i < to; i++) if (this.tokenAt(i)) chars[i] = slot;
       let i = from;
+      // A caret after the last slot (a click at the end of the field) types into the first empty slot.
+      let next = i;
+      while (next < length && !this.tokenAt(next)) next++;
+      if (next >= length) {
+        const empty = chars.indexOf(slot);
+        if (empty >= 0) i = empty;
+      }
       for (const char of data) {
         while (i < length && !this.tokenAt(i)) i++;
         if (i >= length) break;
