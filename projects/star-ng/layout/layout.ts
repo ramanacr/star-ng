@@ -4,8 +4,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   contentChild,
+  contentChildren,
   Directive,
   ElementRef,
+  forwardRef,
   inject,
   input,
   output,
@@ -13,8 +15,12 @@ import {
 } from '@angular/core';
 import {
   injectStarControlDefaults,
+  STAR_SLOT_HOST,
   STAR_UI_TEXT,
+  StarIconContext,
   starInlineKey,
+  StarSlot,
+  starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -210,14 +216,18 @@ export class StarTimeline {
 /**
  * Chip (PrimeNG `p-chip`): label with optional icon or image and a remove button.
  * `<star-chip label="Design" icon="ph-bold ph-palette" removable (removed)="drop()" />`
+ *
+ * Slots (content children): `starIcon="remove"` replaces the icon of the remove button
+ * (PrimeNG `#removeicon`, `removeIcon`).
  */
 @Component({
   selector: 'star-chip',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-
+  imports: [NgTemplateOutlet],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarChip) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-chip' },
+  host: { class: 'star-chip', '[class.star-chip--disabled]': 'disabled()' },
   template: `
     @if (image()) {
       <img data-star-part="picture" class="star-chip__image" [src]="image()" alt="" />
@@ -230,19 +240,31 @@ export class StarTimeline {
         data-star-part="removeButton"
         type="button"
         class="star-chip__remove"
+        [disabled]="disabled()"
         [attr.aria-label]="text.removeItem(label())"
         (click)="removed.emit()"
       >
-        <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+        @if (icons().get('remove'); as custom) {
+          <span data-star-part="removeIcon" aria-hidden="true">
+            <ng-container *ngTemplateOutlet="custom; context: iconContext" />
+          </span>
+        } @else {
+          <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+        }
       </button>
     }
   `,
 })
 export class StarChip {
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly iconContext: StarIconContext = {};
   protected readonly text = inject(STAR_UI_TEXT);
   readonly label = input('');
   readonly icon = input<string | null>(null);
   readonly image = input<string | null>(null);
   readonly removable = input(false, { transform: booleanAttribute });
+  /** The chip looks inactive and its remove button does not work. PrimeNG `disabled`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
   readonly removed = output<void>();
 }

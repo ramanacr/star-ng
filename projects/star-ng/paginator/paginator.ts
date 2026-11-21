@@ -18,12 +18,13 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarIconContext,
+  StarIconTemplate,
   StarSlot,
   starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
-import { StarSelect } from '@star-ng/ui/select';
+import { StarOptionTemplate, StarSelect } from '@star-ng/ui/select';
 
 export interface StarPageEvent {
   /** Index of the first record on the page (0-based). */
@@ -60,6 +61,47 @@ export class StarPaginatorTemplate extends StarSlot<{ $implicit: StarPageEvent }
   }
 }
 
+/** Context of the `starPaginatorOption` slot. */
+export interface StarPaginatorOptionContext {
+  /** `rows`: the rows per page of the option. `jump`: the page number, from 1. */
+  readonly $implicit: number;
+  /** The formatted number, as the default option shows it. */
+  readonly label: string;
+  /** The option is the current value of the select. */
+  readonly selected: boolean;
+  /** Position of the option in the list, from `0`. */
+  readonly index: number;
+}
+
+/**
+ * Option content of a select inside `star-paginator`:
+ * `<ng-template starPaginatorOption="rows" let-rows>{{ rows }} per page</ng-template>`.
+ * `rows` is the rows-per-page select, `jump` the page select of `showJumpToPageDropdown`.
+ * PrimeNG `dropdownItemTemplate` and `jumpToPageItemTemplate`.
+ *
+ * The option is an `option` of a listbox, which owns focus and the keyboard. Do not add focusable
+ * elements in this template, and keep the number in its text: it is the accessible name.
+ */
+@Directive({
+  selector: 'ng-template[starPaginatorOption]',
+  providers: [{ provide: StarSlot, useExisting: StarPaginatorOption }],
+})
+export class StarPaginatorOption extends StarSlot<StarPaginatorOptionContext> {
+  readonly name = 'paginatorOption';
+  readonly starPaginatorOption = input.required<'rows' | 'jump'>();
+
+  override slotKey(): string {
+    return this.starPaginatorOption();
+  }
+
+  static ngTemplateContextGuard(
+    _dir: StarPaginatorOption,
+    _ctx: unknown,
+  ): _ctx is StarPaginatorOptionContext {
+    return true;
+  }
+}
+
 /**
  * Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window,
  * first / last buttons, a rows-per-page `star-select` and a "1–10 of 240" report, with an optional
@@ -67,8 +109,9 @@ export class StarPaginatorTemplate extends StarSlot<{ $implicit: StarPageEvent }
  *
  * `<star-paginator [totalRecords]="240" [(first)]="first" [(rows)]="rows" />`
  *
- * Slots (content children): `starPaginatorTemplate` with `start` and `end`; `starIcon` with
- * `first`, `previous`, `next` and `last`.
+ * Slots (content children): `starPaginatorTemplate` with `start` and `end`; `starPaginatorOption`
+ * with `rows` and `jump` (the options of the inner selects); `starIcon` with `first`, `previous`,
+ * `next`, `last` and `dropdown` (the arrow of the inner selects).
  *
  * PrimeNG names that star-ng covers in another way: `onPageChange` = `pageChange`,
  * `showFirstLastIcon` = `showFirstLast`. Not applicable: `appendTo` and `dropdownScrollHeight`
@@ -78,7 +121,7 @@ export class StarPaginatorTemplate extends StarSlot<{ $implicit: StarPageEvent }
   selector: 'star-paginator',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarSelect, NgTemplateOutlet],
+  imports: [StarSelect, StarOptionTemplate, StarIconTemplate, NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarPaginator) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-paginator', '[hidden]': '!alwaysShow() && pageCount() <= 1' },
@@ -202,7 +245,20 @@ export class StarPaginatorTemplate extends StarSlot<{ $implicit: StarPageEvent }
           optionValue="value"
           [value]="page()"
           (valueChange)="$event !== null && goTo($event)"
-        />
+        >
+          @if (options().get('jump'); as custom) {
+            <ng-template starOption let-option let-selected="selected" let-index="index">
+              <ng-container
+                *ngTemplateOutlet="custom; context: optionContext(option, selected, index, 'jump')"
+              />
+            </ng-template>
+          }
+          @if (icons().get('dropdown'); as custom) {
+            <ng-template starIcon="dropdown">
+              <ng-container *ngTemplateOutlet="custom; context: iconContext" />
+            </ng-template>
+          }
+        </star-select>
       </span>
     }
     @if (showJumpToPageInput()) {
@@ -232,7 +288,20 @@ export class StarPaginatorTemplate extends StarSlot<{ $implicit: StarPageEvent }
           [options]="rowsPerPageOptions()"
           [value]="rows()"
           (valueChange)="$event !== null && changeRows($event)"
-        />
+        >
+          @if (options().get('rows'); as custom) {
+            <ng-template starOption let-option let-selected="selected" let-index="index">
+              <ng-container
+                *ngTemplateOutlet="custom; context: optionContext(option, selected, index, 'rows')"
+              />
+            </ng-template>
+          }
+          @if (icons().get('dropdown'); as custom) {
+            <ng-template starIcon="dropdown">
+              <ng-container *ngTemplateOutlet="custom; context: iconContext" />
+            </ng-template>
+          }
+        </star-select>
       </span>
     }
     @if (templates().get('end'); as custom) {
@@ -290,6 +359,21 @@ export class StarPaginator {
     'paginator',
   );
   protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly options = starSlotMap<StarPaginatorOptionContext>(
+    this.slots,
+    this,
+    'paginatorOption',
+  );
+  /** Context of a `starPaginatorOption` slot from the context of the inner `starOption`. */
+  protected optionContext(
+    option: unknown,
+    selected: boolean,
+    index: number,
+    kind: 'rows' | 'jump',
+  ): StarPaginatorOptionContext {
+    const value = kind === 'rows' ? (option as number) : (option as { value: number }).value + 1;
+    return { $implicit: value, label: this.number(value), selected, index };
+  }
   protected readonly iconContext: StarIconContext = {};
   private readonly format = computed(() => new Intl.NumberFormat(this.locale()));
   protected number(value: number): string {

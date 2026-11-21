@@ -33,7 +33,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         <code>&lt;star-scroll-top /&gt;</code> in the root component of the application.
       </p>
 
-      <docs-api [of]="['StarScrollTop']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarScrollTop']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
     </docs-page>
   `,
   styles: `
@@ -60,6 +65,13 @@ export class ScrollTopPage {
 
   protected readonly script = `readonly rows = Array.from({ length: 30 }, (_, index) => 1001 + index);`;
 
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starIcon="icon"]',
+      description:
+        'Content child. Replaces the arrow. PrimeNG #icon. target takes an element, "parent" or "window"; ariaLabel and behavior are PrimeNG buttonAriaLabel and behavior.',
+    },
+  ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-text-strong', description: 'Background of the button.' },
     { name: '--star-on-tone', description: 'Color of the arrow.' },

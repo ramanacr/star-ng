@@ -73,6 +73,15 @@ export class AccordionPage {
 
   protected readonly slots: readonly DocsRow[] = [
     {
+      name: 'star-accordion-panel ng-template[starHeader]',
+      description: 'Content child of a panel. Replaces the title text.',
+    },
+    {
+      name: 'star-accordion-panel ng-template[starIcon="toggle"]',
+      description:
+        'Content child of a panel. Replaces the arrow; let-expanded is true when it is open. PrimeNG #toggleicon, expandIcon and collapseIcon. The accordion emits opened and closed with the panel value (PrimeNG onOpen and onClose).',
+    },
+    {
       name: '(default)',
       description: 'Inside star-accordion: the panels. Inside a panel: its body.',
     },

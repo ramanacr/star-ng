@@ -28,6 +28,10 @@ export interface StarNodeContext<T = unknown> {
  * Replaces the label of a node in `star-tree` and `star-tree-select`. PrimeNG `#default` node
  * template. The toggle, the checkbox and the node icon stay.
  *
+ * Give a node type to use the template only for the nodes with that `type`:
+ * `<ng-template starNode="folder" let-node>`. A node without a matching template uses the
+ * template without a type (PrimeNG node templates per `type`, `pTemplate="folder"`).
+ *
  * The tree owns the keyboard model and the ARIA attributes of the `role="treeitem"` row. Do not
  * add focusable elements (buttons, links, inputs) in this template.
  *
@@ -41,8 +45,14 @@ export interface StarNodeContext<T = unknown> {
 })
 export class StarNodeTemplate<T = unknown> extends StarSlot<StarNodeContext<T>> {
   readonly name = 'node';
+  /** The node `type` that this template draws. Empty (the default): every other node. */
+  readonly starNode = input<string>('');
   /** Optional: pass the nodes array to type `let-node` in strict templates. */
   readonly starNodeOf = input<readonly StarTreeNode<T>[] | null>(null);
+
+  override slotKey(): string {
+    return this.starNode() ?? '';
+  }
 
   static ngTemplateContextGuard<T>(
     _dir: StarNodeTemplate<T>,

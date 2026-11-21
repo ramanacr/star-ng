@@ -535,6 +535,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
     label: 'Data display',
     items: [
       {
+        label: 'Icon',
+        path: 'controls/icon',
+        keywords: 'phosphor glyph symbol image svg mat-icon',
+        load: () => import('./controls/icon.page').then((m) => m.IconPage),
+      },
+      {
         label: 'Tag',
         path: 'controls/tag',
         keywords: 'status label chip severity',

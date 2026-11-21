@@ -13,6 +13,11 @@
   outline: none;
   animation: star-panel-in var(--star-duration-base) $ease;
 }
+.star-popover__header {
+  margin-bottom: 0.75rem;
+  font: var(--star-type-label);
+  color: var(--star-text-strong);
+}
 .star-confirm--popup {
   gap: 0.75rem;
 

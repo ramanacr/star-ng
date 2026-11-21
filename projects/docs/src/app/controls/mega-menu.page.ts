@@ -35,7 +35,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarMegaMenu']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarMegaMenu', 'StarMenuTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
 
       <h2>Technical notes</h2>
       <p>
@@ -95,6 +100,15 @@ readonly catalogue: readonly StarMenuItem[] = [
 ];`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starMenuTemplate]',
+      description:
+        'Content child. "item" replaces the content of each item (icon, label, shortcut; let-level, let-hasSubmenu), "itemIcon" the icon of an item with an icon, "submenuHeader" the heading of a column, "start" and "end" add content before and after the items. PrimeNG #item, #itemicon, #submenuheader, #start and #end.',
+    },
+    {
+      name: 'ng-template[starIcon="submenu"]',
+      description: 'Content child. Replaces the arrow of a bar item. PrimeNG #submenuicon.',
+    },
     { name: '(none)', description: 'The items come from the items input, not from content.' },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

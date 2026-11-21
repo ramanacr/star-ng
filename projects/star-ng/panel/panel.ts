@@ -166,19 +166,43 @@ export class StarPanel {
   }
 }
 
+/** Payload of `beforeToggle` of `star-fieldset`. */
+export interface StarFieldsetToggleEvent {
+  /** The state before the toggle. */
+  readonly collapsed: boolean;
+  /** Stops this toggle: the fieldset keeps its state and `afterToggle` does not emit. */
+  cancel(): void;
+}
+
 /**
  * Fieldset (PrimeNG `p-fieldset`) on the native `<fieldset>` / `<legend>`, so groups of form
  * controls keep their accessible name. Optional collapse toggle in the legend.
  * `<star-fieldset legend="Requester" toggleable>…controls…</star-fieldset>`
+ *
+ * Slots (content children): `starHeader` replaces the legend text (PrimeNG `#header`);
+ * `starIcon="toggle"` replaces the toggle icon (`let-expanded`; PrimeNG `#toggleicon`,
+ * `#expandicon`, `#collapseicon`). The default content is the body (PrimeNG `#content`).
+ *
+ * PrimeNG names that star-ng covers in another way: `onBeforeToggle` / `onAfterToggle` =
+ * `beforeToggle` / `afterToggle`, `style` and `styleClass` = `pt`. Not applicable:
+ * `motionOptions` (theme motion, off with reduced motion).
  */
 @Component({
   selector: 'star-fieldset',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-
+  imports: [NgTemplateOutlet],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarFieldset) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-fieldset-host' },
   template: `
+    <ng-template #legendText>
+      @if (headerSlot(); as custom) {
+        <ng-container *ngTemplateOutlet="custom" />
+      } @else {
+        {{ legend() }}
+      }
+    </ng-template>
     <fieldset
       data-star-part="frame"
       class="star-fieldset"
@@ -192,17 +216,23 @@ export class StarPanel {
             class="star-fieldset__toggle"
             [attr.aria-expanded]="!collapsed()"
             [attr.aria-controls]="contentId"
-            (click)="collapsed.set(!collapsed())"
+            (click)="toggle()"
           >
-            <i
-              data-star-part="expandIcon"
-              class="ph-bold ph-caret-down star-accordion__caret"
-              aria-hidden="true"
-            ></i>
-            {{ legend() }}
+            @if (icons().get('toggle'); as custom) {
+              <span data-star-part="expandIcon" class="star-fieldset__icon" aria-hidden="true">
+                <ng-container *ngTemplateOutlet="custom; context: { $implicit: !collapsed() }" />
+              </span>
+            } @else {
+              <i
+                data-star-part="expandIcon"
+                class="ph-bold ph-caret-down star-accordion__caret"
+                aria-hidden="true"
+              ></i>
+            }
+            <ng-container *ngTemplateOutlet="legendText" />
           </button>
         } @else {
-          {{ legend() }}
+          <ng-container *ngTemplateOutlet="legendText" />
         }
       </legend>
       <div
@@ -219,8 +249,32 @@ export class StarPanel {
   `,
 })
 export class StarFieldset {
+  private readonly injector = inject(Injector);
   readonly legend = input('');
   readonly toggleable = input(false, { transform: booleanAttribute });
   readonly collapsed = model(false);
+  /**
+   * Emits before the fieldset opens or closes, with the state before the toggle. Call `cancel()`
+   * on the event to stop the toggle. PrimeNG `onBeforeToggle`.
+   */
+  readonly beforeToggle = output<StarFieldsetToggleEvent>();
+  /** Emits after the fieldset opened or closed (after the render), with the new state. PrimeNG `onAfterToggle`. */
+  readonly afterToggle = output<StarPanelToggleEvent>();
   protected readonly contentId = inject(_IdGenerator).getId('star-fieldset-');
+
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+
+  /** Opens or closes the fieldset, with the toggle outputs (`beforeToggle` can cancel). */
+  toggle(): void {
+    const before = this.collapsed();
+    let cancelled = false;
+    this.beforeToggle.emit({ collapsed: before, cancel: () => (cancelled = true) });
+    if (cancelled) return;
+    this.collapsed.set(!before);
+    afterNextRender(() => this.afterToggle.emit({ collapsed: !before }), {
+      injector: this.injector,
+    });
+  }
 }

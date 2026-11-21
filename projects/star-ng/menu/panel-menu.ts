@@ -4,14 +4,24 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  contentChildren,
+  forwardRef,
   inject,
   input,
   model,
   output,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
-import { StarMenuItem } from './menu';
+import {
+  STAR_SLOT_HOST,
+  StarIconContext,
+  StarPart,
+  StarSlot,
+  starSlotMap,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
+import { StarMenuItem, StarMenuItemContext } from './menu';
 
 /**
  * Panel menu (PrimeNG `p-panelmenu`): a vertical menu where an item with child items opens
@@ -23,12 +33,21 @@ import { StarMenuItem } from './menu';
  * `<star-panel-menu ariaLabel="Settings" [items]="sections" [(expandedKeys)]="open" />`
  *
  * An item is identified by its position (`0`, `0.2`, `1.0.3`) in `expandedKeys`.
+ *
+ * Slots (content children): `starMenuTemplate` with `item` (icon and label of each item; the
+ * arrow stays) and `itemIcon`; `starIcon="submenu"` replaces the arrow of a section (`let-expanded`
+ * is `true` when it is open). PrimeNG `#item`, `#headericon` and `#submenuicon`.
+ *
+ * PrimeNG names that star-ng covers in another way: `model` = `items`, `multiple` = the default
+ * (`single` for one open section). Not applicable: `tabindex` (every item is a native button or
+ * link in the tab order).
  */
 @Component({
   selector: 'star-panel-menu',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [StarPart, NgTemplateOutlet, RouterLink, RouterLinkActive],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarPanelMenu) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-panel-menu' },
   template: `
@@ -59,20 +78,24 @@ import { StarMenuItem } from './menu';
                 [attr.aria-controls]="isOpen(key) ? regionId(key) : null"
                 (click)="toggle(key)"
               >
-                @if (item.icon) {
+                <ng-container
+                  *ngTemplateOutlet="content; context: { $implicit: item, level: level, sub: true }"
+                />
+                @if (icons().get('submenu'); as custom) {
+                  <span
+                    data-star-part="expandIcon"
+                    class="star-panel-menu__caret"
+                    aria-hidden="true"
+                  >
+                    <ng-container *ngTemplateOutlet="custom; context: { $implicit: isOpen(key) }" />
+                  </span>
+                } @else {
                   <i
-                    data-star-part="icon"
-                    class="star-panel-menu__icon"
-                    [class]="item.icon"
+                    data-star-part="expandIcon"
+                    class="ph-bold ph-caret-down star-panel-menu__caret"
                     aria-hidden="true"
                   ></i>
                 }
-                <span data-star-part="label" class="star-panel-menu__label">{{ item.label }}</span>
-                <i
-                  data-star-part="expandIcon"
-                  class="ph-bold ph-caret-down star-panel-menu__caret"
-                  aria-hidden="true"
-                ></i>
               </button>
               @if (isOpen(key)) {
                 <div data-star-part="regionPanel" [id]="regionId(key)">
@@ -97,7 +120,9 @@ import { StarMenuItem } from './menu';
                 [attr.aria-disabled]="item.disabled || null"
                 (click)="run(item)"
               >
-                <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
+                <ng-container
+                  *ngTemplateOutlet="content; context: { $implicit: item, level: level }"
+                />
               </a>
             </li>
           } @else if (item.url) {
@@ -110,7 +135,9 @@ import { StarMenuItem } from './menu';
                 [attr.aria-disabled]="item.disabled || null"
                 (click)="run(item)"
               >
-                <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
+                <ng-container
+                  *ngTemplateOutlet="content; context: { $implicit: item, level: level }"
+                />
               </a>
             </li>
           } @else {
@@ -124,7 +151,9 @@ import { StarMenuItem } from './menu';
                 [disabled]="item.disabled"
                 (click)="run(item)"
               >
-                <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
+                <ng-container
+                  *ngTemplateOutlet="content; context: { $implicit: item, level: level }"
+                />
               </button>
             </li>
           }
@@ -132,11 +161,38 @@ import { StarMenuItem } from './menu';
       </ul>
     </ng-template>
 
-    <ng-template #content let-item>
-      @if (item.icon) {
-        <i starPart="icon" class="star-panel-menu__icon" [class]="item.icon" aria-hidden="true"></i>
+    <ng-template #content let-item let-level="level" let-sub="sub">
+      @if (slots().get('item'); as custom) {
+        <span data-star-part="label" class="star-panel-menu__label">
+          <ng-container
+            *ngTemplateOutlet="
+              custom;
+              context: { $implicit: item, level: level, hasSubmenu: !!sub }
+            "
+          />
+        </span>
+      } @else {
+        @if (item.icon) {
+          @if (slots().get('itemIcon'); as custom) {
+            <span starPart="icon" class="star-panel-menu__icon" aria-hidden="true">
+              <ng-container
+                *ngTemplateOutlet="
+                  custom;
+                  context: { $implicit: item, level: level, hasSubmenu: !!sub }
+                "
+              />
+            </span>
+          } @else {
+            <i
+              starPart="icon"
+              class="star-panel-menu__icon"
+              [class]="item.icon"
+              aria-hidden="true"
+            ></i>
+          }
+        }
+        <span starPart="label" class="star-panel-menu__label">{{ item.label }}</span>
       }
-      <span starPart="label" class="star-panel-menu__label">{{ item.label }}</span>
     </ng-template>
   `,
 })
@@ -150,6 +206,14 @@ export class StarPanelMenu {
   /** Positions of the open sections (`'0'`, `'0.2'`). Two-way. */
   readonly expandedKeys = model<readonly string[]>([]);
   readonly itemClick = output<StarMenuItem>();
+
+  private readonly contentSlots = contentChildren(StarSlot, { descendants: true });
+  protected readonly slots = starSlotMap<StarMenuItemContext>(
+    this.contentSlots,
+    this,
+    'menuTemplate',
+  );
+  protected readonly icons = starSlotMap<StarIconContext>(this.contentSlots, this, 'icon');
 
   protected isOpen(key: string): boolean {
     return this.expandedKeys().includes(key);
