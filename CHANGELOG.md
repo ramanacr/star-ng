@@ -2,7 +2,7 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
-## [Unreleased]
+## [0.4.0] - 2026-11-21
 
 ### Added
 
@@ -426,6 +426,25 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tabs: when the last tab that can take the focus closes from the keyboard or its close button, the focus moves to the tab list instead of the page body.
 - Mention: the result count ("2 results available", "No results found") goes to the shared live region (`StarAnnouncer`); the region inside the suggestion panel was created with its first text, so screen readers could miss it.
 
+### Migrating from 0.3
+
+Read this list when you update from `0.3.x` to `0.4.0`. Each item is a change that can break code, tests or styles. The items are in the `Changed` and `Deprecated` sections above, with more detail.
+
+1. Replace `formatFileSize` (`@star-ng/ui/file-upload`) with `starFormatFileSize` from `@star-ng/ui/core`, or use the `starFileSize` pipe. The old function still works in `0.4.0`, but it is deprecated.
+2. Tabs: each tab button is now inside `span.star-tabs__item`, and the tab list is inside `div.star-tabs__nav`. Change the selector `.star-tabs__list > .star-tabs__tab` to `.star-tabs__list .star-tabs__tab`.
+3. Table: the check boxes and radios of the rows now have names such as "Select row ORD-1001". A test that matches the old name "Select row" exactly must change.
+4. Table: a table with an `editable` column is now a `role="grid"` with one tab stop. Use the arrow keys to move between cells. A control that you add in a custom row action or lead template, without a row or edit change, keeps its tab stop. Give it `tabindex="-1"`.
+5. Table: `StarFilterValue` also includes `StarFilterConstraint`. If your code narrows a filter value with `typeof value === 'object'` or `Array.isArray`, also handle the rule object (it has `operator` and `rules`).
+6. Tree: `nodeSelect` no longer fires when a node turns off in multiple or checkbox mode. `nodeUnselect` fires instead. To react to every change, listen to `nodeUnselect` or `valueChange`.
+7. Editor: `star-editor` now declares `maxLength`, so a Signal Forms `maxLength` rule sets it. The editor counts text characters. The form rule counts the length of the value, which includes tags with `format="html"`.
+8. Editor: the HTML sanitizer is now the allow-list sanitizer of the editor. An unsafe URL is removed (it no longer gets the `unsafe:` prefix), and `id` and `name` are removed. A value that you read back can differ from the value that you wrote. Compare or store the value that the editor gives back.
+9. Dialog and drawer: both now extend `StarDialogBase`. `StarDrawer` no longer extends `StarDialog`. The page scroll lock uses the class `star-dialog--block-scroll` instead of `star-dialog--modal`. Update custom styles that select `star-dialog--modal` for this purpose.
+10. Icons: use the bold weight (`ph-bold`) of Phosphor in your own examples. The signature pad, AI prompt, app sidebar and command palette now use it.
+11. Every control element now has a `data-star-part` attribute. Tests that compare the whole markup of a control (snapshots) must accept it. In a few templates, `textContent` now starts or ends with a space (the rendered text is the same). Compare the trimmed text.
+12. The new styling hooks (`pt` and `unstyled`) are opt-in. A control that has no `pt` and is not unstyled looks as before. Do not set `unstyled` unless you supply your own classes for the selected, hover and surface states.
+13. Speed dial: a click outside now closes the open actions, because `hideOnClickOutside` is `true` by default. Set `hideOnClickOutside` to `false` to keep the old behavior.
+14. Paginator: the page numbers and the report numbers now follow the locale (`Intl.NumberFormat`), for example "1,200" or "1.200". Set `locale` on the paginator, or the locale of `provideStarNg`, so that the displayed numbers are the same on every browser. Tests that match the old plain digits must change.
+
 ## [0.3.1] - 2026-11-18
 
 ### Added
@@ -540,6 +559,7 @@ This is the first release.
 - A docs site with guides and one page per control, with live examples, source and API tables: <https://ramanacr.github.io/star-ng/>.
 - Tests: unit tests, end-to-end tests in Chromium, automated axe accessibility scans, a right-to-left sweep, visual tests with baselines made in CI, a print test of the table export, and a consumer smoke test of the packed package.
 
+[0.4.0]: https://github.com/ramanacr/star-ng/releases/tag/v0.4.0
 [0.3.1]: https://github.com/ramanacr/star-ng/releases/tag/v0.3.1
 [0.3.0]: https://github.com/ramanacr/star-ng/releases/tag/v0.3.0
 [0.2.1]: https://github.com/ramanacr/star-ng/releases/tag/v0.2.1
