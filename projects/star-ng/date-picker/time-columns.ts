@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -10,8 +11,10 @@ import {
   input,
   model,
   signal,
+  TemplateRef,
 } from '@angular/core';
 import { STAR_UI_TEXT, starInlineKey, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import type { StarTimeCellContext } from './date-slots';
 
 /** One part of the time: a column of the panel. */
 type TimePart = 'hour' | 'minute' | 'second' | 'period';
@@ -94,6 +97,7 @@ function periodNames(locale?: string): readonly [string, string] {
   selector: 'star-time-columns',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-time__columns', '[class.star-time__columns--disabled]': 'disabled()' },
   template: `
@@ -123,7 +127,22 @@ function periodNames(locale?: string): readonly [string, string] {
             (click)="pick(column.part, cell.value)"
             (focus)="activate(column.part, cell.value)"
           >
-            {{ cell.label }}
+            @if (cellTemplate(); as custom) {
+              <ng-container
+                *ngTemplateOutlet="
+                  custom;
+                  context: {
+                    $implicit: cell.label,
+                    value: cell.value,
+                    part: column.part,
+                    selected: cell.selected,
+                    disabled: cell.disabled,
+                  }
+                "
+              />
+            } @else {
+              {{ cell.label }}
+            }
           </button>
         }
       </div>
@@ -155,6 +174,8 @@ export class StarTimeColumns {
   readonly hourFormat = input<'12' | '24' | undefined>(undefined);
   /** Every cell is disabled, for example while a date picker has no date. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** Content of each cell. Set by `star-time-picker`; there, use the `starTimeCell` slot. */
+  readonly cellTemplate = input<TemplateRef<StarTimeCellContext> | null>(null);
 
   private readonly hourStep = computed(() => wholeStep(this.stepHour()));
   private readonly minuteStep = computed(() => wholeStep(this.stepMinute()));

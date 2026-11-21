@@ -1,12 +1,15 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   ElementRef,
+  forwardRef,
   inject,
   Injector,
   input,
@@ -18,13 +21,17 @@ import {
 import type { FormValueControl } from '@angular/forms/signals';
 import {
   injectStarControlDefaults,
+  STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarDirectionService,
   StarPart,
+  StarSlot,
+  starSlot,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
+import type { StarTimeCellContext } from './date-slots';
 import { StarTimeColumns } from './time-columns';
 
 const PANEL_POSITIONS: ConnectedPosition[] = [
@@ -44,12 +51,16 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
  * and the columns follow `stepHour`, `stepMinute` and `stepSecond`.
  *
  * `<star-time-picker [formField]="form.callAt" min="08:00" max="18:00" [stepMinute]="15" />`
+ *
+ * Slots (content children): `starHeader` and `starFooter` (above and below the columns in the
+ * panel), `starTimeCell` (the content of each hour, minute, second and period cell).
  */
 @Component({
   selector: 'star-time-picker',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, CdkConnectedOverlay, CdkOverlayOrigin, StarTimeColumns],
+  imports: [StarPart, CdkConnectedOverlay, CdkOverlayOrigin, StarTimeColumns, NgTemplateOutlet],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTimePicker) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-time star-date',
@@ -124,7 +135,11 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         [attr.aria-label]="text.chooseTime"
         (keydown)="onPanelKeydown($event)"
       >
+        @if (headerSlot(); as header) {
+          <ng-container *ngTemplateOutlet="header" />
+        }
         <star-time-columns
+          [cellTemplate]="cellSlot()"
           [(value)]="value"
           [min]="min()"
           [max]="max()"
@@ -144,6 +159,9 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
             {{ text.done }}
           </button>
         </div>
+        @if (footerSlot(); as footer) {
+          <ng-container *ngTemplateOutlet="footer" />
+        }
       </div>
     </ng-template>
   `,
@@ -194,6 +212,10 @@ export class StarTimePicker implements FormValueControl<string | null> {
   readonly touch = output<void>();
 
   protected readonly positions = PANEL_POSITIONS;
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  protected readonly cellSlot = starSlot<StarTimeCellContext>(this.slots, this, 'timeCell');
   protected readonly panelId = this.ids.getId('star-time-panel-');
   protected readonly open = signal(false);
   protected readonly interactive = computed(() => !this.disabled() && !this.readonly());

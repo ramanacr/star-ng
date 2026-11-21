@@ -68,6 +68,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Chart: `exportSvg()` (a stand-alone SVG document of the plot with resolved token colors and the title) and `exportPng(scale)` (a PNG `Blob` through a canvas); both browser only: `''` and `null` on the server (Chart.js `toBase64Image`).
 - Chart: responsive labels. The SVG keeps its view box; in a narrow container (width from a `ResizeObserver`, browser only) the axis text grows back to stay readable and the category labels thin out.
 
+- Chart: the `plugins` input (`StarChartPlugin` with `beforeDraw` and `afterDraw`, each with its own `aria-hidden` SVG layer under or over the plot, `StarChartPluginContext`) and `refresh()` (PrimeNG `plugins`, `refresh()`).
+
 #### Chat
 
 - Chat and AI prompt (`star-chat`, `star-ai-prompt`, `star-markdown-lite`, `StarChatMessageTemplate`, new entry `@star-ng/ui/chat`): a message list with own messages at the end, author groups, day separators, a composer (Enter sends, Shift+Enter adds a line, `send`), a typing indicator, `loadMore` at the top with a kept scroll position, in-place streaming with a polite announcement once a message from others is `sent`, and a Markdown subset rendered as text (bold, italic, code, code blocks, safe links with `rel="noopener noreferrer"`, no raw HTML); and a prompt panel with suggestion chips, `promptRequest`, responses with Copy, Retry (`retry`) and Stop (`stop`) while streaming. No network or model call (Kendo UI Chat and AIPrompt). UI texts `chatMessages`, `chatEmpty`, `message`, `send`, `messageFrom`, `newMessage`, `newMessages`, `messageSending`, `messageSent`, `messageNotSent`, `isTyping`, `areTyping`, `aiPrompt`, `aiPromptPlaceholder`, `promptSuggestions`, `generate`, `aiResponses`, `aiGenerating`, `aiResponseReady`, `aiResponseFailed`, `aiPromptShortcutHint`, `copy`, `copied`, `copyFailed`, `retry` and `stop` (English, German, Spanish).
@@ -110,6 +112,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Calendar and date pickers: `monthChange` (`{ month, year }`, month 1–12), `yearChange` (`{ year }`) and `viewChange` (`'day' | 'month' | 'year'`) on navigation; the date pickers also emit `todayClick` (today's date) and `clearClick` (PrimeNG `onMonthChange`, `onYearChange`, `onTodayClick`, `onClearClick`).
 - Date pickers: `touchUI` opens the popup as a centered modal sheet in a native `<dialog>` with larger days, and `breakpoint` (a CSS length, for example `'640px'`) does so only on a window that is not wider; the page does not scroll under the sheet, and the keyboard model stays (PrimeNG `touchUI`, `breakpoint`).
 - Date pickers with `showTime`: `minTime` / `maxTime` limit the time of every day (`HH:mm` or `HH:mm:ss`), together with `minDate` / `maxDate`. `star-time-picker` keeps its `min` / `max` for the same purpose; its 12-hour clock works with seconds.
+
+- Date pickers and calendar: the slots `starDecade` (the title of the year view; calendar input `decadeTemplate`) and `starButtonBar` (the buttons of the button bar, with `today` and `clear`). Time picker: the slots `starHeader`, `starFooter` and `starTimeCell` (each hour, minute, second and period cell; `star-time-columns` input `cellTemplate`) (PrimeNG `#decade`, `#buttonbar` and the time templates).
 
 #### Diagram
 
@@ -382,6 +386,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tree: `nodeUnselect`, `nodeDoubleClick`, `nodeContextMenu`, and a node context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
 - Tree: methods `expandAll`, `collapseAll`, `expandPath` and `scrollToNode`.
 - UI texts `treeMoveHint`, `treeMovedBefore`, `treeMovedAfter`, `treeMovedInside`, `treeMoveNotAllowed` (English, German, Spanish).
+
+- Tree: node templates per node type: `StarTreeNode.type` and `<ng-template starNode="folder">`; the template without a type draws the other nodes. `star-tree-select` passes its typed templates on (PrimeNG `type` with `pTemplate`).
 
 #### Tree select
 

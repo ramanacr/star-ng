@@ -2,6 +2,7 @@ import { _IdGenerator } from '@angular/cdk/a11y';
 import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
+  afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
@@ -134,6 +135,37 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
   }
   return min <= max ? { min, max } : { min: 0, max: 0 };
 }
+
+/** What a chart plugin hook gets. */
+export interface StarChartPluginContext {
+  /** The plot SVG. Its `viewBox` sets the coordinates. */
+  readonly svg: SVGSVGElement;
+  /**
+   * A group for the elements of the plugin: the first child of the SVG in `beforeDraw` (drawn
+   * under the chart), the last child in `afterDraw` (drawn over it). It has `aria-hidden`: the
+   * data table and the marks carry the data. The chart empties it before each draw.
+   */
+  readonly layer: SVGGElement;
+  readonly type: StarChartType;
+  readonly labels: readonly string[];
+  readonly series: readonly (StarChartSeries | StarChartPointSeries)[];
+}
+
+/**
+ * A plugin of `star-chart` (the `plugins` input), for example a target line or a background band.
+ * The hooks run after each render of the chart and after `refresh()`. PrimeNG `plugins`
+ * (Chart.js plugins); this interface is small and works on the SVG.
+ */
+export interface StarChartPlugin {
+  /** Name of the plugin; the layers have `data-star-plugin="<id>:before"` and `"<id>:after"`. */
+  readonly id: string;
+  /** Draws under the chart. */
+  beforeDraw?(context: StarChartPluginContext): void;
+  /** Draws over the chart. */
+  afterDraw?(context: StarChartPluginContext): void;
+}
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
  * Chart (PrimeNG `p-chart` without Chart.js): dependency-free SVG bar, stacked bar, line, area,
@@ -1084,6 +1116,21 @@ export class StarChart {
    * `onDataSelect`.
    */
   readonly pointSelect = output<StarChartPointSelectEvent>();
+  /** Plugins that draw under or over the plot (`StarChartPlugin`). PrimeNG `plugins`. */
+  readonly plugins = input<readonly StarChartPlugin[]>([]);
+  /** Bumped by `refresh()`: the plugins draw again. */
+  private readonly revision = signal(0);
+
+  /**
+   * Draws the chart again: measures the plot width and runs the plugins. The chart follows its
+   * inputs by itself; call it after a change that the chart cannot see (for example a plugin
+   * setting). PrimeNG `refresh()`.
+   */
+  refresh(): void {
+    const width = this.host.nativeElement.querySelector('.star-chart__plot')?.clientWidth ?? 0;
+    if (width && width !== this.plotWidth()) this.plotWidth.set(width);
+    this.revision.update((value) => value + 1);
+  }
 
   protected readonly showTable = linkedSignal(() => this.table());
   protected readonly hover = signal<number | null>(null);
@@ -1758,6 +1805,40 @@ export class StarChart {
   // ---------- Responsive labels ----------
 
   constructor() {
+    // Plugins draw into their own layers after each render that can change the plot.
+    afterRenderEffect({
+      write: () => {
+        const plugins = this.plugins();
+        this.revision();
+        // A new size or a new layout renders a new plot: draw again.
+        this.plotWidth();
+        this.horizontal();
+        this.percent();
+        const context = { type: this.type(), labels: this.labels(), series: this.series() };
+        const svg = this.plotSvg();
+        if (!svg) return;
+        for (const old of svg.querySelectorAll(':scope > [data-star-plugin]')) old.remove();
+        const layer = (name: string, first: boolean): SVGGElement => {
+          const group = svg.ownerDocument.createElementNS(SVG_NS, 'g') as SVGGElement;
+          group.setAttribute('data-star-plugin', name);
+          group.setAttribute('aria-hidden', 'true');
+          if (first) svg.insertBefore(group, svg.firstChild);
+          else svg.appendChild(group);
+          return group;
+        };
+        // `beforeDraw` layers go first in reverse order, so the first plugin is the lowest.
+        for (const plugin of [...plugins].reverse()) {
+          if (!plugin.beforeDraw) continue;
+          const group = layer(`${plugin.id}:before`, true);
+          plugin.beforeDraw({ svg, layer: group, ...context });
+        }
+        for (const plugin of plugins) {
+          if (!plugin.afterDraw) continue;
+          const group = layer(`${plugin.id}:after`, false);
+          plugin.afterDraw({ svg, layer: group, ...context });
+        }
+      },
+    });
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       // Browser only: afterNextRender does not run on the server.

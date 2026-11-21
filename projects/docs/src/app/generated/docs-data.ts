@@ -2430,6 +2430,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "badgeText"
     ]
   },
+  "StarButtonBarTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starButtonBar]",
+    "entry": "@star-ng/ui/date-picker",
+    "description": "Replaces the buttons of the button bar (`showButtonBar`) in the date pickers. PrimeNG `#buttonbar` template. Use buttons with a visible text; they are in the tab order of the panel.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarButtonGroup": {
     "kind": "component",
     "selector": "star-button-group",
@@ -2597,6 +2606,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Set by the date pickers. In your own markup, use the `starDate` slot."
+      },
+      {
+        "name": "decadeTemplate",
+        "type": "TemplateRef<StarDecadeContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "Set by the date pickers. In your own markup, use the `starDecade` slot."
       },
       {
         "name": "pt",
@@ -3297,6 +3313,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'top'",
         "required": false,
         "description": "Where the legend is: above, below, or at the start or the end of the plot."
+      },
+      {
+        "name": "plugins",
+        "type": "readonly StarChartPlugin[]",
+        "default": "[]",
+        "required": false,
+        "description": "Plugins that draw under or over the plot (`StarChartPlugin`). PrimeNG `plugins`."
       },
       {
         "name": "pt",
@@ -5527,6 +5550,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "selector": "ng-template[starDate]",
     "entry": "@star-ng/ui/date-picker",
     "description": "Replaces the content of a day in `star-calendar`, `star-date-picker`, `star-date-range-picker` and `star-multi-date-picker`. PrimeNG `#date` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarDecadeTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starDecade]",
+    "entry": "@star-ng/ui/date-picker",
+    "description": "Replaces the title of the year view (\"2016 – 2027\") in `star-calendar` and the date pickers. PrimeNG `#decade` template. The title stays a live region, so keep the years in the text.",
     "inputs": [],
     "models": [],
     "outputs": []
@@ -13856,6 +13888,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Replaces the label of a node in `star-tree` and `star-tree-select`. PrimeNG `#default` node template. The toggle, the checkbox and the node icon stay.",
     "inputs": [
       {
+        "name": "starNode",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The node `type` that this template draws. Empty (the default): every other node."
+      },
+      {
         "name": "starNodeOf",
         "type": "readonly StarTreeNode<T>[] | null",
         "default": "null",
@@ -20523,6 +20562,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "grid"
     ]
   },
+  "StarTimeCellTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starTimeCell]",
+    "entry": "@star-ng/ui/date-picker",
+    "description": "Replaces the content of an hour, minute, second or period cell in `star-time-picker` (and in `star-time-columns`). PrimeNG time templates. The cell keeps its `option` role, its name and the keyboard; keep the text of the cell in the template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarTimeColumns": {
     "kind": "component",
     "selector": "star-time-columns",
@@ -20584,6 +20632,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "Every cell is disabled, for example while a date picker has no date."
+      },
+      {
+        "name": "cellTemplate",
+        "type": "TemplateRef<StarTimeCellContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "Content of each cell. Set by `star-time-picker`; there, use the `starTimeCell` slot."
       },
       {
         "name": "pt",
