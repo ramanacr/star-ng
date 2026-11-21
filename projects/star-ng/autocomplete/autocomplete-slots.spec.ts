@@ -156,6 +156,12 @@ describe('StarAutoComplete slots', () => {
     expect(panel.querySelector('.foot')).not.toBeNull();
     expect(panel.querySelector('[role="listbox"] .head')).toBeNull();
     expect(panel.querySelector('[role="listbox"] .foot')).toBeNull();
+    expect(
+      panel.querySelector('[data-star-part="headerSlotPanel"].star-panel__header .head'),
+    ).not.toBeNull();
+    expect(
+      panel.querySelector('[data-star-part="footerSlotPanel"].star-panel__footer .foot'),
+    ).not.toBeNull();
   });
 
   it('loading slot shows while loading is true, not from typing alone', async () => {

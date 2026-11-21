@@ -238,16 +238,12 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
           filter
           ariaLabel="City"
         >
-          <ng-template starHeader>
-            <p class="docs-output">Cities with an office</p>
-          </ng-template>
+          <ng-template starHeader> Cities with an office </ng-template>
           <ng-template starGroup let-country let-count="count">
             {{ country }} ({{ count }})
           </ng-template>
           <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
-          <ng-template starFooter>
-            <p class="docs-output">{{ cities.length }} cities</p>
-          </ng-template>
+          <ng-template starFooter> {{ cities.length }} cities </ng-template>
         </star-listbox>
       </docs-example>
 

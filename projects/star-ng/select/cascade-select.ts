@@ -196,6 +196,17 @@ interface CascadeItem<TOption> extends StarMenuItem {
     <ng-template #optionItem let-item>
       <ng-container *ngTemplateOutlet="optionSlot(); context: optionContext(item)" />
     </ng-template>
+    <!-- The header and footer slots, in the shared slot regions of the panels. -->
+    <ng-template #headerRegion>
+      <div data-star-part="headerSlotPanel" class="star-panel__header">
+        <ng-container *ngTemplateOutlet="headerSlot()" />
+      </div>
+    </ng-template>
+    <ng-template #footerRegion>
+      <div data-star-part="footerSlotPanel" class="star-panel__footer">
+        <ng-container *ngTemplateOutlet="footerSlot()" />
+      </div>
+    </ng-template>
   `,
 })
 export class StarCascadeSelect<
@@ -359,14 +370,16 @@ export class StarCascadeSelect<
   );
   protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
   protected readonly iconContext: StarIconContext = {};
-  private readonly headerSlot = starSlot<object>(this.slots, this, 'header');
-  private readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
   /** Header, footer and group icon, as `start`, `end` and the submenu icon of the menu. */
+  private readonly headerRegion = viewChild<TemplateRef<unknown>>('headerRegion');
+  private readonly footerRegion = viewChild<TemplateRef<unknown>>('footerRegion');
   protected readonly menuSlots = computed(() => {
     const map = new Map<string, TemplateRef<unknown>>();
-    const header = this.headerSlot();
-    const footer = this.footerSlot();
     const group = this.icons().get('group');
+    const header = this.headerSlot() && this.headerRegion();
+    const footer = this.footerSlot() && this.footerRegion();
     if (header) map.set('start', header);
     if (footer) map.set('end', footer);
     if (group) map.set('icon:submenu', group);

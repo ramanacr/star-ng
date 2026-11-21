@@ -84,6 +84,9 @@ describe('Popover header and closeOnEscape', () => {
     await fixture.whenStable();
     const panel = document.querySelector<HTMLElement>('.star-popover')!;
     expect(text(panel.querySelector('[data-star-part=headerPanel]'))).toBe('Order 7');
+    expect(panel.querySelector('[data-star-part=headerPanel]')!.classList).toContain(
+      'star-panel__header',
+    );
     panel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await fixture.whenStable();
     expect(document.querySelector('.star-popover')).not.toBeNull();
