@@ -442,6 +442,8 @@ Read this list when you update from `0.3.x` to `0.4.0`. Each item is a change th
 10. Icons: use the bold weight (`ph-bold`) of Phosphor in your own examples. The signature pad, AI prompt, app sidebar and command palette now use it.
 11. Every control element now has a `data-star-part` attribute. Tests that compare the whole markup of a control (snapshots) must accept it. In a few templates, `textContent` now starts or ends with a space (the rendered text is the same). Compare the trimmed text.
 12. The new styling hooks (`pt` and `unstyled`) are opt-in. A control that has no `pt` and is not unstyled looks as before. Do not set `unstyled` unless you supply your own classes for the selected, hover and surface states.
+13. Speed dial: a click outside now closes the open actions, because `hideOnClickOutside` is `true` by default. Set `hideOnClickOutside` to `false` to keep the old behavior.
+14. Paginator: the page numbers and the report numbers now follow the locale (`Intl.NumberFormat`), for example "1,200" or "1.200". Set `locale` on the paginator, or the locale of `provideStarNg`, so that the displayed numbers are the same on every browser. Tests that match the old plain digits must change.
 
 ## [0.3.1] - 2026-11-18
 
