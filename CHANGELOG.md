@@ -369,6 +369,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tabs: `reorderable` lets the user drag a tab to a new place (CDK drag-drop) or move the focused tab with Control+Shift and an arrow key (mirrored in right-to-left), with a live announcement of the new position. The output `tabReorder({ previousIndex, currentIndex })` lets the owner reorder its list. `STAR_UI_TEXT.tabReorderHint` with German and Spanish texts.
 - Tabs: header slot `ng-template[starTabHeader]` (context: `$implicit` and `tab`, `active`, `index`) for custom tab labels, for one tab or for all (PrimeNG `p-tab` content, Material `mat-tab-label`).
 
+- Tabs: `dynamicHeight` (the panel area animates its height on a tab change) and `animationDuration` (the new panel fades in; both off with reduced motion) (Material `dynamicHeight`, `animationDuration`). New `star-tab-nav` with `a[starTabLink]` and `star-tab-nav-panel`: router links as tabs, active from `routerLinkActive` (or `active`), the WAI-ARIA tabs pattern with a panel (tablist, roving tabindex, Arrow keys, Home, End, Space) and a `navigation` of `aria-current` links without one (Material `mat-tab-nav-bar`, `mat-tab-link`, `mat-tab-nav-panel`).
+
 #### Tile layout
 
 - Tile layout (`star-tile-layout`, `star-tile`, new entry `@star-ng/ui/tile-layout`): a CSS grid of tiles with column and row spans, reorder by drag and drop or Control and the arrow keys (`order` model), resize by Control, Shift and the arrow keys or a corner handle (`tileResize`), and container-query breakpoints (Material `mat-grid-list`, Kendo UI TileLayout). UI texts `tileMoveHint`, `tileResizeHint` and `tileSize` (English, German, Spanish).

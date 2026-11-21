@@ -1,6 +1,6 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
-import { NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -30,6 +30,7 @@ import {
   STAR_UI_TEXT,
   starInlineKey,
   starIsRtl,
+  starPrefersReducedMotion,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -175,6 +176,9 @@ export class StarTab {
  *   <star-tab value="history" label="History"><ng-template starTabContent>…</ng-template></star-tab>
  * </star-tabs>
  * ```
+ *
+ * For tabs that are router links, use `star-tab-nav` with `a[starTabLink]` (Material
+ * `mat-tab-nav-bar`).
  */
 @Component({
   selector: 'star-tabs',
@@ -190,6 +194,7 @@ export class StarTab {
     '[class.star-tabs--align-center]': "alignment() === 'center'",
     '[class.star-tabs--align-end]': "alignment() === 'end'",
     '[class.star-tabs--align-stretch]': "alignment() === 'stretch'",
+    '[style.--star-tabs-duration]': 'durationCss()',
   },
   template: `
     <div data-star-part="navigation" class="star-tabs__nav">
@@ -387,6 +392,18 @@ export class StarTabs {
    * applies with `lazy`. PrimeNG `cache`, Material `preserveContent`.
    */
   readonly cache = input(true, { transform: booleanAttribute });
+  /**
+   * The panel area animates its height from the old panel to the new one when the tab changes.
+   * Material `dynamicHeight`. Off with reduced motion.
+   */
+  readonly dynamicHeight = input(false, { transform: booleanAttribute });
+  /**
+   * Duration of the panel change: the new panel fades in, and with `dynamicHeight` the height
+   * moves, in this time. A number is milliseconds; text takes `ms` or `s` (`'200ms'`, `'0.3s'`).
+   * `null` (the default): no fade, and `dynamicHeight` uses the theme duration. Reduced motion
+   * (system setting or `reducedMotion: 'always'`) turns both off. Material `animationDuration`.
+   */
+  readonly animationDuration = input<number | string | null>(null);
 
   readonly changed = output<string>();
   /**
@@ -432,6 +449,22 @@ export class StarTabs {
   protected readonly hasEnabledTab = computed(() => this.tabs().some((tab) => !tab.disabled()));
   /** The last focusable tab, closed from the keyboard or its close button, until the owner removes it. */
   private lastClosed: StarTab | null = null;
+  private readonly doc = inject(DOCUMENT);
+  /** `animationDuration` in milliseconds, or `null`. */
+  private readonly durationMs = computed(() => {
+    const value = this.animationDuration();
+    if (value === null || value === '') return null;
+    if (typeof value === 'number') return Math.max(0, value);
+    const match = /^\s*([\d.]+)\s*(ms|s)?\s*$/.exec(value);
+    if (!match) return null;
+    return Math.max(0, Number(match[1]) * (match[2] === 's' ? 1000 : 1));
+  });
+  protected readonly durationCss = computed(() => {
+    const ms = this.durationMs();
+    return ms === null ? null : `${ms}ms`;
+  });
+  /** Value and height of the panel that was active in the last render. */
+  private shownPanel: { value: string | null; height: number } | null = null;
 
   constructor() {
     // After the owner removed the last focusable tab (at once or in a later render), the focus
@@ -468,6 +501,30 @@ export class StarTabs {
       }
       this.measure();
     });
+    // dynamicHeight and animationDuration: the new panel moves from the old height and fades in.
+    afterRenderEffect(() => {
+      const selected = this.selected();
+      const tab = untracked(this.tabs).find((t) => t.value() === selected);
+      const panel = tab ? this.hostElement.querySelector<HTMLElement>(`#${tab.panelId}`) : null;
+      const height = panel?.offsetHeight ?? 0;
+      const previous = this.shownPanel;
+      this.shownPanel = { value: selected, height };
+      if (!panel || !previous || previous.value === selected) return;
+      if (typeof panel.animate !== 'function' || starPrefersReducedMotion(this.doc)) return;
+      const ms = untracked(this.durationMs);
+      if (
+        untracked(this.dynamicHeight) &&
+        previous.height &&
+        height &&
+        previous.height !== height
+      ) {
+        panel.animate([{ height: `${previous.height}px` }, { height: `${height}px` }], {
+          duration: ms ?? this.themeDuration(),
+          easing: 'ease-out',
+        });
+      }
+      if (ms) panel.animate([{ opacity: 0 }, { opacity: 1 }], { duration: ms, easing: 'ease-out' });
+    });
     // The selected tab scrolls into the visible part of the list.
     afterRenderEffect(() => {
       const selected = this.selected();
@@ -477,6 +534,14 @@ export class StarTabs {
       if (button) starTabsReveal(this.list().nativeElement, button, this.vertical());
       this.measure();
     });
+  }
+
+  /** `--star-duration-base` of the theme in milliseconds (200 when it cannot be read). */
+  private themeDuration(): number {
+    const view = this.doc.defaultView;
+    const raw = view?.getComputedStyle(this.hostElement).getPropertyValue('--star-duration-base');
+    const match = /([\d.]+)\s*(ms|s)/.exec(raw ?? '');
+    return match ? Number(match[1]) * (match[2] === 's' ? 1000 : 1) : 200;
   }
 
   /** Reads which ends of the list hide tabs. */

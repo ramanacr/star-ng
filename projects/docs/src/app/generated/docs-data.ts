@@ -20117,6 +20117,118 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarTabLink": {
+    "kind": "directive",
+    "selector": "a[starTabLink]",
+    "entry": "@star-ng/ui/tabs",
+    "description": "One link of `star-tab-nav`: `<a starTabLink routerLink=\"/orders\" routerLinkActive>Orders</a>`. The active state comes from `routerLinkActive` on the same link, or from the `active` input. With a `tabPanel` on the bar, the link is a `tab`: `aria-selected`, `aria-controls` and a roving `tabindex`. Without it, the link is a plain link with `aria-current=\"page\"` when active. Material `mat-tab-link`.",
+    "inputs": [
+      {
+        "name": "active",
+        "type": "boolean | null",
+        "default": "null",
+        "required": false,
+        "description": "The link is the current page. Default: from `routerLinkActive` on the same link."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The link cannot be followed and the arrow keys skip it."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarTabNav": {
+    "kind": "component",
+    "selector": "star-tab-nav",
+    "entry": "@star-ng/ui/tabs",
+    "description": "A bar of navigation links that look like tabs (Material `mat-tab-nav-bar`). Each link is an `a[starTabLink]` with `routerLink`; the router decides the active one.",
+    "inputs": [
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the bar."
+      },
+      {
+        "name": "tabPanel",
+        "type": "StarTabNavPanel | null",
+        "default": "null",
+        "required": false,
+        "description": "The panel that shows the content of the active link; turns on the tabs pattern."
+      },
+      {
+        "name": "variant",
+        "type": "'line' | 'pill'",
+        "default": "'line'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "alignment",
+        "type": "'start' | 'center' | 'end' | 'stretch'",
+        "default": "'start'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
+      }
+    ],
+    "models": [],
+    "outputs": [],
+    "parts": [
+      "root",
+      "navigation",
+      "list"
+    ]
+  },
+  "StarTabNavPanel": {
+    "kind": "component",
+    "selector": "star-tab-nav-panel",
+    "entry": "@star-ng/ui/tabs",
+    "description": "The panel of a `star-tab-nav` (the `tabpanel` of the tabs pattern), for example around the `router-outlet`: `<star-tab-nav-panel #panel><router-outlet /></star-tab-nav-panel>`. Pass it to the bar with `[tabPanel]=\"panel\"`. Material `mat-tab-nav-panel`.",
+    "inputs": [
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
+      }
+    ],
+    "models": [],
+    "outputs": [],
+    "parts": [
+      "root"
+    ]
+  },
   "StarTabs": {
     "kind": "component",
     "selector": "star-tabs",
@@ -20185,6 +20297,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "true",
         "required": false,
         "description": "Keeps rendered `starTabContent` alive (hidden) when its tab is not active, so it keeps its state (the default). `false` destroys it and renders it again on the next activation. Only applies with `lazy`. PrimeNG `cache`, Material `preserveContent`."
+      },
+      {
+        "name": "dynamicHeight",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The panel area animates its height from the old panel to the new one when the tab changes. Material `dynamicHeight`. Off with reduced motion."
+      },
+      {
+        "name": "animationDuration",
+        "type": "number | string | null",
+        "default": "null",
+        "required": false,
+        "description": "Duration of the panel change: the new panel fades in, and with `dynamicHeight` the height moves, in this time. A number is milliseconds; text takes `ms` or `s` (`'200ms'`, `'0.3s'`). `null` (the default): no fade, and `dynamicHeight` uses the theme duration. Reduced motion (system setting or `reducedMotion: 'always'`) turns both off. Material `animationDuration`."
       },
       {
         "name": "pt",
@@ -22949,6 +23075,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tabs/cache": "<div class=\"docs-stack\">\n  <star-tabs [cache]=\"false\" ariaLabel=\"Notes\">\n    <star-tab value=\"draft\" label=\"Draft\">\n      <ng-template starTabContent>\n        <star-field label=\"Draft note\"><input starInput /></star-field>\n      </ng-template>\n    </star-tab>\n    <star-tab value=\"final\" label=\"Final\">\n      <ng-template starTabContent>The final note is empty.</ng-template>\n    </star-tab>\n  </star-tabs>\n</div>",
   "tabs/closable": "<div class=\"docs-stack\">\n  <star-tabs\n    scrollable\n    [(value)]=\"openFile\"\n    ariaLabel=\"Open files\"\n    (tabClose)=\"closeFile($event)\"\n  >\n    @for (file of files(); track file) {\n      <star-tab [value]=\"file\" [label]=\"file\" [closable]=\"file !== 'summary.txt'\">\n        Content of {{ file }}.\n      </star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Open: {{ files().join(', ') }}</p>\n</div>",
   "tabs/header": "<div class=\"docs-stack\">\n  <star-tabs ariaLabel=\"Order queues\">\n    <ng-template starTabHeader let-tab let-active=\"active\">\n      <i\n        class=\"ph-bold\"\n        [class.ph-folder-open]=\"active\"\n        [class.ph-folder]=\"!active\"\n        aria-hidden=\"true\"\n      ></i>\n      <span>{{ tab.label() }}</span>\n      <span class=\"star-badge star-badge--secondary star-badge--sm\">{{ tab.badge() }}</span>\n    </ng-template>\n    <star-tab value=\"new\" label=\"New\" [badge]=\"4\">Four new orders.</star-tab>\n    <star-tab value=\"packed\" label=\"Packed\" [badge]=\"9\">Nine packed orders.</star-tab>\n    <star-tab value=\"shipped\" label=\"Shipped\" [badge]=\"27\">27 shipped orders.</star-tab>\n  </star-tabs>\n</div>",
+  "tabs/nav": "<star-tab-nav ariaLabel=\"Order views\" [tabPanel]=\"orderPanel\">\n  <a\n    starTabLink\n    routerLink=\".\"\n    [queryParams]=\"{ view: null }\"\n    routerLinkActive\n    [routerLinkActiveOptions]=\"exactQuery\"\n    >Summary</a\n  >\n  <a\n    starTabLink\n    routerLink=\".\"\n    [queryParams]=\"{ view: 'lines' }\"\n    routerLinkActive\n    [routerLinkActiveOptions]=\"exactQuery\"\n    >Lines</a\n  >\n  <a\n    starTabLink\n    routerLink=\".\"\n    [queryParams]=\"{ view: 'notes' }\"\n    routerLinkActive\n    [routerLinkActiveOptions]=\"exactQuery\"\n    >Notes</a\n  >\n</star-tab-nav>\n<star-tab-nav-panel #orderPanel>\n  <p class=\"docs-output\">{{ viewText() }}</p>\n</star-tab-nav-panel>",
   "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
   "tabs/reorderable": "<div class=\"docs-stack\">\n  <star-tabs reorderable ariaLabel=\"Project boards\" (tabReorder)=\"moveBoard($event)\">\n    @for (board of boards(); track board) {\n      <star-tab [value]=\"board\" [label]=\"board\">Board {{ board }}.</star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Order: {{ boards().join(', ') }}</p>\n</div>",
   "tabs/scrollable": "<div class=\"docs-stack\">\n  <star-tabs scrollable ariaLabel=\"Monthly reports\">\n    @for (month of months; track month) {\n      <star-tab [value]=\"month\" [label]=\"month\">Report for {{ month }}.</star-tab>\n    }\n  </star-tabs>\n</div>",

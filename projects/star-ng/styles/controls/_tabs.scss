@@ -100,6 +100,26 @@
   }
 }
 
+// Tab nav: router links that look like tabs, and their panel.
+.star-tab-link {
+  text-decoration: none;
+}
+.star-tab-link--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.star-tab-nav-panel {
+  display: block;
+  padding-top: 1.25rem;
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 4px;
+    border-radius: var(--star-radius-sm);
+  }
+}
+
 // Scrollable: one line of tabs, no scroll bar, scroll buttons at both ends when they overflow.
 .star-tabs--scrollable .star-tabs__list {
   scrollbar-width: none;
