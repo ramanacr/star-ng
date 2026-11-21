@@ -104,7 +104,13 @@ class Host {
       ariaLabel="Rows"
       cellNavigation
     >
-      <ng-template starRow [starRowOf]="nodes" let-node let-columns="columns">
+      <ng-template
+        starRow
+        [starRowOf]="nodes"
+        [starRowColumns]="columns"
+        let-node
+        let-columns="columns"
+      >
         @for (column of columns; track column.field) {
           <td [starTableCell]="column.field" [starTableCellRow]="node" class="own-row-cell">
             {{ node.key }}/{{ column.field }}

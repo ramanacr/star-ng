@@ -66,6 +66,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Popover: the slot `starHeader` and `closeOnEscape` (PrimeNG `closeOnEscape`).
 
+#### Query builder
+
+- Query builder: the new entry point `@star-ng/ui/query-builder/model` holds the query model (`starQueryToPredicate`, `starQueryComplete`, `starQueryToText` and the query types). `@star-ng/ui/query-builder` still exports the same names. The table loads the query builder component only when the advanced filter dialog opens, so a page with a table does not load it before.
+
 #### Select, autocomplete and listbox
 
 - Cascade select: `groupChange` (the parent option and its level when a submenu opens), the slots `starHeader` and `starFooter` in the menu and `starIcon="group"` for the submenu arrow (PrimeNG `onGroupChange`, `#header`, `#footer`, `#groupicon`). `beforeShow` and `beforeHide` emit before the menu overlay is created or removed, `show` and `hide` after it.
@@ -76,7 +80,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Table and tree table
 
-- Tree table: the types `StarTreeTableRowContext` and `StarTreeTableFooterRowContext` (the `starRow` and `starFooterRow` contexts with `StarTreeTableColumn` columns). `StarRowSlotContext` and `StarFooterRowContext` take the column type as an optional second type parameter (default `StarColumn<T>`), so the tree table no longer casts its columns.
+- Tree table: the types `StarTreeTableRowContext` and `StarTreeTableFooterRowContext` (the `starRow` and `starFooterRow` contexts with `StarTreeTableColumn` columns). `StarRowSlotContext` and `StarFooterRowContext` take the column type as an optional second type parameter (default `StarColumn<T>`), so the tree table no longer casts its columns. `StarRowTemplate` takes the optional input `starRowColumns` that types `let-columns` in strict templates (`[starRowColumns]="columns"` in a tree table).
 
 #### Tree
 
@@ -104,7 +108,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Header and footer slots (`starHeader`, `starFooter`) of select, multi-select, autocomplete, multi-column combobox, tree select, cascade select, date picker, listbox and tree, and the popover header: the content sat flush against the edge of the panel, with no padding and no line between it and the list. It now sits in a padded region inside the panel, lined up with the options, with a thin divider to the list and small muted text like the group headings. The header stays above the scrolling list and the footer stays below it. The regions are the new parts `headerSlotPanel` and `footerSlotPanel` (the popover keeps its part `headerPanel`), with pass-through `pt` and unstyled mode, and work in right-to-left pages and in dark mode. Other panels can use the same classes `star-panel__header` and `star-panel__footer`.
 - Table: a `td[starTableCell]` of a `starRow` template in a pinned column now gets the sticky offset and pin classes of the column, so it stays under its header. `starRow` does not support `virtualColumns` (documented; dev mode logs a warning).
 - Table: in lazy mode the row objects of pinned rows are now a pure derivation (`linkedSignal`) instead of a cache written inside a `computed`; a key that the owner unpins through `pinnedRows` no longer comes back with an old row object.
-- Scheduler: the event editor (opened through `StarDialogService`) now closes when the scheduler is destroyed, for example on a route change. Before, it stayed open on the next page. No `editorSave` or `eventDelete` is emitted then.
+- Scheduler: the event editor (opened through `StarDialogService`) now closes when the scheduler is destroyed, for example on a route change. Before, it stayed open on the next page. No `editorSave` or `eventDelete` is emitted then, also not for a save whose dialog is still closing.
+- Chat: the message status icon (sending, sent, error) used the regular Phosphor weight (`ph`), which the README does not ask to load, so it was blank. It now uses the bold weight (`ph-bold`), as the other controls do. The icon now shows (a visual change of the chat).
 - Tree table: a `td[starTableCell]` of a `starRow` template in a frozen column now gets the sticky offset of the column. The docs and the JSDoc now name both parts of the toggle icon (`expandIcon` for the default icon, `toggleIcon` for the wrapper of a `starIcon="toggle"` template); the names do not change.
 
 ## [0.4.0] - 2026-11-21

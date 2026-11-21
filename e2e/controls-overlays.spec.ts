@@ -1125,6 +1125,21 @@ test.describe('service overlays close when the page goes', () => {
     });
   }
 
+  test('confirm: Back closes the open question of the page', async ({ page }) => {
+    await openPage(page, '/controls/button', 'Button');
+    await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+    await page.locator('#docs-nav').getByRole('link', { name: 'Confirm', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Confirm' })).toBeVisible();
+    await example(page, 'Confirm dialog').getByRole('button', { name: 'Delete order' }).click();
+    const question = page.getByRole('alertdialog');
+    await expect(question).toBeVisible();
+
+    await page.goBack();
+    await expect(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+    await expect(question).toHaveCount(0);
+  });
+
   test('scheduler: Back closes the event editor that the scheduler opened', async ({ page }) => {
     await openPage(page, '/controls/button', 'Button');
     await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });

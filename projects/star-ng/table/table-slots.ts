@@ -121,15 +121,23 @@ export interface StarRowSlotContext<T = unknown, C = StarColumn<T>> {
   selector: 'ng-template[starRow]',
   providers: [{ provide: StarSlot, useExisting: StarRowTemplate }],
 })
-export class StarRowTemplate<T = unknown> extends StarSlot<StarRowSlotContext<T>> {
+export class StarRowTemplate<T = unknown, C = StarColumn<T>> extends StarSlot<
+  StarRowSlotContext<T, C>
+> {
   readonly name = 'row';
   /** Optional: pass the table rows to type `let-row` in strict templates. */
   readonly starRowOf = input<readonly T[] | null>(null);
+  /**
+   * Optional: pass the columns to type `let-columns` in strict templates. In a tree table pass
+   * the tree table columns (`[starRowColumns]="columns"`), so a column is a
+   * `StarTreeTableColumn` (with `frozen`, `editor`) and not a table column.
+   */
+  readonly starRowColumns = input<readonly C[] | null>(null);
 
-  static ngTemplateContextGuard<T>(
-    _dir: StarRowTemplate<T>,
+  static ngTemplateContextGuard<T, C>(
+    _dir: StarRowTemplate<T, C>,
     _ctx: unknown,
-  ): _ctx is StarRowSlotContext<T> {
+  ): _ctx is StarRowSlotContext<T, C> {
     return true;
   }
 }

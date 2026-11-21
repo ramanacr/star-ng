@@ -17507,6 +17507,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Optional: pass the table rows to type `let-row` in strict templates."
+      },
+      {
+        "name": "starRowColumns",
+        "type": "readonly C[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the columns to type `let-columns` in strict templates. In a tree table pass the tree table columns (`[starRowColumns]=\"columns\"`), so a column is a `StarTreeTableColumn` (with `frozen`, `editor`) and not a table column."
       }
     ],
     "models": [],

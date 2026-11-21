@@ -1775,7 +1775,8 @@ export class StarScheduler {
       this.injector,
     );
     // The editor belongs to this scheduler: it closes when the scheduler goes (a route change),
-    // and then nothing is emitted and no focus moves.
+    // and then nothing is emitted and no focus moves. A save whose dialog is still closing (exit
+    // animation) when the scheduler goes is dropped too: a destroyed scheduler cannot emit.
     let destroyed = false;
     const unregister = this.destroyRef.onDestroy(() => {
       destroyed = true;

@@ -632,7 +632,7 @@ onRowAction(event: StarTreeTableContextMenuEvent): void {
     {
       name: 'ng-template[starRow] with td[starTableCell]',
       description:
-        'Content child, from @star-ng/ui/table. Replaces the cells after the tree column. The context (StarTreeTableRowContext) has the row, its index, the columns (StarTreeTableColumn, after the first one), selected and expanded. Each starTableCell cell gets its grid attributes and, in a frozen column, the sticky offset of that column.',
+        'Content child, from @star-ng/ui/table. Replaces the cells after the tree column. The context (StarTreeTableRowContext) has the row, its index, the columns (StarTreeTableColumn, after the first one), selected and expanded. Each starTableCell cell gets its grid attributes and, in a frozen column, the sticky offset of that column. Bind [starRowColumns]="columns" on the template to type let-columns as StarTreeTableColumn in strict templates.',
     },
     {
       name: 'ng-template[starIcon="toggle"]',
