@@ -189,6 +189,11 @@ class StarMenuLife implements OnInit, OnDestroy {
   readonly starMenuLife = input<StarMenuItem | null>(null);
   private readonly menu = inject(forwardRef(() => StarMenu));
 
+  // `ngOnInit` stays on purpose: it is the first hook that sees the bound `starMenuLife` input
+  // (the constructor sees the default `null`, which would report a submenu as the root popup),
+  // and it runs once, in the change detection that creates the list. The call is a one-time
+  // "opened" report, not a reaction to a signal: an effect would also run again if the input
+  // changed, and `afterNextRender` would report it only after the list is painted.
   ngOnInit(): void {
     this.menu.listOpened(this.starMenuLife());
   }

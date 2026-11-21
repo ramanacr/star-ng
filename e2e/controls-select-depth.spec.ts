@@ -172,3 +172,21 @@ test.describe('listbox depth', () => {
     await expect(available.getByRole('option')).toHaveCount(3);
   });
 });
+
+test.describe('autocomplete suggestionLoader', () => {
+  test('loads through the loader, shows a failure, and loads again', async ({ page }) => {
+    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    const live = example(page, 'Loader function');
+    const field = live.getByRole('combobox', { name: 'Colleague (loader)' });
+    await field.fill('zz');
+    await expect(
+      page.getByRole('listbox', { name: 'Colleague (loader)' }).getByText('The search failed.'),
+    ).toBeVisible();
+    await field.fill('');
+    await field.pressSequentially('ma');
+    const option = page.getByRole('option').first();
+    await expect(option).toBeVisible();
+    await option.click();
+    await expect(live.locator('.docs-output')).toHaveText(/Colleague: p\d/);
+  });
+});

@@ -6,7 +6,9 @@
 //    `actions/configure-pages` instead, so a fork or a custom domain works as well.
 //    The production build prerenders every docs page to `<route>/index.html`, so GitHub answers a
 //    known address with the status 200 and the content of the page in the HTML source.
-// 2. Checks that every page of the navigation was prerendered (see `check-prerender.mjs`).
+// 2. Adds the hashes of the inline event replay scripts to the policy of each page (see
+//    `csp-hashes.mjs`), then checks that every page of the navigation was prerendered (see
+//    `check-prerender.mjs`).
 // 3. Copies the client-rendered shell `index.csr.html` to `404.html` (see `pages-fallback.mjs`):
 //    the answer for an address that is no page.
 //
@@ -21,6 +23,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { writeAgentData } from './agent-data.mjs';
 import { checkPrerender } from './check-prerender.mjs';
+import { addScriptHashes } from './csp-hashes.mjs';
 import { writeFallback } from './pages-fallback.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -38,6 +41,7 @@ const build = spawnSync(process.execPath, [ng, 'build', 'docs', '--base-href', b
 if (build.status !== 0) process.exit(build.status ?? 1);
 
 const output = new URL('../dist/docs/browser/', import.meta.url);
+addScriptHashes(fileURLToPath(output));
 const pages = checkPrerender(fileURLToPath(output));
 writeFallback(fileURLToPath(output));
 const site = process.env.PAGES_SITE_URL

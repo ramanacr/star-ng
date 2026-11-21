@@ -1064,6 +1064,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarAutoCompleteBase"
       },
       {
+        "name": "suggestionLoader",
+        "type": "StarAutoCompleteLoader<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Loads the suggestions itself, as an alternative to `(completeMethod)` + `[suggestions]`. The control calls the function with the debounced text (at the time `completeMethod` fires, which still fires) through Angular `resource()`: it shows the loading row while the promise is open, aborts an older load when the user types again, and shows the result. When the promise rejects, the list shows the text `searchFailed` (`STAR_UI_TEXT`) instead of the empty text; the next search runs the loader again, also for the same text. A search for the same text as the last successful one keeps that result and does not call the loader. A set `suggestions` input wins over the loaded list. Default `null` (no loader).",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
         "name": "forceSelection",
         "type": "boolean",
         "default": "false",
@@ -1507,6 +1515,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "true",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "suggestionLoader",
+        "type": "StarAutoCompleteLoader<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Loads the suggestions itself, as an alternative to `(completeMethod)` + `[suggestions]`. The control calls the function with the debounced text (at the time `completeMethod` fires, which still fires) through Angular `resource()`: it shows the loading row while the promise is open, aborts an older load when the user types again, and shows the result. When the promise rejects, the list shows the text `searchFailed` (`STAR_UI_TEXT`) instead of the empty text; the next search runs the loader again, also for the same text. A search for the same text as the last successful one keeps that result and does not call the loader. A set `suggestions` input wins over the loaded list. Default `null` (no loader)."
       }
     ],
     "models": [],
@@ -12994,6 +13009,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarAutoCompleteBase"
       },
       {
+        "name": "suggestionLoader",
+        "type": "StarAutoCompleteLoader<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Loads the suggestions itself, as an alternative to `(completeMethod)` + `[suggestions]`. The control calls the function with the debounced text (at the time `completeMethod` fires, which still fires) through Angular `resource()`: it shows the loading row while the promise is open, aborts an older load when the user types again, and shows the result. When the promise rejects, the list shows the text `searchFailed` (`STAR_UI_TEXT`) instead of the empty text; the next search runs the loader again, also for the same text. A search for the same text as the last successful one keeps that result and does not call the loader. A set `suggestions` input wins over the loaded list. Default `null` (no loader).",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
         "name": "selectionLimit",
         "type": "number",
         "default": "0",
@@ -23540,6 +23563,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",
   "autocomplete/large": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"tickets\"\n    [(value)]=\"ticket\"\n    placeholder=\"Search 10,000 tickets\"\n    ariaLabel=\"Ticket\"\n    virtualScroll\n    dropdown\n  />\n  <p class=\"docs-output\" role=\"status\">Ticket: {{ ticket() ?? 'none' }}</p>\n</div>",
   "autocomplete/lazy": "<div class=\"docs-stack\">\n  <star-autocomplete\n    #lazyControl\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyOrder\"\n    lazy\n    virtualScroll\n    dropdown\n    placeholder=\"Type an order number\"\n    ariaLabel=\"Order, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Order: {{ lazyOrder() ?? 'none' }}</p>\n  @if (lazyList.failed()) {\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"lazyControl.resetLazy()\"\n    >\n      Retry\n    </button>\n  }\n</div>",
+  "autocomplete/loader": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestionLoader]=\"findPeople\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"loaded\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague (loader)\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ loaded() ?? 'none' }}</p>\n</div>",
   "autocomplete/local": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"city\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ city() ?? 'none' }}</p>\n</div>",
   "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",

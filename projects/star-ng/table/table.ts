@@ -17,6 +17,7 @@ import {
   inject,
   Injector,
   input,
+  inputBinding,
   isDevMode,
   linkedSignal,
   model,
@@ -24,10 +25,10 @@ import {
   PendingTasks,
   signal,
   TemplateRef,
+  twoWayBinding,
   untracked,
   viewChild,
   ViewContainerRef,
-  type ComponentRef,
   type Type,
 } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
@@ -2521,18 +2522,22 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     this.advancedOpen.set(true);
   }
 
-  /** Creates the query builder in the open dialog, bound to the fields and the draft. */
-  private readonly queryBuilderRef = signal<ComponentRef<StarQueryBuilder> | null>(null);
-  private readonly renderQueryBuilder = effect((onCleanup) => {
+  /**
+   * Creates the query builder in the open dialog with the bindings `[fields]="queryFields()"`
+   * and `[(value)]="advancedDraft"` (Angular `inputBinding` and `twoWayBinding`).
+   */
+  private readonly renderQueryBuilder = effect(() => {
     const host = this.queryBuilderHost();
     const builder = this.queryBuilderType();
     if (!host || !builder) return;
     untracked(() => {
       host.clear();
-      const ref = host.createComponent(builder);
-      const changes = ref.instance.value.subscribe((value) => this.advancedDraft.set(value));
-      ref.onDestroy(() => changes.unsubscribe());
-      this.queryBuilderRef.set(ref);
+      const ref = host.createComponent(builder, {
+        bindings: [
+          inputBinding('fields', this.queryFields),
+          twoWayBinding('value', this.advancedDraft),
+        ],
+      });
       // The dialog took its focus before the builder existed (a footer button). Move it in.
       afterNextRender(
         () => {
@@ -2544,14 +2549,6 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
         { injector: this.injector },
       );
     });
-    onCleanup(() => this.queryBuilderRef.set(null));
-  });
-  /** `[fields]="queryFields()"` and `[(value)]="advancedDraft"` of the created query builder. */
-  private readonly bindQueryBuilder = effect(() => {
-    const ref = this.queryBuilderRef();
-    if (!ref) return;
-    ref.setInput('fields', this.queryFields());
-    ref.setInput('value', this.advancedDraft());
   });
 
   protected applyAdvanced(): void {

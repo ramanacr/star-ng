@@ -104,6 +104,31 @@ test.describe('prerendered docs pages', () => {
   });
 });
 
+test.describe('event replay', () => {
+  test('a click before the application starts runs after hydration', async ({ page }) => {
+    const errors = collectErrors(page);
+    // Holds the application bundle until the click is done; the first-paint scripts load.
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route(/\/main-[^/]+\.js$/, async (route) => {
+      await held;
+      await route.continue();
+    });
+    // A module script delays DOMContentLoaded, so the test waits only for the response.
+    await page.goto('/controls/table', { waitUntil: 'commit' });
+    const direction = page.getByRole('button', { name: /^Text direction: / });
+    await expect(direction).toHaveAttribute('aria-pressed', 'false');
+    expect(await page.evaluate(() => document.documentElement.hasAttribute('ng-version'))).toBe(
+      false,
+    );
+    await direction.click();
+    release();
+    // The event contract recorded the click; hydration replays it.
+    await expect(direction).toHaveAttribute('aria-pressed', 'true');
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('saved text direction on the prerendered page', () => {
   /** Keeps the two first-paint scripts and stops every other script, so the app never starts. */
   const blockApplication = async (page: import('@playwright/test').Page) =>

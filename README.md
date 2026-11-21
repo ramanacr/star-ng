@@ -34,6 +34,10 @@ Control groups: buttons; forms (field, input, checkbox, radio, switch, number, p
 | `rxjs`                                               | 7.8 or later                                   |
 | `@jsverse/transloco`                                 | 8 or later, optional (`@star-ng/ui/transloco`) |
 
+### Change detection
+
+The controls use signals and `OnPush`, and need no `zone.js`. They work in a zoneless application (the Angular default). An application that still uses `provideZoneChangeDetection` is supported, but not tested: the tests of the library run zoneless only.
+
 ## Install
 
 Use one of these commands.
