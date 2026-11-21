@@ -22,6 +22,7 @@ import {
   RendererStyleFlags2,
   untracked,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StarConfigService } from './config';
 
 /** Classes of a part: a string, a list, or a map of class name to on/off (like `[class]`). */
@@ -185,10 +186,11 @@ export class StarStyled implements AfterViewChecked {
     // then the view hook below does not run: adopt again each time the application becomes
     // stable, so the HTML written after the last render has every part.
     if (!this.canObserve) {
-      const subscription = inject(ApplicationRef).isStable.subscribe((stable) => {
-        if (stable) this.adoptAll();
-      });
-      inject(DestroyRef).onDestroy(() => subscription.unsubscribe());
+      inject(ApplicationRef)
+        .isStable.pipe(takeUntilDestroyed())
+        .subscribe((stable) => {
+          if (stable) this.adoptAll();
+        });
     }
   }
 

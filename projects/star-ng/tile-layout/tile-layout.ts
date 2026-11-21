@@ -20,6 +20,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   STAR_UI_TEXT,
   starInlineKey,
@@ -148,10 +149,9 @@ export class StarTileLayout {
     this.dropList.orientation = 'mixed';
     this.dropList.elementContainerSelector = '.star-tile-layout__grid';
     effect(() => (this.dropList.disabled = !this.reorderable()));
-    const subscription = this.dropList.dropped.subscribe((event: CdkDragDrop<unknown>) =>
-      this.onDrop(event),
-    );
-    inject(DestroyRef).onDestroy(() => subscription.unsubscribe());
+    this.dropList.dropped
+      .pipe(takeUntilDestroyed())
+      .subscribe((event: CdkDragDrop<unknown>) => this.onDrop(event));
     // The container queries decide the column count; the tiles need it to clamp their spans.
     afterNextRender(() => {
       const view = this.host.ownerDocument.defaultView;

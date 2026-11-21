@@ -1122,7 +1122,7 @@ describe('date slot context', () => {
 });
 
 describe('date picker: focus without display or input format', () => {
-  it('runs no extra render on focus when no format can change the text', async () => {
+  it('switches the text in the focus event without a synchronous render', async () => {
     const fixture = TestBed.createComponent(FormatHost);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
@@ -1132,10 +1132,18 @@ describe('date picker: focus without display or input format', () => {
       .query((node) => node.nativeElement === plain.closest('star-date-picker'))
       .injector.get(ChangeDetectorRef);
     const spy = vi.spyOn(Object.getPrototypeOf(ref), 'detectChanges');
+    const plainText = plain.value;
     plain.dispatchEvent(new Event('focus'));
-    expect(spy).not.toHaveBeenCalled();
+    expect(plain.value).toBe(plainText);
+    const styledText = styled.value;
     styled.dispatchEvent(new Event('focus'));
-    expect(spy).toHaveBeenCalled();
+    // The text is the input format at once, in the focus event, before any render.
+    expect(styled.value).not.toBe(styledText);
+    const focused = styled.value;
+    expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
+    // The next render keeps that text.
+    await fixture.whenStable();
+    expect(styled.value).toBe(focused);
   });
 });

@@ -134,7 +134,10 @@ export class StarPopover {
   constructor() {
     // Keeps the CDK direction in step with the page, so a popover opened after a switch is flipped.
     inject(StarDirectionService);
-    inject(DestroyRef).onDestroy(() => this.overlayRef?.dispose());
+    inject(DestroyRef).onDestroy(() => {
+      this.outside?.unsubscribe();
+      this.overlayRef?.dispose();
+    });
   }
 
   /** Opens on the event's current target (or a given element), or closes when open. */

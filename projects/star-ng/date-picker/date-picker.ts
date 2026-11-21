@@ -5,7 +5,6 @@ import {
   afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   computed,
   contentChildren,
@@ -251,7 +250,6 @@ export abstract class StarDateInputBase<TValue> {
   protected readonly sheet = new StarDateSheet();
   private readonly sheetDialog = viewChild<ElementRef<HTMLDialogElement>>('sheetDialog');
   private readonly injector = inject(Injector);
-  private readonly changeDetector = inject(ChangeDetectorRef);
   /**
    * Invalid after touch, while the parent `star-field` shows an error, or while the field keeps
    * text that is not a date (`keepInvalid`).
@@ -417,20 +415,23 @@ export abstract class StarDateInputBase<TValue> {
   }
 
   /**
-   * Switches the text to `inputFormat` at once, before the user types: a render after the focus
-   * would replace text that is typed right after it. So the render runs here. When the text
-   * changes, all of it is selected, so typing replaces it (as after Tab); a mouse click still
-   * places the caret, because the browser sets it after the focus event.
+   * Switches the text to `inputFormat` at once, before the user types. The text is written to the
+   * DOM here, in the focus event, and not left to the next render: a key typed before that render
+   * would go into the old text. The next render writes the same text (`typed()`), or the text the
+   * user typed since (the `input` event sets `typed`). When the text changes, all of it is
+   * selected, so typing replaces it (as after Tab); a mouse click still places the caret, because
+   * the browser sets it after the focus event.
    */
   protected onInputFocus(): void {
     if (this.editing()) return;
     this.editing.set(true);
-    // Without displayFormat or inputFormat the text does not change: no render is needed.
+    // Without displayFormat or inputFormat the text does not change.
     if (!this.displayFormat() && !this.inputFormat()) return;
     const input = this.input().nativeElement;
-    const before = input.value;
-    this.changeDetector.detectChanges();
-    if (input.value !== before) input.select();
+    const text = this.typed();
+    if (input.value === text) return;
+    input.value = text;
+    input.select();
   }
 
   protected onInputBlur(): void {

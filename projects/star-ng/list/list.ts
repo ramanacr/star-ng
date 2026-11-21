@@ -16,6 +16,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   STAR_SLOT_HOST,
@@ -275,13 +276,10 @@ export class StarList {
     .skipPredicate((option) => option.item.disabledForKeys);
 
   constructor() {
-    const change = this.keys.change.subscribe(() =>
-      this.active.set(this.keys.activeItem?.item ?? null),
-    );
-    inject(DestroyRef).onDestroy(() => {
-      change.unsubscribe();
-      this.keys.destroy();
-    });
+    this.keys.change
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.active.set(this.keys.activeItem?.item ?? null));
+    inject(DestroyRef).onDestroy(() => this.keys.destroy());
   }
 
   /** @internal Keeps the key manager on the item that took focus by click or Tab. */
