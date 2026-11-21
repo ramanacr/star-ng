@@ -1,5 +1,7 @@
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { StarClipboard } from '@star-ng/ui/core';
 import type { StarQueryGroup } from '@star-ng/ui/query-builder';
 import { StarColumn, StarColumnFilters, StarTable } from './table';
 import type { StarRowPinEvent, StarRowPins } from './table-row-pins';
@@ -116,6 +118,7 @@ class SlotHost {
       [totalRecords]="lazy() ? 8 : 0"
       [(filters)]="filters"
       [stateKey]="stateKey()"
+      [copyHeaders]="copyHeaders()"
     />
   `,
 })
@@ -137,6 +140,7 @@ class FeatureHost {
   readonly lazy = signal(false);
   readonly filters = signal<StarColumnFilters>({});
   readonly stateKey = signal<string | null>(null);
+  readonly copyHeaders = signal(false);
 }
 
 const texts = (root: Element, selector: string) =>
@@ -502,6 +506,42 @@ describe('StarTable depth (N1)', () => {
         panel.querySelectorAll<HTMLInputElement>('[data-star-part="choiceInput"]'),
       );
       expect(boxes.every((box) => !box.checked)).toBe(true);
+    });
+  });
+
+  describe('column selection copy', () => {
+    it('Ctrl+C copies the selected columns of the filtered, sorted rows as TSV', async () => {
+      const copied: string[] = [];
+      TestBed.configureTestingModule({
+        providers: [
+          {
+            provide: StarClipboard,
+            useValue: { copy: (text: string) => (copied.push(text), Promise.resolve(true)) },
+          },
+        ],
+      });
+      const fixture = TestBed.createComponent(FeatureHost);
+      const host = fixture.componentInstance;
+      host.mode.set('column');
+      host.copyHeaders.set(true);
+      host.query.set('Open');
+      await fixture.whenStable();
+      const announce = vi.spyOn(TestBed.inject(LiveAnnouncer), 'announce').mockResolvedValue();
+      host.table().sortField.set('total');
+      host.columnSelection.set(['total', 'id']);
+      await fixture.whenStable();
+      const button = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+        'th[data-field="id"] [data-star-part="columnSelectButton"]',
+      )!;
+      button.focus();
+      button.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'c', ctrlKey: true, bubbles: true, cancelable: true }),
+      );
+      await fixture.whenStable();
+      // The global filter keeps the open orders; the sort by total puts ORD-3 first; the
+      // columns come in display order.
+      expect(copied).toEqual([['Order\tTotal', 'ORD-3\t7', 'ORD-1\t40'].join('\r\n')]);
+      expect(announce.mock.calls.map(([message]) => message)).toContain('Copied 4 cells');
     });
   });
 

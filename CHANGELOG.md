@@ -342,7 +342,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: `filterDelay` waits before typed filter text (filter row, filter menu without Apply, `globalFilter`) applies (PrimeNG `filterDelay`).
 - Table: Excel-style filter (`excelFilter` on a `'multiselect'` column): a header menu with a search box, Select all, Clear and a value check list (Ignite UI excel style filtering).
 - Table: advanced filter. `advancedFilter` adds a button that opens a dialog with `star-query-builder` over all columns; two-way `advancedQuery` (`StarQueryGroup`) filters the rows after the column filters (Ignite UI advanced filtering).
-- Table: column selection (`selectionMode="column"`, two-way `columnSelection`): a select button in each header; click, Ctrl / Cmd + click and Shift + click (Ignite UI column selection).
+- Table: column selection (`selectionMode="column"`, two-way `columnSelection`): a select button in each header; click, Ctrl / Cmd + click and Shift + click; Ctrl+C copies the selected columns of the filtered rows as TSV (with `copyHeaders`, a header line) (Ignite UI column selection).
 - UI texts `pinRowTop`, `pinRowBottom`, `unpinRow`, `advancedFilter` and `selectColumn` (English, German, Spanish).
 
 #### Tabs

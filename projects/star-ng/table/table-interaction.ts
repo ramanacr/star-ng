@@ -128,6 +128,7 @@ export abstract class StarTableInteraction<T> {
   protected abstract readonly pageRows: Signal<readonly T[]>;
   /** Pinned top rows, the page rows and the pinned bottom rows, in display order. */
   protected abstract readonly shownRows: Signal<readonly T[]>;
+  abstract readonly columnSelection: Signal<readonly string[]>;
   protected abstract rowPinOf(row: T): StarRowPinSide | null;
   abstract pinRow(row: T, side: StarRowPinSide): void;
   abstract unpinRow(row: T): void;
@@ -195,7 +196,8 @@ export abstract class StarTableInteraction<T> {
    * removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`. `'column'` selects
    * whole columns (`columnSelection`): each header gets a select button; a click selects that
    * column, Ctrl / Cmd + click adds or removes it, Shift + click selects the columns from the last
-   * clicked one. Ignite UI `columnSelection`.
+   * clicked one. Ctrl+C copies the selected columns of all filtered rows (sort order, all pages)
+   * as tab-separated text, with the headers when `copyHeaders` is set. Ignite UI `columnSelection`.
    */
   readonly selectionMode = input<'single' | 'multiple' | 'cell' | 'range' | 'column' | null>(null);
 
@@ -920,6 +922,7 @@ export abstract class StarTableInteraction<T> {
     cellSelectionMode: () => this.cellSelectionMode(),
     cellSelection: () => this.cellSelection(),
     rowSelectionMode: () => this.rowSelectionMode(),
+    columnFields: () => (this.selectionMode() === 'column' ? this.columnSelection() : []),
     selection: () => this.selection(),
     active: () => this.active(),
     navRows: () => this.navRows(),
