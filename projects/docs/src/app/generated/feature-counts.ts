@@ -213,7 +213,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "inject": {
-      "uses": 68,
+      "uses": 71,
       "files": 25
     },
     "takeUntilDestroyed": {
@@ -221,8 +221,8 @@ export const FEATURE_COUNTS = {
       "files": 1
     },
     "isPlatformBrowser": {
-      "uses": 0,
-      "files": 0
+      "uses": 1,
+      "files": 1
     },
     "toSignal": {
       "uses": 0,

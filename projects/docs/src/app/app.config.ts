@@ -1,5 +1,13 @@
-import { DOCUMENT } from '@angular/common';
-import { ApplicationConfig, inject, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import {
+  ApplicationConfig,
+  ApplicationRef,
+  EnvironmentInjector,
+  inject,
+  PLATFORM_ID,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideClientHydration, withIncrementalHydration } from '@angular/platform-browser';
 import {
   ActivatedRouteSnapshot,
@@ -10,7 +18,14 @@ import {
 } from '@angular/router';
 import { starPrefersReducedMotion } from '@star-ng/ui/core';
 import { routes } from './app.routes';
-import { provideDocsWebMcpTools } from './webmcp';
+
+/** True in a browser that has the WebMCP API (`document.modelContext` or `navigator.modelContext`). */
+function hasWebMcp(): boolean {
+  const hosts = [globalThis.document, globalThis.navigator] as unknown as ({
+    modelContext?: { registerTool?: unknown };
+  } | null)[];
+  return hosts.some((host) => typeof host?.modelContext?.registerTool === 'function');
+}
 
 /** The route config of the deepest active route: the page that the snapshot shows. */
 function pageOf(snapshot: ActivatedRouteSnapshot): unknown {
@@ -47,8 +62,18 @@ export const appConfig: ApplicationConfig = {
     // Event replay adds two inline scripts to each page; `tools/csp-hashes.mjs` adds their
     // hashes to the Content Security Policy of that page after the build.
     provideClientHydration(withIncrementalHydration()),
-    // Experimental WebMCP tools for AI agents in the browser (see `webmcp.ts`). They register
-    // only in a browser that has the WebMCP API.
-    provideDocsWebMcpTools(),
+    // Experimental WebMCP tools for AI agents in the browser (see `webmcp.ts`). The tools module
+    // loads with a dynamic `import()` after the application is stable, and only in a browser
+    // that has the WebMCP API, so the initial bundle does not carry it. The initializer does not
+    // wait for the import.
+    provideAppInitializer(() => {
+      if (!isPlatformBrowser(inject(PLATFORM_ID)) || !hasWebMcp()) return;
+      const injector = inject(EnvironmentInjector);
+      inject(ApplicationRef)
+        .whenStable()
+        .then(() => import('./webmcp'))
+        .then((module) => module.declareDocsWebMcpTools(injector))
+        .catch(() => undefined);
+    }),
   ],
 };

@@ -94,7 +94,7 @@ Examples in the docs, tests and comments use neutral, fictional data: orders, in
 5. Add the style partial `projects/star-ng/styles/controls/_<name>.scss`. Add `@use 'controls/<name>';` to `projects/star-ng/styles/star-ng.scss`.
 6. Add the docs page `projects/docs/src/app/controls/<name>.page.ts`. Each example is a `<docs-example source="<name>/<id>">` element, so the code that the page shows is the code that runs.
 7. Add the page to `DOCS_NAV` in `projects/docs/src/app/nav.ts`. The side navigation, its search and the routes come from this list.
-8. Run `corepack pnpm docs:gen`. Commit the changed file `projects/docs/src/app/generated/docs-data.ts`. `corepack pnpm lint` fails when it is out of date.
+8. Run `corepack pnpm docs:gen`. Commit the changed file `projects/docs/src/app/generated/docs-data.ts`. `corepack pnpm lint` fails when it is out of date. The same command refreshes the feature counts of the Angular features guide, which `lint` checks.
 9. Run `corepack pnpm docs:styles`. It writes `<name>.page.scss` next to the page: the library partials of the controls on the page (see "Docs styles per route"). Load it in the route component with `styleUrl` and `encapsulation: ViewEncapsulation.None`. `corepack pnpm lint` fails when it is out of date.
 10. Add tests (see "Test layers"). A new docs page gets visual baselines from CI.
 11. Run `corepack pnpm format`, `corepack pnpm lint`, `corepack pnpm test:ci`, `corepack pnpm build:lib` and `corepack pnpm check:package`.
