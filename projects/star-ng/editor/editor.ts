@@ -1163,7 +1163,9 @@ export class StarEditor implements FormValueControl<string> {
     this.findOpen.set(mode);
     this.runFind();
     // Render the panel now and focus its field in the same key event: the keys that the user
-    // types next go into the field, not into the content (a render wait lost them).
+    // types next go into the field, not into the content (a render wait lost them). This is the
+    // one synchronous render that a signal or `afterNextRender` cannot replace: the field does
+    // not exist until the `@if` of the panel renders, and the focus must move in this event.
     this.changeDetector.detectChanges();
     const field = this.host.nativeElement.querySelector<HTMLInputElement>(`#${this.findId}`);
     field?.focus();

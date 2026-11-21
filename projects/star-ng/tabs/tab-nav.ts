@@ -14,6 +14,7 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLinkActive } from '@angular/router';
 import { starInlineKey, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
@@ -84,10 +85,9 @@ export class StarTabLink {
   constructor() {
     const routerLinkActive = inject(RouterLinkActive, { self: true, optional: true });
     if (routerLinkActive) {
-      const subscription = routerLinkActive.isActiveChange.subscribe((active) =>
-        this.routerActive.set(active),
-      );
-      inject(DestroyRef).onDestroy(() => subscription.unsubscribe());
+      routerLinkActive.isActiveChange
+        .pipe(takeUntilDestroyed())
+        .subscribe((active) => this.routerActive.set(active));
     }
     // A disabled link must not navigate. `RouterLink` does not check `defaultPrevented`, and its
     // listener can run first. A capture listener on the link runs before the bubble listeners of

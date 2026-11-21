@@ -17697,14 +17697,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarSchedulerEditorSave",
         "default": null,
         "required": false,
-        "description": ""
+        "description": "Emits when Save is pressed in the built-in editor, before the dialog closes."
       },
       {
         "name": "eventDelete",
         "type": "StarSchedulerEventSelect",
         "default": null,
         "required": false,
-        "description": ""
+        "description": "Emits when Delete is pressed in the built-in editor, before the dialog closes."
       }
     ],
     "parts": [

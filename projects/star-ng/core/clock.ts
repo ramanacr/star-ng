@@ -42,7 +42,8 @@ export class StarClock {
     if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
     const tick = Math.max(1000, inject(STAR_CLOCK_TICK));
     // Outside the zone: a zone-based application does not run change detection on every tick;
-    // the signal update schedules the views that read `now()`.
+    // the signal update schedules the views that read `now()`. In a zoneless application
+    // (the default) `NgZone` is a no-op zone and this only runs the function.
     const timer = inject(NgZone).runOutsideAngular(() =>
       setInterval(() => this.current.set(Date.now()), tick),
     );

@@ -90,9 +90,13 @@ test.describe('splitter', () => {
     await page.mouse.down();
     await page.mouse.move(box.x + box.width * 0.7, handle.y + handle.height / 2, { steps: 5 });
     await page.mouse.up();
-    const value = Number(await gutter.getAttribute('aria-valuenow'));
-    expect(value).toBeGreaterThan(65);
-    expect(value).toBeLessThan(75);
+    // Poll: the value comes with the next render after the last pointer move.
+    await expect
+      .poll(async () => {
+        const value = Number(await gutter.getAttribute('aria-valuenow'));
+        return value > 65 && value < 75 ? 'in range' : value;
+      })
+      .toBe('in range');
   });
 });
 

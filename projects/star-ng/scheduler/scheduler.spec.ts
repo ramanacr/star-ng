@@ -81,6 +81,7 @@ const EVENTS: StarSchedulerEvent[] = [
         (eventSelect)="selected.push($event)"
         (eventChange)="onChange($event)"
         (editorSave)="saved.push($event)"
+        (eventDelete)="deleted.push($event)"
       >
         @if (custom()) {
           <ng-template starSchedulerEvent let-occurrence let-time="time">
@@ -106,6 +107,7 @@ class Host {
   readonly selected: StarSchedulerEventSelect[] = [];
   readonly changes: StarSchedulerEventChange[] = [];
   readonly saved: StarSchedulerEditorSave[] = [];
+  readonly deleted: StarSchedulerEventSelect[] = [];
 
   onChange(change: StarSchedulerEventChange): void {
     this.changes.push(change);
@@ -164,6 +166,7 @@ async function setup(configure?: (host: Host) => void) {
 describe('StarScheduler', () => {
   afterEach(() => {
     document.querySelectorAll('dialog').forEach((d) => d.remove());
+    vi.restoreAllMocks();
   });
 
   describe('week view', () => {
@@ -794,6 +797,72 @@ describe('StarScheduler', () => {
       }
       expect(document.querySelector('dialog[open]')).toBeNull();
       expect(host.saved).toHaveLength(0);
+    });
+
+    it('keeps a save when the scheduler is destroyed while the editor is still closing', async () => {
+      const warn = vi.spyOn(console, 'warn');
+      const error = vi.spyOn(console, 'error');
+      const { fixture, host, cell, stable } = await setup((h) => h.editor.set(true));
+      cell(28, 2).click();
+      await stable();
+      const dialog = document.querySelector('dialog')!;
+      const title = dialog.querySelector<HTMLInputElement>('input[starInput]')!;
+      title.value = 'Budget review';
+      title.dispatchEvent(new Event('input'));
+      await stable();
+      const form = dialog.querySelector('form')!;
+      form.dispatchEvent(new Event('submit', { cancelable: true }));
+      // The save is emitted when Save is pressed, before the dialog closes.
+      expect(host.saved).toHaveLength(1);
+      expect(host.saved[0].value.title).toBe('Budget review');
+      // A second press during the exit animation does not emit again.
+      form.dispatchEvent(new Event('submit', { cancelable: true }));
+      // The scheduler goes (a route change) before the dialog has closed.
+      fixture.destroy();
+      for (let i = 0; i < 4; i++) {
+        TestBed.tick();
+        await Promise.resolve();
+      }
+      expect(document.querySelector('dialog[open]')).toBeNull();
+      expect(host.saved).toHaveLength(1);
+      // No output emits after the destroy (NG0953).
+      const ng0953 = [...warn.mock.calls, ...error.mock.calls].filter((call) =>
+        String(call[0]).includes('NG0953'),
+      );
+      expect(ng0953).toEqual([]);
+    });
+
+    it('emits eventDelete when Delete is pressed, once, and not after a destroy', async () => {
+      const warn = vi.spyOn(console, 'warn');
+      const error = vi.spyOn(console, 'error');
+      const { fixture, host, event, stable } = await setup((h) => h.editor.set(true));
+      event('Design review').click();
+      await stable();
+      const dialog = document.querySelector('dialog')!;
+      const remove = [...dialog.querySelectorAll<HTMLButtonElement>('button')].find(
+        (b) => b.textContent?.trim() === 'Delete event',
+      )!;
+      expect(remove).toBeDefined();
+      remove.click();
+      // The delete is emitted when Delete is pressed, before the dialog closes.
+      expect(host.deleted).toHaveLength(1);
+      expect(host.deleted[0].event.id).toBe('review');
+      // A second press during the exit animation does not emit again.
+      remove.click();
+      expect(host.deleted).toHaveLength(1);
+      // The scheduler goes before the dialog has closed.
+      fixture.destroy();
+      for (let i = 0; i < 4; i++) {
+        TestBed.tick();
+        await Promise.resolve();
+      }
+      expect(document.querySelector('dialog[open]')).toBeNull();
+      expect(host.deleted).toHaveLength(1);
+      expect(host.saved).toHaveLength(0);
+      const ng0953 = [...warn.mock.calls, ...error.mock.calls].filter((call) =>
+        String(call[0]).includes('NG0953'),
+      );
+      expect(ng0953).toEqual([]);
     });
   });
 

@@ -197,7 +197,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
  *   key move the focused event by one slot or day, Alt, Shift and an arrow key change its length.
  *   A live region reads the change. In right-to-left the left and right keys are mirrored.
  * - `editor`: a built-in dialog edits title, start, end, all day and resource, and emits
- *   `editorSave` or `eventDelete`.
+ *   `editorSave` or `eventDelete` when Save or Delete is pressed (before the dialog closes).
  * - Times are the local time of the browser; there is no time-zone conversion.
  *
  * ```html
@@ -764,7 +764,9 @@ export class StarScheduler {
   readonly slotSelect = output<StarSchedulerSlotSelect>();
   readonly eventSelect = output<StarSchedulerEventSelect>();
   readonly eventChange = output<StarSchedulerEventChange>();
+  /** Emits when Save is pressed in the built-in editor, before the dialog closes. */
   readonly editorSave = output<StarSchedulerEditorSave>();
+  /** Emits when Delete is pressed in the built-in editor, before the dialog closes. */
   readonly eventDelete = output<StarSchedulerEventSelect>();
 
   private readonly slotsQuery = contentChildren(StarSlot, { descendants: true });
@@ -1752,6 +1754,12 @@ export class StarScheduler {
     opener: HTMLElement | null,
     value: StarSchedulerEditorValue,
   ): void {
+    // The editor belongs to this scheduler: it closes when the scheduler goes (a route change),
+    // and then no focus moves. Save and Delete emit at the moment they are pressed (`commit`),
+    // before the dialog starts to close: a scheduler destroyed during the exit animation has
+    // already emitted, and a destroyed scheduler never emits.
+    let destroyed = false;
+    let committed = false;
     const data: StarSchedulerEditorData = {
       value,
       isNew: !occurrence,
@@ -1760,6 +1768,19 @@ export class StarScheduler {
       locale: this.locale(),
       hourFormat: this.hourFormat(),
       slotMinutes: this.step(),
+      commit: (result) => {
+        if (destroyed || committed) return;
+        committed = true;
+        if (result.action === 'delete' && occurrence) {
+          this.eventDelete.emit({ event: occurrence.event, occurrence });
+        } else if (result.action === 'save') {
+          this.editorSave.emit({
+            event: occurrence?.event ?? null,
+            occurrence,
+            value: result.value,
+          });
+        }
+      },
     };
     const ref = this.dialogs.open<
       StarSchedulerEditor,
@@ -1774,15 +1795,11 @@ export class StarScheduler {
       },
       this.injector,
     );
-    // The editor belongs to this scheduler: it closes when the scheduler goes (a route change),
-    // and then nothing is emitted and no focus moves. A save whose dialog is still closing (exit
-    // animation) when the scheduler goes is dropped too: a destroyed scheduler cannot emit.
-    let destroyed = false;
     const unregister = this.destroyRef.onDestroy(() => {
       destroyed = true;
       ref.close();
     });
-    void ref.closed.then((result) => {
+    void ref.closed.then(() => {
       if (destroyed) return;
       unregister();
       // The focus goes back to the slot or event that opened the editor, or to the active cell.
@@ -1796,12 +1813,6 @@ export class StarScheduler {
         },
         { injector: this.injector },
       );
-      if (!result) return;
-      if (result.action === 'delete' && occurrence) {
-        this.eventDelete.emit({ event: occurrence.event, occurrence });
-      } else if (result.action === 'save') {
-        this.editorSave.emit({ event: occurrence?.event ?? null, occurrence, value: result.value });
-      }
     });
   }
 }
