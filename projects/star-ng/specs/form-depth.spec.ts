@@ -1,16 +1,18 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
 import { StarFooterTemplate, StarHeaderTemplate, StarIconTemplate } from '@star-ng/ui/core';
 import { StarInputMask } from '@star-ng/ui/input-mask';
 import { StarInputNumber } from '@star-ng/ui/input-number';
 import { StarInputTags, StarInputTagTemplate } from '@star-ng/ui/input-tags';
+import { StarColorPicker } from '@star-ng/ui/knob';
 import { StarPassword } from '@star-ng/ui/password';
 import { StarRating } from '@star-ng/ui/rating';
 import { StarSlider } from '@star-ng/ui/slider';
 
 @Component({
   imports: [
+    StarColorPicker,
     StarCheckbox,
     StarRating,
     StarInputNumber,
@@ -24,6 +26,13 @@ import { StarSlider } from '@star-ng/ui/slider';
     StarFooterTemplate,
   ],
   template: `
+    <star-color-picker
+      class="color"
+      ariaLabel="Color"
+      (opened)="panel.push('open')"
+      (closed)="panel.push('close')"
+    />
+
     <star-checkbox class="box" [(checked)]="checked" [(indeterminate)]="mixed">
       Terms
       <ng-template starIcon="check" let-on
@@ -95,6 +104,8 @@ class Host {
   readonly password = signal('');
   readonly level = signal(20);
   readonly ends: number[] = [];
+  readonly panel: string[] = [];
+  readonly picker = viewChild.required(StarColorPicker);
 }
 
 async function setup() {
@@ -228,5 +239,14 @@ describe('form inputs depth (N1)', () => {
     await fixture.whenStable();
     expect(host.level()).toBe(40);
     expect(host.ends).toEqual([40]);
+  });
+
+  it('color picker: opened and closed of the custom color panel', async () => {
+    const { fixture, host } = await setup();
+    host.picker().openPanel();
+    await fixture.whenStable();
+    host.picker().closePanel(false);
+    await fixture.whenStable();
+    expect(host.panel).toEqual(['open', 'close']);
   });
 });

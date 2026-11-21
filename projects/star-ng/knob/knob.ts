@@ -476,6 +476,10 @@ export class StarColorPicker implements FormValueControl<string> {
    * dropper. A value that the application sets does not emit. PrimeNG `onChange`.
    */
   readonly changed = output<string>();
+  /** The custom color panel opened. PrimeNG `onShow`. */
+  readonly opened = output<void>();
+  /** The custom color panel closed. PrimeNG `onHide`. */
+  readonly closed = output<void>();
   /** The parent `star-field` when it labels the swatch group (a group is not labelable). */
   protected readonly field = injectStarFieldLink(null, () => this.focus());
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
@@ -583,12 +587,14 @@ export class StarColorPicker implements FormValueControl<string> {
     if (this.disabled() || this.open()) return;
     this.rtl.set(starIsRtl(this.custom().nativeElement));
     this.open.set(true);
+    this.opened.emit();
   }
 
   /** Closes the panel; by default the focus goes back to the custom color tile. */
   closePanel(focusTile = true): void {
     if (!this.open()) return;
     this.open.set(false);
+    this.closed.emit();
     this.touch.emit();
     if (focusTile) this.custom().nativeElement.focus();
   }

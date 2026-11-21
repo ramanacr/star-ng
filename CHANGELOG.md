@@ -169,6 +169,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Form inputs
 
+- Color picker: `opened` and `closed` outputs of the custom color panel (PrimeNG `onShow`, `onHide`).
 - Checkbox: `starIcon="check"` slot for the check and the indeterminate icon (PrimeNG `#icon`).
 - Input mask: `characterPattern` (what an `a` slot takes; PrimeNG `characterPattern`).
 - Input number: `buttonLayout` (`horizontal`, `stacked`, `vertical`), `allowEmpty`, `highlightOnFocus` and the `starIcon` slots `increment` and `decrement` (PrimeNG `buttonLayout`, `allowEmpty`, `highlightOnFocus`, `#incrementbuttonicon`, `#decrementbuttonicon`).

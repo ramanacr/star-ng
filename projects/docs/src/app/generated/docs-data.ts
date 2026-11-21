@@ -3691,6 +3691,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "The color that the user chose: a swatch, a typed hex value, the custom color panel or the eye dropper. A value that the application sets does not emit. PrimeNG `onChange`."
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The custom color panel opened. PrimeNG `onShow`."
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The custom color panel closed. PrimeNG `onHide`."
       }
     ],
     "parts": [
