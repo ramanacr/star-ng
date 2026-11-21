@@ -9,5 +9,11 @@ export const routes: Routes = [
     loadComponent: () => import('./home.page').then((m) => m.HomePage),
   },
   ...DOCS_ROUTES,
-  { path: '**', redirectTo: '' },
+  // An unknown address shows a "Page not found" page (see `not-found.page.ts`). The prerender
+  // step skips this wildcard route; GitHub Pages serves the client shell `404.html` for it.
+  {
+    path: '**',
+    title: 'Page not found · StarNG',
+    loadComponent: () => import('./not-found.page').then((m) => m.NotFoundPage),
+  },
 ];

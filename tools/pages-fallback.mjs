@@ -5,8 +5,9 @@
 // A request for any other path has no file, so GitHub answers with the `404.html` of the site
 // (status 404, no rewrite). `404.html` is a copy of the client-rendered shell `index.csr.html`
 // that the build writes next to the prerendered pages: the browser loads the application, the
-// router reads the address and shows the page (an unknown address goes to the home page). The
-// shell has no page content, so an unknown address never shows the content of a wrong page.
+// router reads the address and shows the page (an unknown address shows the "Page not found"
+// page). The shell has no page content, so an unknown address never shows the content of a wrong
+// page.
 // When a build has no `index.csr.html` (no prerender), `index.html` is the shell.
 //
 // Usage: `node tools/pages-fallback.mjs [output-folder]` (default `dist/docs/browser`).
