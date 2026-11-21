@@ -33,6 +33,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
     class: 'star-slider',
     '[class.star-slider--disabled]': 'disabled()',
     '[class.star-slider--vertical]': "orientation() === 'vertical'",
+    '[class.star-slider--invalid]': 'showInvalid()',
   },
   template: `
     <input
@@ -50,6 +51,8 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
       [attr.aria-labelledby]="ariaLabelledBy()"
       [attr.aria-describedby]="fieldDescribedBy()"
       [attr.aria-valuetext]="valueText()"
+      [attr.aria-invalid]="showInvalid() || null"
+      [attr.name]="name() || null"
       [attr.aria-orientation]="orientation() === 'vertical' ? 'vertical' : null"
       [style.--star-fill]="percent() + '%'"
       (input)="value.set(+range.value)"
@@ -86,7 +89,17 @@ export class StarSlider implements FormValueControl<number> {
   readonly inputId = input(inject(_IdGenerator).getId('star-slider-'));
   /** The parent `star-field` when it labels the slider: the label points at the input. */
   private readonly field = injectStarFieldLink(this.inputId);
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+  /** The value is not valid; it shows after `touched` (also bound from Signal Forms). */
+  readonly invalid = input(false, { transform: booleanAttribute });
+  /** The user has visited the control (Signal Forms binds it). */
+  readonly touched = input(false, { transform: booleanAttribute });
+  /** Name of the value in a native form submit. */
+  readonly name = input('');
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
@@ -117,6 +130,7 @@ export class StarSlider implements FormValueControl<number> {
     class: 'star-slider star-slider--range',
     '[class.star-slider--disabled]': 'disabled()',
     '[class.star-slider--vertical]': "orientation() === 'vertical'",
+    '[class.star-slider--invalid]': 'showInvalid()',
     '[attr.role]': "ariaLabelledBy() ? 'group' : null",
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
   },
@@ -138,6 +152,8 @@ export class StarSlider implements FormValueControl<number> {
         [value]="value()[0]"
         [disabled]="disabled() || disabledMinHandle()"
         [attr.aria-orientation]="orientation() === 'vertical' ? 'vertical' : null"
+        [attr.aria-invalid]="showInvalid() || null"
+        [attr.name]="name() || null"
         (change)="slideEnd.emit(value())"
         [attr.aria-label]="text.sliderMinimum(groupLabel())"
         [attr.aria-describedby]="fieldDescribedBy()"
@@ -156,6 +172,8 @@ export class StarSlider implements FormValueControl<number> {
         [value]="value()[1]"
         [disabled]="disabled() || disabledMaxHandle()"
         [attr.aria-orientation]="orientation() === 'vertical' ? 'vertical' : null"
+        [attr.aria-invalid]="showInvalid() || null"
+        [attr.name]="name() || null"
         (change)="slideEnd.emit(value())"
         [attr.aria-label]="text.sliderMaximum(groupLabel())"
         [attr.aria-describedby]="fieldDescribedBy()"
@@ -184,6 +202,12 @@ export class StarRangeSlider implements FormValueControl<readonly [number, numbe
   readonly ariaLabelledBy = input<string | null>(null);
   /** A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`). */
   readonly required = input(false, { transform: booleanAttribute });
+  /** The value is not valid; it shows after `touched` (also bound from Signal Forms). */
+  readonly invalid = input(false, { transform: booleanAttribute });
+  /** The user has visited the control (Signal Forms binds it). */
+  readonly touched = input(false, { transform: booleanAttribute });
+  /** Name of the value in a native form submit. */
+  readonly name = input('');
   readonly disabled = input(false, { transform: booleanAttribute });
   /** `'vertical'`: low at the bottom, high at the top. PrimeNG `orientation`. */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
@@ -206,6 +230,10 @@ export class StarRangeSlider implements FormValueControl<readonly [number, numbe
   private readonly field = injectStarFieldLink(null, () => this.focus());
   /** `ariaLabel`, else the `star-field` label text. */
   protected readonly groupLabel = computed(() => this.ariaLabel() ?? (this.field?.label() || ''));
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   /** Focuses the handle of the low value. */

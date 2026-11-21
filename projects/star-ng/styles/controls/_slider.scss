@@ -235,3 +235,12 @@
   width: 1.5rem;
   height: var(--star-slider-length, 10rem);
 }
+// Invalid state (`invalid` after `touched`).
+.star-slider--invalid .star-slider__input {
+  outline: 2px solid var(--star-danger);
+  outline-offset: 2px;
+  border-radius: var(--star-radius-pill);
+}
+.star-rating--invalid .star-rating__star {
+  color: var(--star-danger);
+}

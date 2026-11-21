@@ -53,6 +53,8 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'fieldDescribedBy()',
     '[attr.aria-required]': 'required() || null',
+    '[attr.aria-invalid]': 'showInvalid() || null',
+    '[class.star-rating--invalid]': 'showInvalid()',
     '[class.star-rating--vertical]': "orientation() === 'vertical'",
     '[class.star-rating--readonly]': 'readonly() || disabled()',
     '(mouseleave)': 'hover.set(null)',
@@ -63,7 +65,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
         <input
           type="radio"
           class="star-sr-only"
-          [name]="groupName"
+          [name]="name() || groupName"
           value="0"
           [checked]="value() === null"
           [disabled]="disabled() || readonly()"
@@ -98,7 +100,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
               <input
                 type="radio"
                 class="star-sr-only"
-                [name]="groupName"
+                [name]="name() || groupName"
                 [value]="option"
                 [checked]="value() === option"
                 [disabled]="disabled() || readonly()"
@@ -120,7 +122,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
           <input
             type="radio"
             class="star-sr-only"
-            [name]="groupName"
+            [name]="name() || groupName"
             [value]="star"
             [checked]="value() === star"
             [disabled]="disabled() || readonly()"
@@ -159,6 +161,12 @@ export class StarRating implements FormValueControl<number | null> {
   readonly ariaLabelledBy = input<string | null>(null);
   /** A rating is needed (`aria-required`); also bound from Signal Forms `required()`. */
   readonly required = input(false, { transform: booleanAttribute });
+  /** The value is not valid; it shows after `touched` (also bound from Signal Forms). */
+  readonly invalid = input(false, { transform: booleanAttribute });
+  /** The user has visited the control (Signal Forms binds it). */
+  readonly touched = input(false, { transform: booleanAttribute });
+  /** Name of the value in a native form submit. */
+  readonly name = input('');
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
@@ -167,6 +175,10 @@ export class StarRating implements FormValueControl<number | null> {
   private readonly field = injectStarFieldLink(null, () => this.focus());
   protected readonly labelledBy = computed(() =>
     starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
   );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
