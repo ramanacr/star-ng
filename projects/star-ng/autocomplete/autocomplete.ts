@@ -78,8 +78,11 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
    * Loads the suggestions itself, as an alternative to `(completeMethod)` + `[suggestions]`. The
    * control calls the function with the debounced text (at the time `completeMethod` fires, which
    * still fires) through Angular `resource()`: it shows the loading row while the promise is open,
-   * aborts an older load when the user types again, and shows the result. A set `suggestions`
-   * input wins over the loaded list. Default `null` (no loader).
+   * aborts an older load when the user types again, and shows the result. When the promise
+   * rejects, the list shows the text `searchFailed` (`STAR_UI_TEXT`) instead of the empty text;
+   * the next search runs the loader again, also for the same text. A search for the same text
+   * as the last successful one keeps that result and does not call the loader. A set
+   * `suggestions` input wins over the loaded list. Default `null` (no loader).
    */
   readonly suggestionLoader = input<StarAutoCompleteLoader<TOption> | null>(null);
 
@@ -128,6 +131,11 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     return this.loading() || this.loaded.isLoading();
   }
 
+  /** The `suggestionLoader` failed for the last search (and no `suggestions` input is set). */
+  protected readonly loadFailed = computed(
+    () => !this.suggestions() && !!this.suggestionLoader() && this.loaded.status() === 'error',
+  );
+
   protected override readonly visibleOptions = computed(() => {
     const remote = this.remote();
     const query = this.query();
@@ -152,12 +160,14 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
       (this.visibleOptions().length > 0 ||
         this.customRow() !== null ||
         this.busy() ||
+        this.loadFailed() ||
         this.showEmptyMessage()),
   );
 
   protected readonly liveText = computed(() => {
     if (!this.panelVisible()) return '';
     if (this.busy()) return this.text.searching;
+    if (this.loadFailed()) return this.text.searchFailed;
     const count = this.visibleOptions().length;
     return count ? this.text.resultsAvailable(count) : this.emptyText();
   });
@@ -229,6 +239,8 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
 
   /** Starts a search: `completeMethod`, and the `suggestionLoader` when one is set. */
   private search(query: string): void {
+    // The same text after a failed load: the params do not change, so reload explicitly.
+    if (this.searched() === query && this.loaded.status() === 'error') this.loaded.reload();
     this.searched.set(query);
     this.completeMethod.emit({ query });
   }
@@ -466,7 +478,9 @@ const TEMPLATE = `
         } @empty {
           @if (!loadingRow() && customRow() === null) {
             <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
-              @if (emptySlot(); as custom) {
+              @if (loadFailed() && !busy()) {
+                {{ text.searchFailed }}
+              } @else if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
               } @else {
                 <ng-container>{{ busy() ? text.searching : emptyText() }}</ng-container>

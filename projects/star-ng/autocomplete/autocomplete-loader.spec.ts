@@ -18,6 +18,7 @@ const CITIES: City[] = [
   template: `
     <star-autocomplete
       [suggestionLoader]="load"
+      [suggestions]="given()"
       (completeMethod)="queries.push($event.query)"
       optionLabel="name"
       [(value)]="city"
@@ -28,11 +29,17 @@ const CITIES: City[] = [
 })
 class Host {
   readonly city = signal<City | null>(null);
+  readonly given = signal<readonly City[] | null>(null);
+  failNext = false;
   readonly queries: string[] = [];
   readonly calls: { query: string; signal: AbortSignal }[] = [];
   readonly pending: ((value: readonly City[]) => void)[] = [];
   readonly load = (query: string, abortSignal: AbortSignal): Promise<readonly City[]> => {
     this.calls.push({ query, signal: abortSignal });
+    if (this.failNext) {
+      this.failNext = false;
+      return Promise.reject(new Error('The service is down'));
+    }
     return new Promise((resolve) =>
       this.pending.push(() =>
         resolve(CITIES.filter((c) => c.name.toLowerCase().startsWith(query.toLowerCase()))),
@@ -95,5 +102,39 @@ describe('StarAutoComplete suggestionLoader', () => {
     host.pending[1]([]);
     await settle(fixture);
     expect(options().map((o) => o.textContent?.trim())).toEqual(['Lyon']);
+  });
+
+  it('shows searchFailed when the loader rejects, and the same text loads again', async () => {
+    const fixture = TestBed.createComponent(Host);
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input')!;
+
+    host.failNext = true;
+    type(input, 'ly');
+    await settle(fixture);
+    await settle(fixture);
+    const empty = () => document.querySelector('[data-star-part=emptyItem]')?.textContent?.trim();
+    expect(empty()).toBe('The search failed. Type again to retry.');
+
+    type(input, 'ly');
+    await settle(fixture);
+    expect(host.calls.map((c) => c.query)).toEqual(['ly', 'ly']);
+    host.pending.shift()!([]);
+    await settle(fixture);
+    expect(options().map((o) => o.textContent?.trim())).toEqual(['Lyon']);
+  });
+
+  it('a set suggestions input wins over the loaded list', async () => {
+    const fixture = TestBed.createComponent(Host);
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    host.given.set([CITIES[2]]);
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input')!;
+    type(input, 'l');
+    await settle(fixture);
+    host.pending.shift()!([]);
+    await settle(fixture);
+    expect(options().map((o) => o.textContent?.trim())).toEqual(['Oslo']);
   });
 });

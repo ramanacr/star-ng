@@ -50,6 +50,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   selectedItems: (count) =>
     `${count} ${forCount(count, 'elemento seleccionado', 'elementos seleccionados')}`,
   searching: 'Buscando…',
+  searchFailed: 'La búsqueda ha fallado. Escriba de nuevo para reintentar.',
   showOptions: 'Mostrar opciones',
   addCustomValue: (label) => `Añadir «${label}»`,
   resultsAvailable: (count) =>
