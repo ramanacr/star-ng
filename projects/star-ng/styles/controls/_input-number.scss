@@ -123,3 +123,37 @@
 .star-password__rule--ok {
   color: color-mix(in srgb, var(--star-success) 65%, var(--star-text-strong));
 }
+// Step buttons stacked at the end (`buttonLayout="stacked"`).
+.star-number__steps {
+  display: flex;
+  flex-direction: column;
+
+  .star-number__btn {
+    height: 1rem;
+    margin-block: 0;
+  }
+}
+.star-number--stacked .star-number__input {
+  text-align: start;
+}
+// Plus above, minus below the field (`buttonLayout="vertical"`).
+.star-number--vertical {
+  display: inline-block;
+
+  .star-number__control {
+    flex-direction: column;
+  }
+  .star-number__btn {
+    width: 100%;
+    margin: 0;
+  }
+  .star-number__input {
+    width: 100%;
+  }
+}
+// Icon slots (`starIcon`) of the number and password fields.
+.star-number__icon,
+.star-password__icon {
+  display: inline-flex;
+  align-items: center;
+}

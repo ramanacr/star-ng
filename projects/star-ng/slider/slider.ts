@@ -19,13 +19,21 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
  * Slider (PrimeNG `p-slider`) on native `<input type="range">`: full keyboard and screen-reader
  * support from the platform, styled track and fill, optional value label.
  * `<star-slider [(value)]="severity" [min]="1" [max]="5" ariaLabel="Severity" showValue />`
+ *
+ * `orientation="vertical"` draws it from bottom (min) to top (max) with `aria-orientation`;
+ * `slideEnd` emits the value when a drag or a key press ends (PrimeNG `orientation`,
+ * `onSlideEnd`).
  */
 @Component({
   selector: 'star-slider',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-slider', '[class.star-slider--disabled]': 'disabled()' },
+  host: {
+    class: 'star-slider',
+    '[class.star-slider--disabled]': 'disabled()',
+    '[class.star-slider--vertical]': "orientation() === 'vertical'",
+  },
   template: `
     <input
       data-star-part="input"
@@ -41,8 +49,10 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
       [attr.aria-label]="ariaLabel()"
       [attr.aria-describedby]="fieldDescribedBy()"
       [attr.aria-valuetext]="valueText()"
+      [attr.aria-orientation]="orientation() === 'vertical' ? 'vertical' : null"
       [style.--star-fill]="percent() + '%'"
       (input)="value.set(+range.value)"
+      (change)="slideEnd.emit(value())"
       (blur)="touch.emit()"
     />
     @if (showValue()) {
@@ -64,6 +74,10 @@ export class StarSlider implements FormValueControl<number> {
   /** Text for the current value, for example `(v) => v + ' kg'`. */
   readonly format = input<(value: number) => string>(String);
   readonly ariaLabel = input<string | null>(null);
+  /** `'vertical'` draws the slider from bottom (min) to top (max). PrimeNG `orientation`. */
+  readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
+  /** The value when a drag or a key press ends (the native `change`). PrimeNG `onSlideEnd`. */
+  readonly slideEnd = output<number>();
   readonly inputId = input(inject(_IdGenerator).getId('star-slider-'));
   /** The parent `star-field` when it labels the slider: the label points at the input. */
   private readonly field = injectStarFieldLink(this.inputId);

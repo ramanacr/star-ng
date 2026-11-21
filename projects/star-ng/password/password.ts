@@ -1,10 +1,13 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   ElementRef,
+  forwardRef,
   inject,
   input,
   model,
@@ -13,7 +16,17 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, StarStyled, StarUiText, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  STAR_UI_TEXT,
+  StarIconContext,
+  StarSlot,
+  starSlot,
+  starSlotMap,
+  StarStyled,
+  StarUiText,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink } from '@star-ng/ui/field';
 
 export interface StarPasswordRule {
@@ -38,11 +51,20 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
  * `current-password` without.
  *
  * `<star-password [formField]="form.newPassword" feedback />`
+ *
+ * Strength: the share of `rules` met gives 1 to 4 bars; `thresholds` sets the shares for fair,
+ * good and strong (PrimeNG `mediumRegex` / `strongRegex`; the texts come from `STAR_UI_TEXT`,
+ * PrimeNG `weakLabel` / `mediumLabel` / `strongLabel`). Slots: `<ng-template starIcon="show">`
+ * and `starIcon="hide"` replace the icons of the show / hide button (PrimeNG `#showicon`,
+ * `#hideicon`); `starHeader` and `starFooter` add content above and below the strength feedback
+ * (PrimeNG `#header`, `#footer`).
  */
 @Component({
   selector: 'star-password',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarPassword) }],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-password',
@@ -78,17 +100,26 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         [disabled]="disabled()"
         (click)="masked.set(!masked())"
       >
-        <i
-          data-star-part="revealIcon"
-          class="ph-bold"
-          [class.ph-eye]="masked()"
-          [class.ph-eye-slash]="!masked()"
-          aria-hidden="true"
-        ></i>
+        @if (icons().get(masked() ? 'show' : 'hide'); as icon) {
+          <span data-star-part="revealIcon" class="star-password__icon" aria-hidden="true">
+            <ng-container *ngTemplateOutlet="icon; context: noState" />
+          </span>
+        } @else {
+          <i
+            data-star-part="revealIcon"
+            class="ph-bold"
+            [class.ph-eye]="masked()"
+            [class.ph-eye-slash]="!masked()"
+            aria-hidden="true"
+          ></i>
+        }
       </button>
     </div>
     @if (feedback()) {
       <div data-star-part="feedbackPanel" class="star-password__feedback" [id]="feedbackId">
+        @if (headerSlot(); as header) {
+          <ng-container *ngTemplateOutlet="header" />
+        }
         <div data-star-part="meterPanel" class="star-password__meter" aria-hidden="true">
           @for (bar of bars; track bar) {
             <span
@@ -118,6 +149,9 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
             </li>
           }
         </ul>
+        @if (footerSlot(); as footer) {
+          <ng-container *ngTemplateOutlet="footer" />
+        }
       </div>
     }
   `,
@@ -136,6 +170,11 @@ export class StarPassword implements FormValueControl<string> {
   protected readonly activeRules = computed(
     () => this.rules() ?? starPasswordRules(this.text, this.minLength() ?? 12),
   );
+  /**
+   * Shares of the rules met (0 to 1) from which the strength is fair, good and strong.
+   * Default `[0.375, 0.625, 0.875]` (the share rounded to quarters). Below the first share it is weak.
+   */
+  readonly thresholds = input<readonly [number, number, number]>([0.375, 0.625, 0.875]);
   readonly placeholder = input<string | null>(null);
   readonly autocomplete = input<string | null>(null);
   readonly ariaLabel = input<string | null>(null);
@@ -163,15 +202,21 @@ export class StarPassword implements FormValueControl<string> {
   );
 
   protected readonly masked = signal(true);
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  protected readonly noState: StarIconContext = {};
   protected readonly bars = [0, 1, 2, 3];
   private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
 
-  /** Rules met, scaled to 0–4 bars. */
+  /** Rules met, as 0–4 bars: 1 weak, 2 fair, 3 good, 4 strong (`thresholds`). */
   protected readonly score = computed(() => {
     const rules = this.activeRules();
     if (!this.value() || !rules.length) return 0;
-    const met = rules.filter((rule) => rule.test(this.value())).length;
-    return Math.max(1, Math.round((met / rules.length) * 4));
+    const share = rules.filter((rule) => rule.test(this.value())).length / rules.length;
+    const [fair, good, strong] = this.thresholds();
+    return share >= strong ? 4 : share >= good ? 3 : share >= fair ? 2 : 1;
   });
   protected readonly level = computed<'weak' | 'fair' | 'good' | 'strong'>(
     () => (['weak', 'weak', 'fair', 'good', 'strong'] as const)[this.score()],

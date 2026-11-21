@@ -1,10 +1,14 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
+  Directive,
   ElementRef,
+  forwardRef,
   inject,
   input,
   model,
@@ -13,10 +17,47 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  STAR_UI_TEXT,
+  StarIconContext,
+  StarSlot,
+  starSlot,
+  starSlotMap,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink } from '@star-ng/ui/field';
 
 export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
+
+/** Context of the chip slot of `star-input-tags`. */
+export interface StarInputTagContext {
+  /** The tag text. */
+  readonly $implicit: string;
+  /** Position of the tag, starting at `0`. */
+  readonly index: number;
+}
+
+/**
+ * Replaces the text of each chip of `star-input-tags`:
+ * `<ng-template starInputTag let-tag let-index="index">…</ng-template>`. PrimeNG `#item` (chip)
+ * template. The chip and its remove button stay; do not add focusable elements.
+ */
+@Directive({
+  selector: 'ng-template[starInputTag]',
+  providers: [{ provide: StarSlot, useExisting: StarInputTagTemplate }],
+})
+export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
+  readonly name = 'inputTag';
+
+  static ngTemplateContextGuard(
+    _dir: StarInputTagTemplate,
+    _ctx: unknown,
+  ): _ctx is StarInputTagContext {
+    return true;
+  }
+}
 
 /**
  * Free-text tag field (PrimeNG `p-inputtags` / chips): type a value and press Enter, a
@@ -26,11 +67,16 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
  * per-tag `maxLength`. A live region announces added, removed and rejected tags.
  *
  * `<star-input-tags [formField]="form.cc" [validate]="isEmail" placeholder="Add e-mail" ariaLabel="CC" />`
+ *
+ * Slots: `starInputTag` (the text of each chip), `<ng-template starIcon="remove">` (the remove
+ * icon of a chip) and `starIcon="clear"` (the clear icon).
  */
 @Component({
   selector: 'star-input-tags',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarInputTags) }],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-select star-tags',
@@ -54,7 +100,11 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
         >
           @for (tag of value(); track tag; let i = $index) {
             <li data-star-part="chipItem" class="star-chip star-chip--sm">
-              {{ tag }}
+              @if (tagSlot(); as custom) {
+                <ng-container *ngTemplateOutlet="custom; context: { $implicit: tag, index: i }" />
+              } @else {
+                {{ tag }}
+              }
               @if (!disabled() && !readonly()) {
                 <button
                   data-star-part="removeButton"
@@ -64,7 +114,13 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
                   [attr.aria-label]="text.removeItem(tag)"
                   (click)="$event.stopPropagation(); removeAt(i)"
                 >
-                  <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+                  @if (icons().get('remove'); as icon) {
+                    <span data-star-part="removeIcon" class="star-chip__icon" aria-hidden="true">
+                      <ng-container *ngTemplateOutlet="icon; context: noState" />
+                    </span>
+                  } @else {
+                    <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+                  }
                 </button>
               }
             </li>
@@ -100,7 +156,13 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
           [attr.aria-label]="text.clear"
           (click)="$event.stopPropagation(); clear()"
         >
-          <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+          @if (icons().get('clear'); as icon) {
+            <span data-star-part="clearIcon" class="star-chip__icon" aria-hidden="true">
+              <ng-container *ngTemplateOutlet="icon; context: noState" />
+            </span>
+          } @else {
+            <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+          }
         </button>
       }
     </div>
@@ -146,6 +208,10 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
   readonly rejected = output<{ tag: string; reason: StarTagRejection }>();
 
   protected readonly hintId = this.ids.getId('star-tags-hint-');
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly tagSlot = starSlot<StarInputTagContext>(this.slots, this, 'inputTag');
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly noState: StarIconContext = {};
   /** The hint of the keys, and the hint or error of a parent `star-field`. */
   protected readonly describedBy = computed(() =>
     [this.hintId, this.field?.describedBy()].filter(Boolean).join(' '),

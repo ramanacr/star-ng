@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { StarIconTemplate } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarInputNumber } from '@star-ng/ui/input-number';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-input-number-page',
-  imports: [DOCS, StarInputNumber, StarField],
+  imports: [DOCS, StarInputNumber, StarIconTemplate, StarField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -70,12 +71,41 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Button layouts"
+        source="input-number/layouts"
+        note="buttonLayout places the step buttons: horizontal (default), stacked at the end, or vertical. starIcon increment and decrement replace their icons. allowEmpty false keeps a number in the field, and highlightOnFocus selects the text on focus."
+      >
+        <div class="docs-row">
+          <star-input-number
+            [(value)]="stacked"
+            showButtons
+            buttonLayout="stacked"
+            [allowEmpty]="false"
+            highlightOnFocus
+            ariaLabel="Stacked"
+          />
+          <star-input-number
+            [(value)]="vertical"
+            showButtons
+            buttonLayout="vertical"
+            [min]="0"
+            ariaLabel="Vertical"
+          >
+            <ng-template starIcon="increment"><i class="ph-bold ph-arrow-up"></i></ng-template>
+            <ng-template starIcon="decrement"><i class="ph-bold ph-arrow-down"></i></ng-template>
+          </star-input-number>
+        </div>
+      </docs-example>
+
       <docs-api [of]="['StarInputNumber']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class InputNumberPage {
   protected readonly quantity = signal<number | null>(3);
+  protected readonly stacked = signal<number | null>(12);
+  protected readonly vertical = signal<number | null>(4);
   protected readonly price = signal<number | null>(1234.5);
   protected readonly share = signal<number | null>(25);
   protected readonly weight = signal<number | null>(2);

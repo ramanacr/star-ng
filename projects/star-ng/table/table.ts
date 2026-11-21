@@ -1003,7 +1003,9 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
 
   /** The second header row with the column filters (`filterDisplay="row"`). */
   protected readonly hasColumnFilters = computed(
-    () => this.filterDisplay() === 'row' && this.visibleColumns().some((column) => column.filter),
+    () =>
+      this.filterDisplay() === 'row' &&
+      this.visibleColumns().some((column) => column.filter && !column.excelFilter),
   );
 
   /** Columns that have a filter value now, with that value. */

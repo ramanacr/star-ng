@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { StarIconTemplate } from '@star-ng/ui/core';
 import { StarRating } from '@star-ng/ui/rating';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-rating-page',
-  imports: [DOCS, StarRating],
+  imports: [DOCS, StarRating, StarIconTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -26,6 +27,18 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-rating [value]="2" disabled ariaLabel="Closed rating" />
       </docs-example>
 
+      <docs-example
+        heading="Cancel and custom icons"
+        source="rating/cancel"
+        note="cancel adds a first option that clears the rating. starIcon on, off and cancel replace the filled star, the empty star and the clear icon."
+      >
+        <star-rating [(value)]="hearts" cancel ariaLabel="Delivery">
+          <ng-template starIcon="on"><i class="ph-fill ph-heart"></i></ng-template>
+          <ng-template starIcon="off"><i class="ph-bold ph-heart"></i></ng-template>
+        </star-rating>
+        <p class="docs-output" role="status">Rating: {{ hearts() ?? 'none' }}</p>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         The first star is on the right in a right-to-left page. The arrow keys follow the visual
@@ -39,6 +52,7 @@ import { DOCS, DocsRow } from '../shared/docs';
 export class RatingPage {
   protected readonly score = signal<number | null>(3);
   protected readonly detail = signal<number | null>(7);
+  protected readonly hearts = signal<number | null>(2);
 
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-warning', description: 'Color of a filled star.' },

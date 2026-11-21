@@ -1,10 +1,13 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   ElementRef,
+  forwardRef,
   inject,
   input,
   model,
@@ -12,7 +15,14 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormCheckboxControl } from '@angular/forms/signals';
-import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  StarIconContext,
+  StarSlot,
+  starSlotMap,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 
 /**
@@ -21,11 +31,16 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
  *
  * Signal Forms: `<star-checkbox [formField]="form.terms">I agree</star-checkbox>`
  * Standalone:   `<star-checkbox [(checked)]="agree" [indeterminate]="some">Label</star-checkbox>`
+ *
+ * Slot: `<ng-template starIcon="check" let-checked>` replaces the check and the dash icon
+ * (PrimeNG `#icon` template); `checked` is `true` when checked, `false` when indeterminate.
  */
 @Component({
   selector: 'star-checkbox',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarCheckbox) }],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-check',
@@ -53,7 +68,9 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
         (blur)="touch.emit()"
       />
       <span data-star-part="boxPanel" class="star-check__box" aria-hidden="true">
-        @if (indeterminate()) {
+        @if ((indeterminate() || checked()) && icons().get('check'); as icon) {
+          <ng-container *ngTemplateOutlet="icon; context: { $implicit: !indeterminate() }" />
+        } @else if (indeterminate()) {
           <i data-star-part="boxIcon" class="ph-bold ph-minus"></i>
         } @else if (checked()) {
           <i data-star-part="boxIcon" class="ph-bold ph-check"></i>
@@ -80,6 +97,9 @@ export class StarCheckbox implements FormCheckboxControl {
 
   /** Signal Forms touch notification. */
   readonly touch = output<void>();
+
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
 
   private readonly box = viewChild.required<ElementRef<HTMLInputElement>>('box');
 

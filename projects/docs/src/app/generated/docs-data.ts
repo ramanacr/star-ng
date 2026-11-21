@@ -9592,7 +9592,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-input-mask",
     "entry": "@star-ng/ui/input-mask",
-    "description": "Masked text field (PrimeNG `p-inputmask`): fixed-format entry such as phone numbers, postal codes or serial numbers. Mask tokens: `9` digit, `a` letter, `*` letter or digit; other characters are literals. The value is the masked text, or the raw slots with `unmask`.",
+    "description": "Masked text field (PrimeNG `p-inputmask`): fixed-format entry such as phone numbers, postal codes or serial numbers. Mask tokens: `9` digit, `a` letter, `*` letter or digit; other characters are literals. The value is the masked text, or the raw slots with `unmask`. `characterPattern` changes what an `a` slot takes (PrimeNG `characterPattern`).",
     "inputs": [
       {
         "name": "mask",
@@ -9621,6 +9621,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "true",
         "required": false,
         "description": "Keep a partly filled value on blur (default clears it)."
+      },
+      {
+        "name": "characterPattern",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Pattern of one character of an `a` slot, as regular expression source (default: any letter). For example `[A-F]` for upper-case hex letters. PrimeNG `characterPattern`."
       },
       {
         "name": "placeholder",
@@ -9837,6 +9844,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "buttonLayout",
+        "type": "'horizontal' | 'stacked' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "Place of the step buttons: `'horizontal'` (default; minus before, plus after the field), `'stacked'` (up and down at the end) or `'vertical'` (plus above, minus below). PrimeNG `buttonLayout`."
+      },
+      {
+        "name": "allowEmpty",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "`false`: an empty field is not a value. On blur it takes the last value, else `min`, else `0`. Default `true` (an empty field is `null`). PrimeNG `allowEmpty`."
+      },
+      {
+        "name": "highlightOnFocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Selects the whole text when the field gets the focus. PrimeNG `highlightOnFocus`."
+      },
+      {
         "name": "placeholder",
         "type": "string | null",
         "default": "null",
@@ -9937,9 +9965,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "controlPanel",
+      "input",
+      "stepPanel",
       "stepButton",
-      "stepIcon",
-      "input"
+      "stepIcon"
     ]
   },
   "StarInputOtp": {
@@ -10231,6 +10260,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "clearIcon",
       "errorText"
     ]
+  },
+  "StarInputTagTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starInputTag]",
+    "entry": "@star-ng/ui/input-tags",
+    "description": "Replaces the text of each chip of `star-input-tags`: `<ng-template starInputTag let-tag let-index=\"index\">…</ng-template>`. PrimeNG `#item` (chip) template. The chip and its remove button stay; do not add focusable elements.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarItemTemplate": {
     "kind": "directive",
@@ -14640,6 +14678,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Length rule; also bound from a Signal Forms `minLength()` validator. Default 12."
       },
       {
+        "name": "thresholds",
+        "type": "readonly [number, number, number]",
+        "default": "[0.375, 0.625, 0.875]",
+        "required": false,
+        "description": "Shares of the rules met (0 to 1) from which the strength is fair, good and strong. Default `[0.375, 0.625, 0.875]` (the share rounded to quarters). Below the first share it is weak."
+      },
+      {
         "name": "placeholder",
         "type": "string | null",
         "default": "null",
@@ -15999,6 +16044,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "cancel",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A first option that clears the rating (value `null`). PrimeNG `cancel`."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
@@ -16056,6 +16108,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
+      "cancelItem",
+      "cancelIcon",
       "rateItem",
       "rateIcon"
     ]
@@ -17672,6 +17726,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`'vertical'` draws the slider from bottom (min) to top (max). PrimeNG `orientation`."
+      },
+      {
         "name": "inputId",
         "type": "string",
         "default": "(generated id)",
@@ -17719,6 +17780,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "slideEnd",
+        "type": "number",
+        "default": null,
+        "required": false,
+        "description": "The value when a drag or a key press ends (the native `change`). PrimeNG `onSlideEnd`."
+      },
       {
         "name": "touch",
         "type": "void",
@@ -22229,6 +22297,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chat/basic": "<star-chat\n  [messages]=\"messages()\"\n  user=\"me\"\n  [typing]=\"typing()\"\n  [loading]=\"loadingOlder()\"\n  [hasMore]=\"hasMore()\"\n  locale=\"en-US\"\n  ariaLabel=\"Support conversation\"\n  (send)=\"post($event.text)\"\n  (loadMore)=\"loadOlder()\"\n/>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
+  "checkbox/icon": "<star-checkbox [(checked)]=\"iconChecked\">\n  Send a copy\n  <ng-template starIcon=\"check\" let-checked>\n    <i [class]=\"checked ? 'ph-bold ph-heart' : 'ph-bold ph-minus'\"></i>\n  </ng-template>\n</star-checkbox>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",
   "checkbox/states": "<star-checkbox [checked]=\"true\" disabled>Disabled</star-checkbox>\n<star-checkbox [checked]=\"true\" readonly>Read-only</star-checkbox>",
   "chip/basic": "<star-chip label=\"Design\" />\n<star-chip label=\"Travel\" icon=\"ph-bold ph-airplane\" />\n<star-chip label=\"Team\">(4)</star-chip>",
@@ -22371,16 +22440,19 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "input-group/addons": "<div class=\"docs-stack\">\n  <star-field label=\"Website\">\n    <star-input-group>\n      <star-input-group-addon>https://</star-input-group-addon>\n      <input starInput placeholder=\"example.com\" />\n    </star-input-group>\n  </star-field>\n  <star-input-group ariaLabel=\"Weight\">\n    <input starInput inputmode=\"decimal\" aria-label=\"Weight\" placeholder=\"0.0\" />\n    <star-input-group-addon>kg</star-input-group-addon>\n  </star-input-group>\n</div>",
   "input-group/button": "<div class=\"docs-stack\">\n  <star-input-group ariaLabel=\"Coupon\">\n    <input starInput aria-label=\"Coupon code\" placeholder=\"Coupon code\" />\n    <star-button variant=\"secondary\">Apply</star-button>\n  </star-input-group>\n</div>",
   "input-group/icon": "<div class=\"docs-stack\">\n  <star-icon-field icon=\"ph-bold ph-magnifying-glass\">\n    <input starInput type=\"search\" placeholder=\"Search orders\" aria-label=\"Search orders\" />\n  </star-icon-field>\n  <star-icon-field icon=\"ph-bold ph-envelope-simple\" iconPosition=\"end\">\n    <input starInput type=\"email\" placeholder=\"name@example.com\" aria-label=\"Email\" />\n  </star-icon-field>\n</div>",
+  "input-mask/pattern": "<star-input-mask\n  mask=\"aa-9999\"\n  characterPattern=\"[A-F]\"\n  [(value)]=\"batch\"\n  ariaLabel=\"Batch code\"\n/>\n<p class=\"docs-output\" role=\"status\">Value: {{ batch() || 'empty' }}</p>",
   "input-mask/phone": "<div class=\"docs-stack\">\n  <star-field label=\"Phone\">\n    <star-input-mask mask=\"(999) 999-9999\" [(value)]=\"phone\" />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Value: {{ phone() || '(empty)' }}</p>\n</div>",
   "input-mask/unmask": "<div class=\"docs-stack\">\n  <star-field label=\"Serial number\">\n    <star-input-mask mask=\"aa-9999-**\" unmask slotChar=\"#\" [(value)]=\"serial\" />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Value: {{ serial() || '(empty)' }}</p>\n</div>",
   "input-number/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Quantity\">\n    <star-input-number [(value)]=\"quantity\" [min]=\"0\" [max]=\"20\" showButtons />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Quantity: {{ quantity() }}</p>\n</div>",
   "input-number/currency": "<div class=\"docs-stack\">\n  <star-input-number\n    [(value)]=\"price\"\n    mode=\"currency\"\n    currency=\"EUR\"\n    locale=\"de-DE\"\n    ariaLabel=\"Price in euro\"\n  />\n  <star-input-number\n    [(value)]=\"price\"\n    mode=\"currency\"\n    currency=\"USD\"\n    locale=\"en-US\"\n    ariaLabel=\"Price in dollars\"\n  />\n</div>",
+  "input-number/layouts": "<div class=\"docs-row\">\n  <star-input-number\n    [(value)]=\"stacked\"\n    showButtons\n    buttonLayout=\"stacked\"\n    [allowEmpty]=\"false\"\n    highlightOnFocus\n    ariaLabel=\"Stacked\"\n  />\n  <star-input-number\n    [(value)]=\"vertical\"\n    showButtons\n    buttonLayout=\"vertical\"\n    [min]=\"0\"\n    ariaLabel=\"Vertical\"\n  >\n    <ng-template starIcon=\"increment\"><i class=\"ph-bold ph-arrow-up\"></i></ng-template>\n    <ng-template starIcon=\"decrement\"><i class=\"ph-bold ph-arrow-down\"></i></ng-template>\n  </star-input-number>\n</div>",
   "input-number/modes": "<div class=\"docs-stack\">\n  <star-input-number [(value)]=\"share\" mode=\"percent\" locale=\"en-US\" ariaLabel=\"Share\" />\n  <star-input-number\n    [(value)]=\"weight\"\n    mode=\"unit\"\n    unit=\"kilogram\"\n    locale=\"en-US\"\n    ariaLabel=\"Weight\"\n  />\n  <star-input-number [(value)]=\"items\" suffix=\" items\" locale=\"en-US\" ariaLabel=\"Items\" />\n</div>",
   "input-number/states": "<div class=\"docs-stack\">\n  <star-input-number [value]=\"12\" disabled ariaLabel=\"Disabled number\" />\n  <star-input-number [value]=\"12\" readonly ariaLabel=\"Read-only number\" />\n</div>",
   "input-otp/basic": "<star-input-otp\n  [(value)]=\"code\"\n  integerOnly\n  ariaLabel=\"Verification code\"\n  (completed)=\"done.set($event)\"\n/>\n<p class=\"docs-output\" role=\"status\">\n  Value: {{ code() || '(empty)' }}. Completed: {{ done() || 'no' }}\n</p>",
   "input-otp/disabled": "<star-input-otp value=\"123456\" disabled ariaLabel=\"Used code\" />",
   "input-otp/masked": "<star-input-otp [(value)]=\"pin\" [length]=\"4\" mask ariaLabel=\"PIN\" />",
   "input-tags/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Labels\" hint=\"Press Enter or a comma to add a label.\">\n    <star-input-tags [(value)]=\"labels\" showClear />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">{{ labels().join(', ') || '(none)' }}</p>\n</div>",
+  "input-tags/chips": "<star-input-tags [(value)]=\"chipTags\" ariaLabel=\"Topics\" showClear>\n  <ng-template starInputTag let-tag><i class=\"ph-bold ph-hash\"></i>{{ tag }}</ng-template>\n  <ng-template starIcon=\"remove\"><i class=\"ph-bold ph-trash\"></i></ng-template>\n</star-input-tags>",
   "input-tags/disabled": "<div class=\"docs-stack\">\n  <star-input-tags [value]=\"['north', 'south']\" disabled ariaLabel=\"Regions\" />\n</div>",
   "input-tags/validate": "<div class=\"docs-stack\">\n  <star-field label=\"Recipients\" hint=\"Email addresses, three at most.\">\n    <star-input-tags\n      [(value)]=\"recipients\"\n      [validate]=\"isEmail\"\n      [maxTags]=\"3\"\n      (rejected)=\"rejected.set($event.tag + ': ' + $event.reason)\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Rejected: {{ rejected() || '(nothing)' }}</p>\n</div>",
   "kanban/basic": "<div class=\"docs-stack\">\n  <star-kanban\n    [columns]=\"columns\"\n    [items]=\"tasks()\"\n    columnKey=\"status\"\n    itemKey=\"id\"\n    order=\"rank\"\n    itemLabel=\"title\"\n    (itemMove)=\"onMove($event)\"\n  >\n    <ng-template starKanbanCard [starKanbanCardOf]=\"tasks()\" let-task>\n      <span class=\"card-title\">{{ task.title }}</span>\n      <span class=\"card-meta\">\n        <span>{{ task.owner }}</span>\n        <star-tag [value]=\"task.id\" severity=\"secondary\" />\n      </span>\n    </ng-template>\n  </star-kanban>\n  <p class=\"docs-output\" role=\"status\">{{ lastMove() }}</p>\n</div>",
@@ -22462,6 +22534,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
+  "password/templates": "<star-password\n  [(value)]=\"templated\"\n  feedback\n  [thresholds]=\"[0.4, 0.6, 0.8]\"\n  ariaLabel=\"Account password\"\n>\n  <ng-template starIcon=\"show\"><i class=\"ph-bold ph-lock-simple-open\"></i></ng-template>\n  <ng-template starIcon=\"hide\"><i class=\"ph-bold ph-lock-simple\"></i></ng-template>\n  <ng-template starHeader><p>Pick a password you do not use elsewhere.</p></ng-template>\n  <ng-template starFooter><p>A password manager can make one for you.</p></ng-template>\n</star-password>",
   "pick-list/basic": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"available\" [(target)]=\"chosen\" />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "pick-list/filter-drag": "<div class=\"docs-stack\">\n  <star-pick-list\n    [(source)]=\"cities\"\n    [(target)]=\"route\"\n    filter\n    filterMatchMode=\"startsWith\"\n    dragdrop\n    showTargetControls\n    stripedRows\n    sourceHeader=\"Cities\"\n    targetHeader=\"Route\"\n    sourceFilterPlaceholder=\"Find a city\"\n    targetFilterPlaceholder=\"Find a stop\"\n    (moveToTarget)=\"lastMove.set('to the route: ' + names($event))\"\n    (moveAllToTarget)=\"lastMove.set('all to the route: ' + names($event))\"\n    (moveToSource)=\"lastMove.set('back to the cities: ' + names($event))\"\n    (moveAllToSource)=\"lastMove.set('all back: ' + names($event))\"\n    (targetReorder)=\"lastMove.set('route reordered: ' + names($event))\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last move: {{ lastMove() || 'none' }}</p>\n</div>",
   "pick-list/item": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"people\" [(target)]=\"team\" optionLabel=\"name\">\n    <ng-template starItem [starItemOf]=\"people()\" let-member let-list=\"list\">\n      {{ member.name }}\n      @if (list === 'target') {\n        <small style=\"color: var(--star-text-muted)\">on the team</small>\n      }\n    </ng-template>\n  </star-pick-list>\n</div>",
@@ -22488,6 +22561,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",
   "rating/basic": "<star-rating [(value)]=\"score\" ariaLabel=\"Service rating\" />\n<p class=\"docs-output\" role=\"status\">Rating: {{ score() ?? 'none' }}</p>",
+  "rating/cancel": "<star-rating [(value)]=\"hearts\" cancel ariaLabel=\"Delivery\">\n  <ng-template starIcon=\"on\"><i class=\"ph-fill ph-heart\"></i></ng-template>\n  <ng-template starIcon=\"off\"><i class=\"ph-bold ph-heart\"></i></ng-template>\n</star-rating>\n<p class=\"docs-output\" role=\"status\">Rating: {{ hearts() ?? 'none' }}</p>",
   "rating/count": "<star-rating [(value)]=\"detail\" [count]=\"10\" ariaLabel=\"Detailed rating\" />",
   "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
   "ribbon/collapsed": "<star-ribbon [(collapsed)]=\"collapsed\" (command)=\"run($event)\">\n  <star-ribbon-tab key=\"home\" label=\"Home\">\n    <star-ribbon-group label=\"Clipboard\" [items]=\"clipboard\" />\n  </star-ribbon-tab>\n  <star-ribbon-tab key=\"review\" label=\"Review\">\n    <star-ribbon-group label=\"Comments\" [items]=\"comments\" />\n  </star-ribbon-tab>\n</star-ribbon>",
@@ -22532,6 +22606,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
   "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
   "slider/range": "<div class=\"docs-stack\">\n  <star-range-slider\n    [(value)]=\"price\"\n    [bounds]=\"[0, 500]\"\n    [step]=\"10\"\n    showValue\n    ariaLabel=\"Price range\"\n  />\n  <p class=\"docs-output\" role=\"status\">From {{ price()[0] }} to {{ price()[1] }}</p>\n</div>",
+  "slider/vertical": "<div class=\"docs-row\">\n  <star-slider\n    [(value)]=\"height\"\n    orientation=\"vertical\"\n    ariaLabel=\"Height\"\n    showValue\n    (slideEnd)=\"ended.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last end: {{ ended() ?? 'none' }}</p>\n</div>",
   "sparkline/line": "<p>\n  Weekly sales <star-sparkline [data]=\"sales\" [highlight]=\"['last']\" /> rose to 21.5\n  thousand.\n</p>",
   "sparkline/markers": "<star-sparkline\n  [data]=\"load\"\n  [highlight]=\"['min', 'max', 'last']\"\n  [referenceLine]=\"70\"\n  [min]=\"0\"\n  [max]=\"100\"\n  [width]=\"200\"\n  [height]=\"40\"\n  ariaLabel=\"Server load, target 70 percent\"\n/>",
   "sparkline/table": "<star-table\n  [value]=\"regions\"\n  [columns]=\"columns\"\n  dataKey=\"region\"\n  ariaLabel=\"Sales per region\"\n>\n  <ng-template starCell=\"trend\" [starCellOf]=\"regions\" let-row>\n    <star-sparkline [data]=\"row.trend\" [highlight]=\"['last']\" />\n  </ng-template>\n</star-table>",

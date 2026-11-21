@@ -35,6 +35,20 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Character pattern"
+        source="input-mask/pattern"
+        note="characterPattern sets what an a slot takes, as regular expression source. Here the letters are A to F only."
+      >
+        <star-input-mask
+          mask="aa-9999"
+          characterPattern="[A-F]"
+          [(value)]="batch"
+          ariaLabel="Batch code"
+        />
+        <p class="docs-output" role="status">Value: {{ batch() || 'empty' }}</p>
+      </docs-example>
+
       <docs-api [of]="['StarInputMask']" [cssVars]="cssVars" />
 
       <h3>Functions</h3>
@@ -66,6 +80,7 @@ import { DOCS, DocsRow } from '../shared/docs';
 })
 export class InputMaskPage {
   protected readonly phone = signal('');
+  protected readonly batch = signal('');
   protected readonly serial = signal('');
 
   protected readonly cssVars: readonly DocsRow[] = [

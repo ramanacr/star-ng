@@ -18,12 +18,24 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
 /** Mask slot tokens (PrimeNG `p-inputmask` syntax): `9` digit, `a` letter, `*` letter or digit. */
 const TOKENS: Record<string, RegExp> = { '9': /\d/, a: /\p{L}/u, '*': /[\p{L}\d]/u };
 
+/** The tokens with `a` replaced by a custom character pattern (`characterPattern`). */
+function tokensFor(characterPattern?: string | null): Record<string, RegExp> {
+  if (!characterPattern) return TOKENS;
+  return { ...TOKENS, a: new RegExp(`^(?:${characterPattern})$`, 'u') };
+}
+
 /** Applies a mask to raw characters; returns the masked text (unfilled slots as `slotChar`). */
-export function applyMask(mask: string, raw: string, slotChar = '_'): string {
+export function applyMask(
+  mask: string,
+  raw: string,
+  slotChar = '_',
+  characterPattern?: string | null,
+): string {
+  const tokens = tokensFor(characterPattern);
   let out = '';
   let r = 0;
   for (const char of mask) {
-    const token = TOKENS[char];
+    const token = tokens[char];
     if (!token) {
       out += char;
       continue;
@@ -36,6 +48,7 @@ export function applyMask(mask: string, raw: string, slotChar = '_'): string {
 
 /** Characters typed into the slots, without literals and slot chars. */
 export function unmask(mask: string, masked: string, slotChar = '_'): string {
+  // Slot positions do not depend on the character pattern.
   let out = '';
   [...mask].forEach((char, i) => {
     if (TOKENS[char] && masked[i] !== undefined && masked[i] !== slotChar) out += masked[i];
@@ -47,6 +60,7 @@ export function unmask(mask: string, masked: string, slotChar = '_'): string {
  * Masked text field (PrimeNG `p-inputmask`): fixed-format entry such as phone numbers, postal
  * codes or serial numbers. Mask tokens: `9` digit, `a` letter, `*` letter or digit; other
  * characters are literals. The value is the masked text, or the raw slots with `unmask`.
+ * `characterPattern` changes what an `a` slot takes (PrimeNG `characterPattern`).
  *
  * `<star-input-mask mask="(999) 999-9999" [formField]="form.phone" ariaLabel="Phone number" />`
  */
@@ -94,6 +108,11 @@ export class StarInputMask implements FormValueControl<string> {
   readonly unmask = input(false, { transform: booleanAttribute });
   /** Keep a partly filled value on blur (default clears it). */
   readonly autoClear = input(true, { transform: booleanAttribute });
+  /**
+   * Pattern of one character of an `a` slot, as regular expression source (default: any
+   * letter). For example `[A-F]` for upper-case hex letters. PrimeNG `characterPattern`.
+   */
+  readonly characterPattern = input<string | null>(null);
   readonly placeholder = input<string | null>(null);
   readonly ariaLabel = input<string | null>(null);
   readonly inputId = input(inject(_IdGenerator).getId('star-mask-'));
@@ -112,7 +131,7 @@ export class StarInputMask implements FormValueControl<string> {
   protected readonly numericOnly = computed(() => !/[a*]/.test(this.mask()));
   protected readonly display = computed(() => {
     const value = this.value();
-    return value ? applyMask(this.mask(), value, this.slotChar()) : '';
+    return value ? applyMask(this.mask(), value, this.slotChar(), this.characterPattern()) : '';
   });
 
   private slotsFilled(masked: string): boolean {
@@ -120,7 +139,9 @@ export class StarInputMask implements FormValueControl<string> {
   }
 
   protected onFocus(input: HTMLInputElement): void {
-    if (!input.value) input.value = applyMask(this.mask(), '', this.slotChar());
+    if (!input.value) {
+      input.value = applyMask(this.mask(), '', this.slotChar(), this.characterPattern());
+    }
     queueMicrotask(() => this.placeCaret(input));
   }
 
@@ -130,7 +151,7 @@ export class StarInputMask implements FormValueControl<string> {
     const raw = [...input.value]
       .filter((char) => char !== this.slotChar() && /[\p{L}\d]/u.test(char))
       .join('');
-    const masked = applyMask(this.mask(), raw, this.slotChar());
+    const masked = applyMask(this.mask(), raw, this.slotChar(), this.characterPattern());
     input.value = masked;
     this.placeCaret(input);
     const typed = unmask(this.mask(), masked, this.slotChar());

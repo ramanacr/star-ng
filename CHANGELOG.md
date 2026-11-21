@@ -167,6 +167,17 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - File upload: owner-driven upload hooks without built-in HTTP: `uploadHandler` (`{ files }`) from an Upload button (`showUploadButton`) or right after the choice (`auto`), a Cancel button (`showCancelButton`, output `cleared`, public `clear()`), the output `fileRemove`, `imageError` of a thumbnail, `mode="basic"` (one button that shows the file names), `chooseLabel`, `uploadLabel`, `cancelLabel`, `chooseIcon`, `uploadIcon`, `cancelIcon`, `previewWidth`, `name`, public `choose()` and `upload()`, and the slots `starHeader`, `starFileUploadTemplate` (`toolbar`, `content`, `fileLabel`) and `starIcon` (`choose`, `upload`, `cancel`) (PrimeNG `p-fileupload`).
 
+#### Form inputs
+
+- Checkbox: `starIcon="check"` slot for the check and the indeterminate icon (PrimeNG `#icon`).
+- Input mask: `characterPattern` (what an `a` slot takes; PrimeNG `characterPattern`).
+- Input number: `buttonLayout` (`horizontal`, `stacked`, `vertical`), `allowEmpty`, `highlightOnFocus` and the `starIcon` slots `increment` and `decrement` (PrimeNG `buttonLayout`, `allowEmpty`, `highlightOnFocus`, `#incrementbuttonicon`, `#decrementbuttonicon`).
+- Input tags: `starInputTag` chip slot (`StarInputTagTemplate`, `StarInputTagContext`) and the `starIcon` slots `remove` and `clear`.
+- Password: `thresholds` of the strength levels; `starIcon` slots `show` and `hide`; `starHeader` and `starFooter` around the strength feedback (PrimeNG `#showicon`, `#hideicon`, `#header`, `#footer`).
+- Rating: `cancel` (a first option that clears the rating) and the `starIcon` slots `on`, `off` and `cancel` (PrimeNG `cancel`, `#onicon`, `#officon`, `#cancelicon`).
+- Slider: `orientation="vertical"` and the `slideEnd` output (PrimeNG `orientation`, `onSlideEnd`).
+- Core: new `StarIconSlotName` values `sort`, `on`, `off`, `increment`, `decrement`, `remove`, `show` and `hide`.
+
 #### Galleria
 
 - Galleria: `thumbnailsPosition` (`bottom`, `top`, `left`, `right`), `numVisible` and `responsiveOptions` (a window of thumbnails that follows the image), `showThumbnailNavigators`, `verticalThumbnailViewPortHeight`, `showThumbnails`, `showItemNavigators`, `showItemNavigatorsOnHover`, `circular`, indicators (`showIndicators`, `showIndicatorsOnItem`, `indicatorsPosition`, `changeItemOnIndicatorHover`), `autoPlay` with `transitionInterval` and `shouldStopAutoplayByClick` (a pause button; it pauses on hover and focus and does not advance with reduced motion), and a full-screen mode in a modal dialog (`fullScreen` and the `visible` model). While autoplay runs, the image counter is not a live region; a closed full-screen gallery does not advance. Slots: `starGalleriaTemplate` (`item`, `caption`, `thumbnail`, `indicator`), `starHeader`, `starFooter` and `starIcon` (`previous`, `next`, `previousThumbnail`, `nextThumbnail`) (PrimeNG `p-galleria`). The galleria moves to its own file in `@star-ng/ui/media`.
