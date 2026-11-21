@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
+import { StarMenu, StarMenuItem, StarMenuTemplate, StarMenuTrigger } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-menu-page',
-  imports: [DOCS, StarButton, StarMenu, StarMenuTrigger],
+  imports: [DOCS, StarButton, StarMenu, StarMenuTemplate, StarMenuTrigger],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -80,6 +80,35 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-menu inline ariaLabel="Inline menu" [items]="viewItems" />
       </docs-example>
 
+      <docs-example
+        heading="Groups, start and end"
+        source="menu/groups"
+        [script]="groupScript"
+        note="An item with group shows its items in place under a heading (a group with aria-labelledby), as p-menu does. starMenuTemplate with start and end adds content around the items, outside the menu role; submenuHeader replaces the heading. show and hide report the popup, submenuShow and submenuHide a submenu."
+      >
+        <star-menu inline ariaLabel="Workspace menu" [items]="groupItems">
+          <ng-template starMenuTemplate="start">
+            <span class="docs-output">Workspace: Orders</span>
+          </ng-template>
+          <ng-template starMenuTemplate="submenuHeader" let-item>
+            {{ item.label }} actions
+          </ng-template>
+          <ng-template starMenuTemplate="end">
+            <span class="docs-output">2 people online</span>
+          </ng-template>
+        </star-menu>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The p-menu and p-tieredmenu names that StarNG gives in another way: model is items, popup is
+        the default (inline for an in-place menu), onShow and onHide are show and hide, onFocus and
+        onBlur are the native focusin and focusout events, autoDisplay is always on (a submenu opens
+        on hover), and style and styleClass are the pass-through pt. Not needed: appendTo,
+        autoZIndex and baseZIndex (the popup is in the top layer) and breakpoint (no separate
+        small-screen mode).
+      </p>
+
       <h2>Right-to-left</h2>
       <p>
         Submenus open toward the start side of the menu: to the left in a right-to-left page. Arrow
@@ -89,7 +118,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       </p>
 
       <docs-api
-        [of]="['StarMenu', 'StarMenuTrigger']"
+        [of]="['StarMenu', 'StarMenuTrigger', 'StarMenuTemplate']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -141,6 +170,33 @@ export class MenuPage {
     },
   ];
 
+  protected readonly groupItems: readonly StarMenuItem[] = [
+    { label: 'Search', icon: 'ph-bold ph-magnifying-glass' },
+    {
+      label: 'Orders',
+      group: true,
+      items: [{ label: 'New order' }, { label: 'Import orders' }],
+    },
+    {
+      label: 'Invoices',
+      group: true,
+      items: [{ label: 'New invoice' }, { label: 'Send reminders' }],
+    },
+  ];
+  protected readonly groupScript = `readonly groupItems: readonly StarMenuItem[] = [
+  { label: 'Search', icon: 'ph-bold ph-magnifying-glass' },
+  {
+    label: 'Orders',
+    group: true,
+    items: [{ label: 'New order' }, { label: 'Import orders' }],
+  },
+  {
+    label: 'Invoices',
+    group: true,
+    items: [{ label: 'New invoice' }, { label: 'Send reminders' }],
+  },
+];`;
+
   protected readonly fileScript = `readonly last = signal('none');
 
 readonly fileItems: readonly StarMenuItem[] = [
@@ -171,7 +227,15 @@ readonly fileItems: readonly StarMenuItem[] = [
 ];`;
 
   protected readonly slots: readonly DocsRow[] = [
-    { name: '(none)', description: 'The items come from the items input, not from content.' },
+    {
+      name: 'ng-template[starMenuTemplate]',
+      description:
+        'Content child. "item" replaces the content of each item (icon, label, shortcut; let-level, let-hasSubmenu), "itemIcon" the icon of an item with an icon, "submenuHeader" the heading of a group, "start" and "end" add content before and after the items. PrimeNG #item, #itemicon, #submenuheader, #start and #end.',
+    },
+    {
+      name: 'ng-template[starIcon="submenu"]',
+      description: 'Content child. Replaces the submenu arrow. PrimeNG #submenuicon.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-surface', description: 'Background of the popup.' },

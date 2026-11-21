@@ -10,6 +10,7 @@ import {
   ElementRef,
   forwardRef,
   inject,
+  input,
   Service,
   signal,
   viewChild,
@@ -20,6 +21,7 @@ import {
   STAR_UI_TEXT,
   StarSlot,
   starSlot,
+  starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -91,6 +93,50 @@ export class StarConfirmMessageTemplate extends StarSlot<StarConfirmMessageConte
   }
 }
 
+/** Context of the `starConfirmTemplate` slots. */
+export interface StarConfirmTemplateContext {
+  /** The options of `ask()`. */
+  readonly $implicit: StarConfirmOptions;
+  /** Answers the question with yes (for the `footer` slot). */
+  readonly accept: () => void;
+  /** Answers the question with no (for the `footer` slot). */
+  readonly reject: () => void;
+}
+
+/**
+ * Slot names of `starConfirmTemplate`: `header` (the title of the dialog; PrimeNG `#header`),
+ * `icon` (the icon next to the message; `#icon`), `acceptIcon` and `rejectIcon` (an icon in the
+ * buttons; `#accepticon`, `#rejecticon`), `footer` (replaces the buttons; `#footer`). The popup
+ * has no title, so `header` is for the dialog only.
+ */
+export type StarConfirmSlotName = 'header' | 'icon' | 'acceptIcon' | 'rejectIcon' | 'footer';
+
+/**
+ * Template slot of `star-confirm-host`:
+ * `<ng-template starConfirmTemplate="footer" let-options let-accept="accept">…</ng-template>`.
+ * The icons are decorative (`aria-hidden`). Buttons in `footer` must call `accept` or `reject`;
+ * put `data-autofocus` on the one that gets the first focus.
+ */
+@Directive({
+  selector: 'ng-template[starConfirmTemplate]',
+  providers: [{ provide: StarSlot, useExisting: StarConfirmTemplate }],
+})
+export class StarConfirmTemplate extends StarSlot<StarConfirmTemplateContext> {
+  readonly name = 'confirmTemplate';
+  readonly starConfirmTemplate = input.required<StarConfirmSlotName>();
+
+  override slotKey(): string {
+    return this.starConfirmTemplate();
+  }
+
+  static ngTemplateContextGuard(
+    _dir: StarConfirmTemplate,
+    _ctx: unknown,
+  ): _ctx is StarConfirmTemplateContext {
+    return true;
+  }
+}
+
 /**
  * Promise-based confirmation (PrimeNG `ConfirmationService` + `p-confirmdialog` /
  * `p-confirmpopup`). Requests queue; place one `<star-confirm-host />` in the app shell.
@@ -127,6 +173,15 @@ export class StarConfirmService {
 /**
  * Shows the questions of `StarConfirmService`: a modal `alertdialog`, or a popup next to
  * `target` (PrimeNG `p-confirmdialog` / `p-confirmpopup`). Place one in the app shell.
+ *
+ * Slots (content children): `starConfirmMessage` (the message), `starConfirmTemplate` with
+ * `header`, `icon`, `acceptIcon`, `rejectIcon` and `footer`.
+ *
+ * PrimeNG names that star-ng covers in another way: the options of `ask()` (`header`, `message`,
+ * `icon`, `acceptLabel`, `rejectLabel`, `rejectVisible`, `defaultFocus`, `target`), `acceptIcon`
+ * and `rejectIcon` = the slots, `style` and `styleClass` = `pt`. Not applicable: `appendTo`,
+ * `autoZIndex`, `baseZIndex` (top layer), `key` (one host shows the queue), `blockScroll`,
+ * `modal`, `focusTrap` (the native modal dialog does it), `rtl` (the direction of the page).
  */
 @Component({
   selector: 'star-confirm-host',
@@ -138,6 +193,57 @@ export class StarConfirmService {
   template: `
     @let request = dialogRequest();
     @let popup = popupRequest();
+    <ng-template #icon let-options>
+      @if (parts().get('icon'); as custom) {
+        <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true">
+          <ng-container *ngTemplateOutlet="custom; context: context(options)" />
+        </span>
+      } @else if (options.icon) {
+        <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true"
+          ><i data-star-part="severityIcon" [class]="options.icon"></i
+        ></span>
+      }
+    </ng-template>
+    <!-- The buttons of the popup and the dialog (or the footer slot). -->
+    <ng-template #actions let-options let-size="size">
+      @if (parts().get('footer'); as custom) {
+        <ng-container *ngTemplateOutlet="custom; context: context(options)" />
+      } @else {
+        @let accept = focusAccept(options);
+        @if (options.rejectVisible !== false) {
+          <star-button
+            [size]="size"
+            variant="ghost"
+            [attr.data-autofocus]="accept ? null : ''"
+            (pressed)="answer(false)"
+          >
+            @if (parts().get('rejectIcon'); as custom) {
+              <span
+                data-star-part="buttonIcon"
+                class="star-confirm__button-icon"
+                aria-hidden="true"
+              >
+                <ng-container *ngTemplateOutlet="custom; context: context(options)" />
+              </span>
+            }
+            {{ options.rejectLabel ?? text.reject }}
+          </star-button>
+        }
+        <star-button
+          [size]="size"
+          [variant]="acceptVariant(options)"
+          [attr.data-autofocus]="accept ? '' : null"
+          (pressed)="answer(true)"
+        >
+          @if (parts().get('acceptIcon'); as custom) {
+            <span data-star-part="buttonIcon" class="star-confirm__button-icon" aria-hidden="true">
+              <ng-container *ngTemplateOutlet="custom; context: context(options)" />
+            </span>
+          }
+          {{ options.acceptLabel ?? text.accept }}
+        </star-button>
+      }
+    </ng-template>
     <ng-template #message let-options>
       @if (messageTemplate(); as template) {
         <ng-container *ngTemplateOutlet="template; context: { $implicit: options }" />
@@ -161,34 +267,13 @@ export class StarConfirmService {
           (keydown.shift.tab)="cycleTab($event)"
         >
           <div data-star-part="dialogPanel" class="star-confirm star-confirm--popup">
-            @if (popup.icon) {
-              <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true"
-                ><i data-star-part="severityIcon" [class]="popup.icon"></i
-              ></span>
-            }
+            <ng-container *ngTemplateOutlet="icon; context: { $implicit: popup }" />
             <div data-star-part="messageText" class="star-confirm__message" [id]="popupMessageId">
               <ng-container *ngTemplateOutlet="message; context: { $implicit: popup }" />
             </div>
           </div>
           <div data-star-part="actionList" class="star-confirm__actions">
-            @if (popup.rejectVisible !== false) {
-              <star-button
-                size="sm"
-                variant="ghost"
-                [attr.data-autofocus]="focusAccept(popup) ? null : ''"
-                (pressed)="answer(false)"
-              >
-                {{ popup.rejectLabel ?? text.reject }}
-              </star-button>
-            }
-            <star-button
-              size="sm"
-              [variant]="acceptVariant(popup)"
-              [attr.data-autofocus]="focusAccept(popup) ? '' : null"
-              (pressed)="answer(true)"
-            >
-              {{ popup.acceptLabel ?? text.accept }}
-            </star-button>
+            <ng-container *ngTemplateOutlet="actions; context: { $implicit: popup, size: 'sm' }" />
           </div>
         </div>
       }
@@ -197,40 +282,33 @@ export class StarConfirmService {
       [role]="'alertdialog'"
       size="sm"
       [visible]="!!request"
-      [header]="request?.header ?? ''"
-      [ariaLabel]="request?.header ? null : (request?.message ?? null)"
+      [header]="parts().get('header') ? '' : (request?.header ?? '')"
+      [ariaLabel]="
+        request?.header && !parts().get('header')
+          ? null
+          : request?.header || request?.message || null
+      "
       (visibleChange)="!$event && confirm.settle(false)"
     >
       @if (request) {
+        @if (parts().get('header'); as custom) {
+          <div data-star-part="headerPanel" starDialogHeader class="star-confirm__header">
+            <ng-container *ngTemplateOutlet="custom; context: context(request)" />
+          </div>
+        }
+      }
+      @if (request) {
         <div data-star-part="dialogPanel" class="star-confirm">
-          @if (request.icon) {
-            <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true"
-              ><i data-star-part="severityIcon" [class]="request.icon"></i
-            ></span>
-          }
+          <ng-container *ngTemplateOutlet="icon; context: { $implicit: request }" />
           <div data-star-part="messageText" class="star-confirm__message">
             <ng-container *ngTemplateOutlet="message; context: { $implicit: request }" />
           </div>
         </div>
       }
+      <!-- One root element per block: the dialog projects the footer by its attribute. -->
       @if (request) {
         <div data-star-part="footer" starDialogFooter class="star-dialog__footer">
-          @if (request.rejectVisible !== false) {
-            <star-button
-              variant="ghost"
-              [attr.data-autofocus]="focusAccept(request) ? null : ''"
-              (pressed)="confirm.settle(false)"
-            >
-              {{ request.rejectLabel ?? text.reject }}
-            </star-button>
-          }
-          <star-button
-            [variant]="acceptVariant(request)"
-            [attr.data-autofocus]="focusAccept(request) ? '' : null"
-            (pressed)="confirm.settle(true)"
-          >
-            {{ request.acceptLabel ?? text.accept }}
-          </star-button>
+          <ng-container *ngTemplateOutlet="actions; context: { $implicit: request, size: 'md' }" />
         </div>
       }
     </star-dialog>
@@ -247,6 +325,20 @@ export class StarConfirmHost {
     this,
     'confirmMessage',
   );
+  protected readonly parts = starSlotMap<StarConfirmTemplateContext>(
+    this.slots,
+    this,
+    'confirmTemplate',
+  );
+
+  /** Context of the `starConfirmTemplate` slots for one request. */
+  protected context(options: StarConfirmOptions): StarConfirmTemplateContext {
+    return {
+      $implicit: options,
+      accept: () => this.answer(true),
+      reject: () => this.answer(false),
+    };
+  }
 
   protected readonly dialogRequest = computed(() => {
     const current = this.confirm.current();

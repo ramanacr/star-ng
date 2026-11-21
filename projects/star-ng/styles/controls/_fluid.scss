@@ -1,0 +1,28 @@
+// Fluid layout (PrimeNG `p-fluid`): under a fluid root (`data-star-fluid`, set by the
+// `starFluid` directive or by `provideStarNg({ fluid: true })` on `<html>`), the form controls
+// fill the inline size. `data-star-fluid="false"` turns it off for all content below it.
+$on: '[data-star-fluid]:not([data-star-fluid="false"])';
+$off: '[data-star-fluid="false"]';
+$block-fields: 'star-select, star-multi-select, star-autocomplete, star-tree-select, star-multi-column-combobox, star-listbox, star-date-picker, star-date-range-picker, star-multi-date-picker, star-time-picker, star-input-number, star-input-mask, star-input-tags, star-password';
+
+#{$on} :is(#{$block-fields}):not(#{$off}, #{$off} *) {
+  display: block;
+  inline-size: 100%;
+}
+#{$on} :is(input.star-input, textarea.star-input, star-color-picker):not(#{$off}, #{$off} *) {
+  inline-size: 100%;
+}
+#{$on} star-cascade-select:not(#{$off}, #{$off} *) {
+  display: flex;
+  inline-size: 100%;
+}
+// Buttons fill the line only in a form.
+#{$on} form :is(star-button, star-select-button, star-toggle-button):not(#{$off}, #{$off} *) {
+  display: flex;
+  inline-size: 100%;
+
+  > :is(.star-btn, .star-toggle-btn),
+  .star-segmented__item {
+    flex: 1;
+  }
+}

@@ -335,6 +335,11 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
 
   protected readonly slots: readonly DocsRow[] = [
     {
+      name: 'ng-template[starDecade]',
+      description:
+        'Content child. Replaces the title of the year view; let-years, let-first and let-last. Keep the years in the text: the title is a live region. PrimeNG #decade.',
+    },
+    {
       name: 'ng-template[starDate]',
       description:
         'Content child. Replaces the content of a day button. The button keeps its accessible name (the full date), aria-current, aria-disabled and the keys. The context has $implicit (the date), today, selected, disabled, outside and special (the entry of specialDates, or null). Do not add focusable elements: the calendar owns the keys. With two or more months the template applies to every month.',

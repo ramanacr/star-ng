@@ -74,7 +74,8 @@
 .star-listbox__option--add {
   color: var(--star-primary-text);
 }
-.star-cascade--fluid {
+// A nearer `data-star-fluid="false"` (the fluid opt-out) wins over the fluid default.
+.star-cascade--fluid:not([data-star-fluid='false'], [data-star-fluid='false'] *) {
   display: flex;
   width: 100%;
 }

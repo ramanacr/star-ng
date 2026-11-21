@@ -29,7 +29,7 @@ import {
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import { starParseIso } from './date-format';
-import type { StarDateContext } from './date-slots';
+import type { StarDateContext, StarDecadeContext } from './date-slots';
 import {
   addDays,
   addMonths,
@@ -143,9 +143,18 @@ export function isoWeek(date: Date): number {
             {{ focused().getFullYear() }}
           </button>
         } @else {
-          <span data-star-part="titleText" class="star-calendar__title-text"
-            >{{ years()[0] }} – {{ years()[11] }}</span
-          >
+          <span data-star-part="titleText" class="star-calendar__title-text">
+            @if (decadeSlot(); as custom) {
+              <ng-container
+                *ngTemplateOutlet="
+                  custom;
+                  context: { $implicit: years(), first: years()[0], last: years()[11] }
+                "
+              />
+            } @else {
+              {{ years()[0] }} – {{ years()[11] }}
+            }
+          </span>
         }
       </h2>
       <button
@@ -391,6 +400,8 @@ export class StarCalendar {
   readonly specialDates = input<readonly StarSpecialDate[]>([]);
   /** Set by the date pickers. In your own markup, use the `starDate` slot. */
   readonly dateTemplate = input<TemplateRef<StarDateContext> | null>(null);
+  /** Set by the date pickers. In your own markup, use the `starDecade` slot. */
+  readonly decadeTemplate = input<TemplateRef<StarDecadeContext> | null>(null);
 
   readonly dateSelect = output<Date>();
   /**
@@ -410,6 +421,9 @@ export class StarCalendar {
   private readonly ownDateSlot = starSlot<StarDateContext>(this.slots, this, 'date');
   /** Own `starDate` slot first, then the `dateTemplate` input. */
   protected readonly dateSlot = computed(() => this.ownDateSlot() ?? this.dateTemplate());
+  private readonly ownDecadeSlot = starSlot<StarDecadeContext>(this.slots, this, 'decade');
+  /** Own `starDecade` slot first, then the `decadeTemplate` input. */
+  protected readonly decadeSlot = computed(() => this.ownDecadeSlot() ?? this.decadeTemplate());
 
   readonly view = linkedSignal<StarCalendarView>(() => this.granularity());
   protected readonly hover = signal<Date | null>(null);

@@ -101,6 +101,15 @@ export class PanelPage {
   protected readonly togglerScript = `readonly toggleLog = signal('');`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'star-fieldset ng-template[starHeader]',
+      description: 'Content child of the fieldset. Replaces the legend text. PrimeNG #header.',
+    },
+    {
+      name: 'star-fieldset ng-template[starIcon="toggle"]',
+      description:
+        'Content child of the fieldset. Replaces the toggle icon; let-expanded is true when it is open. PrimeNG #toggleicon, #expandicon and #collapseicon. beforeToggle can cancel the toggle with cancel(); afterToggle reports the new state.',
+    },
     { name: '(default)', description: 'The body of the panel or the fieldset.' },
     {
       name: '[starPanelActions]',

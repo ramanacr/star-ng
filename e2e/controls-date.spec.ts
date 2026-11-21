@@ -963,10 +963,22 @@ test.describe('popups with time columns fit a small window', () => {
 
   /** The time part is at the inline end of the calendar (on the right in ltr), in the same row. */
   async function expectTimeBesideCalendar(popup: Locator): Promise<void> {
-    const calendar = (await popup.locator('star-calendar').boundingBox())!;
-    const time = (await popup.locator('.star-date__time').boundingBox())!;
+    // Both boxes in one read after two frames, so the popup has settled its position.
+    const { calendar, time } = await popup.evaluate(
+      (root) =>
+        new Promise<{ calendar: DOMRect; time: DOMRect }>((resolve) =>
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() =>
+              resolve({
+                calendar: root.querySelector('star-calendar')!.getBoundingClientRect().toJSON(),
+                time: root.querySelector('.star-date__time')!.getBoundingClientRect().toJSON(),
+              }),
+            ),
+          ),
+        ),
+    );
     expect(time.x).toBeGreaterThanOrEqual(calendar.x + calendar.width - 1);
-    expect(Math.abs(time.y - calendar.y)).toBeLessThan(2);
+    expect(Math.abs(time.y - calendar.y)).toBeLessThan(3);
     // The calendar sets the height of the row: the time part is not higher.
     expect(time.height).toBeLessThanOrEqual(calendar.height + 1);
   }

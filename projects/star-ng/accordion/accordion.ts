@@ -14,9 +14,18 @@ import {
   input,
   linkedSignal,
   model,
+  output,
   TemplateRef,
 } from '@angular/core';
-import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  StarIconContext,
+  StarSlot,
+  starSlot,
+  starSlotMap,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 
 /** Lazy panel body: `<ng-template starAccordionContent>` renders on first expand only. */
 @Directive({ selector: 'ng-template[starAccordionContent]' })
@@ -24,12 +33,19 @@ export class StarAccordionContent {
   readonly template = inject<TemplateRef<unknown>>(TemplateRef);
 }
 
-/** One section of `star-accordion`. */
+/**
+ * One section of `star-accordion`.
+ *
+ * Slots (content children): `starHeader` replaces the title (PrimeNG `p-accordion-header`
+ * content); `starIcon="toggle"` replaces the arrow (`let-expanded`; PrimeNG `#toggleicon`,
+ * `expandIcon`, `collapseIcon`). Content with `starAccordionHeader` is added after the title.
+ */
 @Component({
   selector: 'star-accordion-panel',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarAccordionPanel) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-accordion__panel',
@@ -52,13 +68,25 @@ export class StarAccordionContent {
         @if (icon(); as icon) {
           <i data-star-part="headerIcon" [class]="icon" aria-hidden="true"></i>
         }
-        <span data-star-part="titleText" class="star-accordion__title">{{ header() }}</span>
+        <span data-star-part="titleText" class="star-accordion__title">
+          @if (headerSlot(); as custom) {
+            <ng-container *ngTemplateOutlet="custom" />
+          } @else {
+            {{ header() }}
+          }
+        </span>
         <ng-content select="[starAccordionHeader]" />
-        <i
-          data-star-part="expandIcon"
-          class="ph-bold ph-caret-down star-accordion__caret"
-          aria-hidden="true"
-        ></i>
+        @if (icons().get('toggle'); as custom) {
+          <span data-star-part="expandIcon" class="star-accordion__icon" aria-hidden="true">
+            <ng-container *ngTemplateOutlet="custom; context: { $implicit: expanded() }" />
+          </span>
+        } @else {
+          <i
+            data-star-part="expandIcon"
+            class="ph-bold ph-caret-down star-accordion__caret"
+            aria-hidden="true"
+          ></i>
+        }
       </button>
     </h3>
     <div
@@ -94,6 +122,9 @@ export class StarAccordionPanel {
   protected readonly headerId = this.ids.getId('star-accordion-header-');
   protected readonly regionId = this.ids.getId('star-accordion-region-');
   protected readonly lazy = contentChild(StarAccordionContent);
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
 
   readonly expanded = computed(() => this.accordion.isOpen(this.value()));
   protected readonly rendered = linkedSignal<boolean, boolean>({
@@ -124,6 +155,10 @@ export class StarAccordionPanel {
 export class StarAccordion {
   readonly value = model<readonly string[]>([]);
   readonly multiple = input(false, { transform: booleanAttribute });
+  /** Emits the value of a panel that the user opened. PrimeNG `onOpen`. */
+  readonly opened = output<string>();
+  /** Emits the value of a panel that the user closed. PrimeNG `onClose`. */
+  readonly closed = output<string>();
 
   private readonly panels = contentChildren(StarAccordionPanel);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -139,8 +174,12 @@ export class StarAccordion {
         open ? values.filter((v) => v !== value) : [...values, value],
       );
     } else {
+      const previous = this.value();
       this.value.set(open ? [] : [value]);
+      for (const other of previous) if (other !== value) this.closed.emit(other);
     }
+    if (open) this.closed.emit(value);
+    else this.opened.emit(value);
   }
 
   onHeaderKeydown(event: KeyboardEvent): void {

@@ -90,6 +90,16 @@ readonly sections: readonly StarMenuItem[] = [
 ];`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starMenuTemplate]',
+      description:
+        'Content child. "item" replaces the icon and label of each item (let-level, let-hasSubmenu), "itemIcon" the icon of an item with an icon. PrimeNG #item and #headericon.',
+    },
+    {
+      name: 'ng-template[starIcon="submenu"]',
+      description:
+        'Content child. Replaces the arrow of a section; let-expanded is true when it is open. PrimeNG #submenuicon.',
+    },
     { name: '(none)', description: 'The items come from the items input, not from content.' },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

@@ -111,6 +111,7 @@ export const STAR_DATE_TEMPLATE = `
         [firstDayOfWeek]="firstDayOfWeek()"
         [locale]="locale()"
         [dateTemplate]="dateSlot()"
+        [decadeTemplate]="decadeSlot()"
         (dateSelect)="onDateSelect($event)"
         (monthChange)="monthChange.emit($event)"
         (yearChange)="yearChange.emit($event)"
@@ -131,6 +132,7 @@ export const STAR_DATE_TEMPLATE = `
                 [showSeconds]="showSeconds()"
                 [hourFormat]="hourFormat()"
                 [disabled]="!field.value"
+                [cellTemplate]="timeCellSlot()"
                 (valueChange)="$event && field.set($event)"
               />
             </div>
@@ -142,8 +144,12 @@ export const STAR_DATE_TEMPLATE = `
       }
       @if (showButtonBar()) {
         <div data-star-part="barPanel" class="star-date__bar">
-          <button data-star-part="todayButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
-          <button data-star-part="footerClearButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
+          @if (buttonBarSlot(); as custom) {
+            <ng-container *ngTemplateOutlet="custom; context: buttonBarContext" />
+          } @else {
+            <button data-star-part="todayButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
+            <button data-star-part="footerClearButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
+          }
         </div>
       }
       <!-- The footer is last, below the button bar. PrimeNG \`#footer\` template. -->
