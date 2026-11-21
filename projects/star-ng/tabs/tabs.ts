@@ -194,7 +194,6 @@ export class StarTab {
     '[class.star-tabs--align-center]': "alignment() === 'center'",
     '[class.star-tabs--align-end]': "alignment() === 'end'",
     '[class.star-tabs--align-stretch]': "alignment() === 'stretch'",
-    '[style.--star-tabs-duration]': 'durationCss()',
   },
   template: `
     <div data-star-part="navigation" class="star-tabs__nav">
@@ -459,10 +458,6 @@ export class StarTabs {
     if (!match) return null;
     return Math.max(0, Number(match[1]) * (match[2] === 's' ? 1000 : 1));
   });
-  protected readonly durationCss = computed(() => {
-    const ms = this.durationMs();
-    return ms === null ? null : `${ms}ms`;
-  });
   /** Value and height of the panel that was active in the last render. */
   private shownPanel: { value: string | null; height: number } | null = null;
 
@@ -518,7 +513,9 @@ export class StarTabs {
         height &&
         previous.height !== height
       ) {
-        panel.animate([{ height: `${previous.height}px` }, { height: `${height}px` }], {
+        // `overflow: clip` keeps the taller content inside the moving height.
+        const from = { height: `${previous.height}px`, overflow: 'clip' };
+        panel.animate([from, { height: `${height}px`, overflow: 'clip' }], {
           duration: ms ?? this.themeDuration(),
           easing: 'ease-out',
         });

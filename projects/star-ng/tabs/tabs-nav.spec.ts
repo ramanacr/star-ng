@@ -156,17 +156,30 @@ describe('StarTabs dynamicHeight and animationDuration', () => {
         removeEventListener: () => undefined,
       }) as unknown as MediaQueryList) as typeof window.matchMedia;
     document.documentElement.removeAttribute('data-star-motion');
+    // jsdom has no layout: the panel of tab A is 40 px high, the one of tab B 80 px.
+    const height = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight');
+    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.tagName === 'STAR-TAB' ? (this.textContent?.includes('B') ? 80 : 40) : 0;
+      },
+    });
     try {
       const fixture = TestBed.createComponent(TabsHost);
       await fixture.whenStable();
       const host = fixture.nativeElement.querySelector('star-tabs') as HTMLElement;
-      expect(host.style.getPropertyValue('--star-tabs-duration')).toBe('200ms');
+      expect(host).toBeTruthy();
       fixture.componentInstance.tab.set('b');
       await fixture.whenStable();
-      expect(calls.length).toBeGreaterThan(0);
+      expect(calls.length).toBe(2);
       expect(calls.every((c) => c.options.duration === 200)).toBe(true);
-      expect(calls.some((c) => 'opacity' in c.keyframes[0])).toBe(true);
+      expect(calls[0].keyframes).toEqual([
+        { height: '40px', overflow: 'clip' },
+        { height: '80px', overflow: 'clip' },
+      ]);
+      expect(calls[1].keyframes).toEqual([{ opacity: 0 }, { opacity: 1 }]);
     } finally {
+      if (height) Object.defineProperty(HTMLElement.prototype, 'offsetHeight', height);
       window.matchMedia = matchMedia;
       if (original) Element.prototype.animate = original as typeof Element.prototype.animate;
       else delete (Element.prototype as { animate?: unknown }).animate;
