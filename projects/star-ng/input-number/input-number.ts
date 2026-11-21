@@ -81,6 +81,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
         [readOnly]="readonly()"
         [required]="required()"
         [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="ariaLabelledBy()"
         [attr.aria-valuenow]="value()"
         [attr.aria-valuetext]="formatted()"
         [attr.aria-valuemin]="min()"
@@ -92,6 +93,17 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
         (blur)="onBlur()"
         (keydown)="onKeydown($event)"
       />
+      @if (showClear() && value() !== null && !disabled() && !readonly()) {
+        <button
+          data-star-part="clearButton"
+          type="button"
+          class="star-select__icon-btn star-number__clear"
+          [attr.aria-label]="uiText.clear"
+          (click)="clear()"
+        >
+          <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+        </button>
+      }
       @if (showButtons() && buttonLayout() === 'stacked') {
         <span data-star-part="stepPanel" class="star-number__steps">
           <ng-container *ngTemplateOutlet="stepButton; context: { $implicit: 1 }" />
@@ -152,6 +164,13 @@ export class StarInputNumber implements FormValueControl<number | null> {
   /** ISO 4217 code for `mode="currency"`, for example `EUR`. */
   readonly currency = input('USD');
   /**
+   * How `mode="currency"` shows the currency: `'symbol'` (default, `€`), `'narrowSymbol'`,
+   * `'code'` (`EUR`) or `'name'` (`euros`). PrimeNG `currencyDisplay`.
+   */
+  readonly currencyDisplay = input<'symbol' | 'narrowSymbol' | 'code' | 'name'>('symbol');
+  /** A clear button while the field has a value. PrimeNG `showClear`. */
+  readonly showClear = input(false, { transform: booleanAttribute });
+  /**
    * ECMA-402 sanctioned unit for `mode="unit"`, for example `kilogram`, `milliliter`, `day`.
    * An unsupported unit (such as `milligram`) is shown as a plain suffix instead of failing.
    */
@@ -188,6 +207,8 @@ export class StarInputNumber implements FormValueControl<number | null> {
   readonly highlightOnFocus = input(false, { transform: booleanAttribute });
   readonly placeholder = input<string | null>(null);
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
   readonly inputId = input(inject(_IdGenerator).getId('star-number-'));
 
   readonly disabled = input(false, { transform: booleanAttribute });
@@ -212,6 +233,7 @@ export class StarInputNumber implements FormValueControl<number | null> {
     const options: Intl.NumberFormatOptions = {
       style: mode,
       currency: mode === 'currency' ? this.currency() : undefined,
+      currencyDisplay: mode === 'currency' ? this.currencyDisplay() : undefined,
       unit: mode === 'unit' ? this.unit() : undefined,
       minimumFractionDigits: this.minFractionDigits(),
       maximumFractionDigits: this.maxFractionDigits(),
@@ -340,6 +362,13 @@ export class StarInputNumber implements FormValueControl<number | null> {
     } else if (event.key === 'Enter') {
       this.commit();
     }
+  }
+
+  /** Empties the value (the clear button). */
+  clear(): void {
+    this.value.set(null);
+    this.input().nativeElement.value = '';
+    this.input().nativeElement.focus();
   }
 
   focus(options?: FocusOptions): void {
