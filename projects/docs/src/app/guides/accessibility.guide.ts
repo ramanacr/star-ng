@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { DOCS } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './accessibility.guide.scss',
   selector: 'docs-accessibility-guide',
   imports: [DOCS],
   changeDetection: ChangeDetectionStrategy.OnPush,

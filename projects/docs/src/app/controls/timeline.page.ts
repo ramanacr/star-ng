@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarTimeline, StarTimelineContent, StarTimelineEvent } from '@star-ng/ui/layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './timeline.page.scss',
   selector: 'docs-timeline-page',
   imports: [DOCS, StarTimeline, StarTimelineContent],
   changeDetection: ChangeDetectionStrategy.OnPush,

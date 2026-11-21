@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarBottomNav, StarBottomNavItem } from '@star-ng/ui/bottom-nav';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-bottom-nav-page',
+  selector: 'docs-bottom-nav-page-content',
   imports: [DOCS, StarBottomNav, StarBottomNavItem],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -82,7 +82,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
   `,
 })
-export class BottomNavPage {
+export class BottomNavPageContent {
   protected readonly section = signal<string | null>('orders');
   protected readonly views: Record<string, string> = {
     orders: '3 new orders today.',
@@ -110,3 +110,18 @@ export class BottomNavPage {
     { name: 'Enter / Space', description: 'Activates the item.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`bottom-nav.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-bottom-nav-page',
+  imports: [BottomNavPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './bottom-nav.page.scss',
+  template: '<docs-bottom-nav-page-content />',
+})
+export class BottomNavPage {}

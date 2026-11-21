@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarAnimateOnScroll } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-animate-on-scroll-page',
+  selector: 'docs-animate-on-scroll-page-content',
   imports: [DOCS, StarAnimateOnScroll],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -49,10 +49,25 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
   `,
 })
-export class AnimateOnScrollPage {
+export class AnimateOnScrollPageContent {
   protected readonly blocks = [1, 2, 3, 4, 5, 6];
 
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-duration-slow', description: 'Duration of the fade and the move.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`animate-on-scroll.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-animate-on-scroll-page',
+  imports: [AnimateOnScrollPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './animate-on-scroll.page.scss',
+  template: '<docs-animate-on-scroll-page-content />',
+})
+export class AnimateOnScrollPage {}

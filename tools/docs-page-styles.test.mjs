@@ -1,0 +1,146 @@
+// Tests of the route-level CSS of the docs (tools/docs-page-styles.mjs): every page loads the
+// library partials of the controls it renders, and the cascade is the cascade of star-ng.css.
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
+import { test } from 'node:test';
+import * as sass from 'sass';
+import {
+  emissionOrder,
+  expectedFiles,
+  neededPartials,
+  pageFiles,
+  pagePartials,
+  pageSheetPartials,
+  pageStylesFile,
+  partials,
+  requiredTokens,
+  root,
+  shellPartials,
+  vocabulary,
+} from './docs-page-styles.mjs';
+
+const shell = shellPartials();
+const pages = pageFiles();
+const page = (path) => join(root, 'projects/docs/src/app', path);
+
+test('the page stylesheets and the shell list are up to date', () => {
+  const stale = expectedFiles()
+    .filter(([file, text]) => (existsSync(file) ? readFileSync(file, 'utf8') : null) !== text)
+    .map(([file]) => file);
+  assert.deepEqual(stale, [], 'run node tools/docs-page-styles.mjs');
+});
+
+test('every page has its partials in its own stylesheet or in the shell', () => {
+  assert.ok(pages.length > 140, `${pages.length} pages`);
+  const missing = [];
+  for (const file of pages) {
+    const loaded = new Set([...shell, ...pageSheetPartials(file, shell)]);
+    for (const name of neededPartials(vocabulary(file).vocab)) {
+      if (!loaded.has(name)) missing.push(`${basename(file)}: ${name}`);
+    }
+  }
+  assert.deepEqual(missing, []);
+});
+
+test('the route component of each page loads its stylesheet without encapsulation', () => {
+  const wrong = [];
+  for (const file of pages) {
+    const sheet = pageStylesFile(file);
+    const text = readFileSync(file, 'utf8');
+    const url = `styleUrl: './${basename(sheet)}'`;
+    if (!existsSync(sheet)) {
+      if (text.includes('.page.scss') || text.includes('.guide.scss')) wrong.push(basename(file));
+      continue;
+    }
+    // The decorator that names the stylesheet sets ViewEncapsulation.None and has no other
+    // styles: component styles of the page content go into a child component, after it.
+    const decorator = text.slice(text.lastIndexOf('@Component({', text.indexOf(url)));
+    const body = decorator.slice(0, decorator.indexOf('\n})'));
+    if (!body.includes(url) || !body.includes('encapsulation: ViewEncapsulation.None')) {
+      wrong.push(`${basename(file)}: no styleUrl with ViewEncapsulation.None`);
+    } else if (/\n {2}styles: /.test(body)) {
+      wrong.push(`${basename(file)}: styles next to the route styles`);
+    }
+  }
+  assert.deepEqual(wrong, []);
+});
+
+test('the shell loads the partials of the header, the toast and the confirm dialog', () => {
+  for (const name of ['button', 'dialog', 'popover', 'toast', 'utility']) {
+    assert.ok(shell.includes(`controls/${name}`), name);
+  }
+  // A control that only a page renders stays out of the critical CSS.
+  for (const name of ['table', 'select', 'scheduler', 'date-picker', 'field']) {
+    assert.ok(!shell.includes(`controls/${name}`), name);
+  }
+});
+
+test('example components, dialogs and library dependencies count for the page', () => {
+  // The table examples render through table-demo.ts; the table renders the paginator.
+  const table = vocabulary(page('controls/table.page.ts'));
+  assert.ok(table.files.some((file) => basename(file) === 'table-demo.ts'));
+  const tableSheet = pageSheetPartials(page('controls/table.page.ts'), shell);
+  for (const name of ['table', 'paginator', 'date-picker', 'listbox']) {
+    assert.ok(tableSheet.includes(`controls/${name}`), name);
+  }
+  // A dialog that a page opens with the service is a component of its own file.
+  const dialog = vocabulary(page('controls/dialog.page.ts'));
+  assert.ok(dialog.files.some((file) => basename(file) === 'edit-note-dialog.ts'));
+  // The scheduler page: the scheduler and the date picker of its editor.
+  const scheduler = pagePartials(page('controls/scheduler.page.ts'), shell);
+  assert.ok(scheduler.includes('controls/scheduler') && scheduler.includes('controls/date-picker'));
+});
+
+test('a selector needs its classes, not those of :not(), :is(), :where() or attributes', () => {
+  assert.deepEqual(requiredTokens('.star-a > .star-b:hover'), ['star-a', 'star-b']);
+  assert.deepEqual(requiredTokens('star-chart .star-chart__svg'), [
+    'star-chart',
+    'star-chart__svg',
+  ]);
+  assert.deepEqual(requiredTokens('.star-a:not(.star-b) :is(.star-c, .star-d)'), ['star-a']);
+  assert.deepEqual(requiredTokens('[data-star-part=root]:where(.star-x)'), []);
+});
+
+test('a page stylesheet keeps the order of star-ng.css with the global stylesheet', () => {
+  const { order } = emissionOrder();
+  const global = [...shell];
+  for (const file of pages) {
+    const sheet = pageSheetPartials(file, shell);
+    if (!sheet.length) continue;
+    // The document order: the global stylesheet, then the page stylesheet. A partial that is in
+    // both counts at its last place. Every pair must keep the order of star-ng.css.
+    const last = new Map();
+    [...global, ...sheet].forEach((name, index) => last.set(name, index));
+    const effective = [...last.keys()].sort((a, b) => last.get(a) - last.get(b));
+    const expected = [...effective].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    assert.deepEqual(effective, expected, basename(file));
+  }
+});
+
+test('the unstyled rules do not depend on their place among the control partials', () => {
+  // `_unstyled.scss` is last in star-ng.css and stays in the global stylesheet, before the page
+  // partials. That is the same cascade only while no control rule can tie with it: its rules
+  // have zero specificity (`:where()`) or are on `:root`, and no control rule sets one of its
+  // properties at zero specificity or on `:root`.
+  const stylesDir = join(root, 'projects/star-ng/styles');
+  const compile = (name) =>
+    sass.compileString(`@use '${name}';`, { loadPaths: [stylesDir], style: 'compressed' }).css;
+  const unstyled = compile('unstyled');
+  const properties = new Set(unstyled.match(/--star-[a-z0-9-]+(?=:)/g));
+  for (const m of unstyled.matchAll(/([^{};]+)\{/g)) {
+    const selector = m[1].trim();
+    if (selector.startsWith('@')) continue;
+    assert.match(selector, /^(:where\(|:root$)/, selector);
+  }
+  for (const name of partials().keys()) {
+    if (!name.startsWith('controls/')) continue;
+    for (const m of compile(name).matchAll(/([^{};]+)\{([^{}]*)\}/g)) {
+      const selectors = m[1].trim().split(',');
+      const zero = selectors.some((s) => /^(:where\([^]*\)|\*|:root)$/.test(s.trim()));
+      if (!zero) continue;
+      const set = (m[2].match(/--star-[a-z0-9-]+(?=:)/g) ?? []).filter((p) => properties.has(p));
+      assert.deepEqual(set, [], `${name}: ${m[1]}`);
+    }
+  }
+});

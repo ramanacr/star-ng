@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarIconTemplate } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarInputNumber } from '@star-ng/ui/input-number';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './input-number.page.scss',
   selector: 'docs-input-number-page',
   imports: [DOCS, StarInputNumber, StarIconTemplate, StarField],
   changeDetection: ChangeDetectionStrategy.OnPush,

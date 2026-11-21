@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarInput } from '@star-ng/ui/field';
 import { StarSelect } from '@star-ng/ui/select';
 import { StarFloatLabel } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './float-label.page.scss',
   selector: 'docs-float-label-page',
   imports: [DOCS, StarFloatLabel, StarInput, StarSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,

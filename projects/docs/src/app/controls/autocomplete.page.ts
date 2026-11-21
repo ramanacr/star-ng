@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import {
   StarAutoComplete,
@@ -24,6 +24,8 @@ interface OfficeCity {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './autocomplete.page.scss',
   selector: 'docs-autocomplete-page',
   imports: [
     DOCS,

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarCellTemplate, StarColumn, StarTable } from '@star-ng/ui/table';
 import { StarTag } from '@star-ng/ui/tag';
@@ -103,6 +103,8 @@ const PARTS: readonly Part[] = [
 ];
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './table-export.page.scss',
   selector: 'docs-table-export-page',
   imports: [DOCS, StarTable, StarCellTemplate, StarTag, StarButton, DocsFill, DocsRefTable],
   changeDetection: ChangeDetectionStrategy.OnPush,

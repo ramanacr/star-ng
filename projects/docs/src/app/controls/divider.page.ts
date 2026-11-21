@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarDivider } from '@star-ng/ui/layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './divider.page.scss',
   selector: 'docs-divider-page',
   imports: [DOCS, StarDivider],
   changeDetection: ChangeDetectionStrategy.OnPush,

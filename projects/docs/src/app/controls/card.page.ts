@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarCard } from '@star-ng/ui/card';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './card.page.scss',
   selector: 'docs-card-page',
   imports: [DOCS, StarCard, StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

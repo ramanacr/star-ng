@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { DOCS, DocsRow } from '../shared/docs';
 
 const names = (prefix: string, items: readonly string[]) => items.map((item) => `${prefix}${item}`);
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './theming.guide.scss',
   selector: 'docs-theming-guide',
   imports: [DOCS],
   changeDetection: ChangeDetectionStrategy.OnPush,

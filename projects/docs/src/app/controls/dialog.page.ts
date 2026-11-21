@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import {
   StarDialog,
@@ -32,6 +38,8 @@ const POSITIONS: readonly StarDialogPosition[] = [
 ];
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './dialog.page.scss',
   selector: 'docs-dialog-page',
   imports: [
     DOCS,

@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarIconTemplate } from '@star-ng/ui/core';
 import { StarRating } from '@star-ng/ui/rating';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './rating.page.scss',
   selector: 'docs-rating-page',
   imports: [DOCS, StarRating, StarIconTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,

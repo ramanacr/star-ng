@@ -1,0 +1,1255 @@
+// Docs layout: the shell, the page frame and the example areas. It comes after the library styles
+// (`styles.scss`, and again at the end of each page stylesheet, so it stays after the partials of
+// the page). It uses only the `--star-*` tokens, so it follows the theme like any consuming
+// product does.
+
+// Docs-local tokens. Each one is a mix of `--star-*` tokens, so it follows the light and the dark
+// theme. They are for the docs shell only: a live example keeps the plain library tokens, so a
+// control looks as it does in a consumer application.
+:root {
+  --docs-header-height: 3.5rem;
+  // Page background: the muted surface with a trace of the primary color.
+  --docs-canvas: color-mix(in srgb, var(--star-primary) 4%, var(--star-surface-muted));
+  // Header and side navigation: between the surface and the canvas.
+  --docs-chrome: color-mix(in srgb, var(--star-primary) 2%, var(--star-surface));
+  // A tinted fill for hover states, table heads and icon tiles.
+  --docs-tint: color-mix(in srgb, var(--star-primary) 7%, var(--star-surface));
+  // `--star-text-muted` is made for the plain surface: on the tinted canvas it is under 4.5:1.
+  // This mix moves it toward the strong text (darker in light, lighter in dark).
+  --docs-text-muted: color-mix(in srgb, var(--star-text-muted) 70%, var(--star-text-strong));
+  // Code blocks: a neutral fill, one step away from the surface.
+  --docs-code-fill: color-mix(in srgb, var(--star-text-strong) 4%, var(--star-surface));
+  --docs-accent-line: linear-gradient(90deg, var(--star-primary), var(--star-accent));
+  // Logo mark: the brackets and the star (brand/starng-mark.svg and starng-mark-dark.svg).
+  --docs-logo-brackets: #4f46e5;
+  --docs-logo-star: #f59e0b;
+  // The star of the logo, as a mask. It marks "you are here" in the navigation.
+  --docs-star-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='16 19 24 24'%3E%3Cpath d='M28 19C28.9 28 31 30.1 40 31C31 31.9 28.9 34 28 43C27.1 34 25 31.9 16 31C25 30.1 27.1 28 28 19Z'/%3E%3C/svg%3E");
+}
+[data-theme='dark'] {
+  --docs-logo-brackets: #a5b4fc;
+  --docs-logo-star: #fbbf24;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+// Anchor targets and focused elements stop below the sticky header, not under it.
+html {
+  scroll-padding-top: calc(var(--docs-header-height) + var(--star-space-4));
+}
+
+// No fixed height on `body`: it grows with the page. The sticky header can stick only inside its
+// containing block. A body of one viewport height lets the header scroll away after one screen.
+body {
+  min-height: 100vh;
+  margin: 0;
+  font: var(--star-type-body-lg);
+  color: var(--star-text);
+  background: var(--docs-canvas);
+}
+// A custom element is inline by default. As a block, the root holds the whole page and is the
+// containing block of the sticky header.
+docs-root {
+  display: block;
+}
+
+a {
+  color: var(--star-accent);
+}
+
+code,
+pre {
+  font: var(--star-type-code);
+}
+// Code stays left-to-right inside right-to-left text; isolation keeps it from reordering its neighbors.
+code {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+:focus-visible {
+  outline: 2px solid var(--star-accent);
+  outline-offset: 2px;
+}
+
+// The parts the browser draws (selection, scroll bars, native checks, the caret) take the theme.
+:root {
+  accent-color: var(--star-primary);
+  caret-color: var(--star-primary);
+  scrollbar-color: color-mix(in srgb, var(--star-text-muted) 45%, transparent) transparent;
+}
+::selection {
+  background: color-mix(in srgb, var(--star-primary) 24%, transparent);
+  color: var(--star-text-strong);
+}
+kbd {
+  display: inline-block;
+  min-width: 1.25rem;
+  padding: 0 0.3em;
+  border: 1px solid var(--star-border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--star-radius-xs);
+  background: var(--star-surface);
+  color: var(--star-text-strong);
+  font: var(--star-type-code);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+// ---------- Shell ----------
+.docs-skip {
+  position: absolute;
+  inset-inline-start: var(--star-space-3);
+  top: -4rem;
+  z-index: 100;
+  padding: var(--star-space-2) var(--star-space-3);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+  box-shadow: var(--star-shadow-md);
+
+  &:focus {
+    top: var(--star-space-3);
+  }
+}
+
+.docs-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--star-space-3);
+  height: var(--docs-header-height);
+  padding: 0 var(--star-space-4);
+  border-bottom: 1px solid var(--star-border);
+  background: var(--docs-chrome);
+  box-shadow: var(--star-shadow-xs);
+
+  // A thin accent line along the bottom edge. Decoration only.
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--docs-accent-line);
+    opacity: 0.85;
+    pointer-events: none;
+  }
+}
+.docs-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--star-space-2);
+  font: var(--star-type-title);
+  color: var(--star-text-strong);
+  text-decoration: none;
+}
+.docs-header__mark {
+  display: block;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+}
+.docs-header__mark-brackets {
+  fill: none;
+  stroke: var(--docs-logo-brackets);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.docs-header__mark-star {
+  fill: var(--docs-logo-star);
+}
+.docs-header__spacer {
+  flex: 1;
+}
+// The header controls share one treatment: a quiet square button that fills on hover.
+.docs-header__button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 var(--star-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--star-radius-md);
+  background: transparent;
+  color: var(--docs-text-muted);
+  font-size: 1.125rem;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  &:hover {
+    background: var(--docs-tint);
+    color: var(--star-text-strong);
+  }
+}
+// The direction button shows its state as text (LTR or RTL), with a border so it reads as a toggle.
+.docs-header__dir {
+  border-color: var(--star-border);
+  font: var(--star-type-label);
+  letter-spacing: 0.02em;
+
+  &[aria-pressed='true'] {
+    border-color: color-mix(in srgb, var(--star-primary) 45%, var(--star-border));
+    background: var(--star-primary-soft);
+    color: var(--star-text-strong);
+  }
+}
+.docs-header__menu {
+  display: none;
+}
+
+.docs-body {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  min-height: calc(100vh - var(--docs-header-height));
+}
+
+// The navigation scrolls on its own and stays in place while the page scrolls.
+.docs-nav {
+  position: sticky;
+  top: var(--docs-header-height);
+  align-self: start;
+  height: calc(100vh - var(--docs-header-height));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--star-space-4) var(--star-space-3);
+  border-inline-end: 1px solid var(--star-border);
+  background: var(--docs-chrome);
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+.docs-nav__search {
+  display: flex;
+  align-items: center;
+  gap: var(--star-space-2);
+  min-height: 2.5rem;
+  margin-bottom: var(--star-space-5);
+  padding: 0 var(--star-space-3);
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+  color: var(--star-text-muted);
+
+  &:focus-within {
+    border-color: var(--star-accent);
+    box-shadow: var(--star-focus-ring);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 2.25rem;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--star-text-strong);
+
+    // The browser default placeholder color is under 4.5:1: use the muted text token.
+    &::placeholder {
+      color: var(--star-text-muted);
+    }
+  }
+}
+// The shortcut hint hides while the field has the focus or text: then it is not needed.
+.docs-nav__key {
+  flex: none;
+}
+.docs-nav__search:focus-within .docs-nav__key,
+.docs-nav__search:has(input:not(:placeholder-shown)) .docs-nav__key {
+  visibility: hidden;
+}
+.docs-nav__status {
+  margin: calc(-1 * var(--star-space-3)) 0 var(--star-space-5);
+  padding: 0 var(--star-space-3);
+  color: var(--docs-text-muted);
+  font: var(--star-type-body-sm);
+}
+.docs-nav__group {
+  margin-bottom: var(--star-space-6);
+}
+.docs-nav__heading {
+  margin: 0 0 var(--star-space-1);
+  padding: 0 var(--star-space-3);
+  font: var(--star-type-label);
+  font-weight: 700;
+  color: var(--star-text-strong);
+}
+// Links keep a fixed start padding, so the text does not move when the star of the current page
+// shows.
+.docs-nav__link {
+  position: relative;
+  display: block;
+  padding: 0.375rem var(--star-space-3);
+  padding-inline-start: calc(var(--star-space-3) + 0.75rem);
+  border-radius: var(--star-radius-md);
+  color: var(--star-text);
+  text-decoration: none;
+
+  &:hover {
+    background: var(--docs-tint);
+    color: var(--star-text-strong);
+  }
+}
+// The current page: tinted fill, bold text and the star of the logo on the start side (not
+// color alone).
+.docs-nav__link--active,
+.docs-nav__link--active:hover {
+  background: var(--star-primary-soft);
+  color: var(--star-text-strong);
+  font-weight: 600;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    inset-inline-start: var(--star-space-2);
+    width: 0.75rem;
+    height: 0.75rem;
+    translate: 0 -50%;
+    background: var(--docs-logo-star);
+    mask: var(--docs-star-mask) center / contain no-repeat;
+  }
+}
+.docs-nav__empty {
+  padding: 0 var(--star-space-3);
+  color: var(--docs-text-muted);
+}
+
+.docs-main {
+  min-width: 0;
+  padding: var(--star-space-8) var(--star-space-8) var(--star-space-12);
+  outline: none;
+}
+
+// The trademark note under the page, outside `main` (the visual tests capture `main` only).
+.docs-footer {
+  grid-column: 2;
+  padding: var(--star-space-4) var(--star-space-8) var(--star-space-8);
+  border-top: 1px solid var(--star-border);
+  font: var(--star-type-body-sm);
+  color: var(--docs-text-muted);
+
+  p {
+    max-width: 60rem;
+    margin: 0;
+  }
+}
+
+@keyframes docs-drawer-in {
+  from {
+    translate: -1.5rem 0;
+    opacity: 0;
+  }
+}
+@keyframes docs-drawer-in-rtl {
+  from {
+    translate: 1.5rem 0;
+    opacity: 0;
+  }
+}
+@keyframes docs-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+// The backdrop exists only while the drawer is open, and only a small screen shows it.
+.docs-backdrop {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  .docs-header__menu {
+    display: inline-grid;
+  }
+  .docs-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .docs-nav {
+    display: none;
+    position: fixed;
+    inset: var(--docs-header-height) auto 0 0;
+    z-index: 20;
+    width: min(20rem, 88vw);
+    height: auto;
+    // Box alignment applies to a fixed box too: `start` (from the sticky layout above) would
+    // size the drawer to its content and ignore `bottom: 0`. Stretch fills the screen height.
+    align-self: stretch;
+    box-shadow: var(--star-shadow-xl);
+  }
+  [dir='rtl'] .docs-nav {
+    inset: var(--docs-header-height) 0 0 auto;
+  }
+  .docs-nav--open {
+    display: block;
+  }
+  // The page behind the open drawer is dimmed; a click on it closes the drawer.
+  .docs-backdrop {
+    display: block;
+    position: fixed;
+    inset: var(--docs-header-height) 0 0 0;
+    z-index: 19;
+    background: color-mix(in srgb, #000 40%, transparent);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .docs-nav--open {
+      animation: docs-drawer-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    [dir='rtl'] .docs-nav--open {
+      animation-name: docs-drawer-in-rtl;
+    }
+    .docs-backdrop {
+      animation: docs-fade-in 220ms ease-out;
+    }
+  }
+  .docs-main {
+    padding: var(--star-space-5) var(--star-space-4) var(--star-space-10);
+  }
+  .docs-footer {
+    grid-column: 1;
+    padding-inline: var(--star-space-4);
+  }
+}
+
+// ---------- Page ----------
+.docs-page {
+  display: block;
+  max-width: 60rem;
+  margin: 0 auto;
+
+  h1 {
+    margin: 0;
+    font: var(--star-type-display);
+    color: var(--star-text-strong);
+  }
+  h2 {
+    margin: var(--star-space-10) 0 var(--star-space-3);
+    font: var(--star-type-title-lg);
+    color: var(--star-text-strong);
+  }
+  h3 {
+    margin: var(--star-space-6) 0 var(--star-space-2);
+    font: var(--star-type-title-sm);
+    color: var(--star-text-strong);
+  }
+  p,
+  li {
+    max-width: 46rem;
+    line-height: 1.6;
+  }
+  :not(pre) > code {
+    padding: 0.1em 0.35em;
+    border-radius: var(--star-radius-xs);
+    background: color-mix(in srgb, var(--star-border) 55%, transparent);
+    color: var(--star-text-strong);
+    font-size: 0.85em;
+  }
+}
+.docs-page__header {
+  padding-bottom: var(--star-space-4);
+  border-bottom: 1px solid var(--star-border);
+
+  h1 {
+    text-wrap: balance;
+  }
+}
+.docs-page .docs-page__lead {
+  max-width: 44rem;
+  margin: var(--star-space-3) 0 var(--star-space-5);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--docs-text-muted);
+  text-wrap: pretty;
+
+  @media (max-width: 800px) {
+    font-size: 1rem;
+  }
+}
+// Where the page sits: the docs home and the navigation group.
+.docs-page__trail ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--star-space-1);
+  margin: 0 0 var(--star-space-2);
+  padding: 0;
+  list-style: none;
+  font: var(--star-type-body-sm);
+  color: var(--docs-text-muted);
+}
+.docs-page .docs-page__trail li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--star-space-1);
+  max-width: none;
+  line-height: 1.5;
+
+  & + li::before {
+    content: '/';
+    color: var(--docs-text-muted);
+  }
+}
+.docs-page__trail a {
+  color: var(--docs-text-muted);
+  text-underline-offset: 0.2em;
+
+  &:hover {
+    color: var(--star-text-strong);
+  }
+}
+
+// Code is always left-to-right, also on a right-to-left page: the block keeps its own direction,
+// so the copy button stays on the same side as the end of the lines.
+.docs-code {
+  position: relative;
+  display: block;
+  margin: var(--star-space-3) 0;
+  direction: ltr;
+  text-align: left;
+
+  pre {
+    margin: 0;
+    padding: var(--star-space-4);
+    padding-inline-end: 3rem;
+    overflow-x: auto;
+    border: 1px solid var(--star-border);
+    border-radius: var(--star-radius-lg);
+    background: var(--docs-code-fill);
+    color: var(--star-text-strong);
+    tab-size: 2;
+  }
+}
+.docs-code__copy {
+  position: absolute;
+  top: var(--star-space-2);
+  inset-inline-end: var(--star-space-2);
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+  color: var(--docs-text-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--star-text-strong);
+    border-color: var(--star-border-strong);
+  }
+}
+.docs-code__copy--done,
+.docs-code__copy--done:hover {
+  border-color: color-mix(in srgb, var(--star-success) 50%, var(--star-border));
+  color: var(--star-success);
+}
+
+.docs-example {
+  display: block;
+  margin: var(--star-space-8) 0;
+}
+// The title row: the heading and a link to the example (a deep link to share).
+.docs-example__head {
+  display: flex;
+  align-items: center;
+  gap: var(--star-space-1);
+  margin: var(--star-space-6) 0 var(--star-space-2);
+}
+// The title is a level 2 heading (a page has no level 2 heading before its first example), drawn
+// at the size of a level 3 heading.
+.docs-page h2.docs-example__title {
+  margin: 0;
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
+}
+// The link shows on hover and on focus; a touch screen (no hover) always shows it.
+.docs-example__anchor {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--star-radius-md);
+  color: var(--docs-text-muted);
+  opacity: 0;
+
+  &:hover {
+    background: var(--docs-tint);
+    color: var(--star-text-strong);
+  }
+  &:focus-visible,
+  .docs-example__head:hover & {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    opacity: 1;
+  }
+}
+.docs-example__note {
+  margin: 0 0 var(--star-space-3);
+  color: var(--docs-text-muted);
+}
+// The live area and its source form one raised card on the canvas.
+.docs-example__frame {
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+}
+// The live area keeps the plain surface of the library: a control looks here as it does in an
+// application.
+.docs-example__live {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--star-space-4);
+  padding: var(--star-space-6);
+  border-radius: var(--star-radius-lg) var(--star-radius-lg) 0 0;
+  background: var(--star-surface);
+}
+.docs-example__source-icon {
+  font-size: 1rem;
+}
+.docs-example__source-caret {
+  margin-inline-start: auto;
+  font-size: 0.875rem;
+}
+.docs-example__live--column {
+  flex-direction: column;
+  align-items: stretch;
+}
+.docs-example__source {
+  border-top: 1px solid var(--star-border);
+  border-radius: 0 0 var(--star-radius-lg) var(--star-radius-lg);
+  background: var(--docs-code-fill);
+
+  summary {
+    display: flex;
+    align-items: center;
+    gap: var(--star-space-2);
+    min-height: 2.5rem;
+    padding: 0 var(--star-space-4);
+    font: var(--star-type-label);
+    color: var(--docs-text-muted);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+    &:hover {
+      color: var(--star-text-strong);
+    }
+    &:focus-visible {
+      outline-offset: -2px;
+    }
+  }
+  &[open] > summary {
+    color: var(--star-text-strong);
+  }
+  &[open] .docs-example__source-caret {
+    rotate: 180deg;
+  }
+  .docs-code {
+    margin: 0 var(--star-space-3) var(--star-space-3);
+  }
+  pre {
+    background: var(--star-surface);
+  }
+}
+// The content of a headless dialog draws its own padding.
+.docs-headless {
+  padding: var(--star-space-6);
+
+  h2 {
+    margin: 0;
+    font: var(--star-type-title);
+  }
+}
+// A block that fills the width of the live area (forms, stacked rows).
+.docs-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--star-space-4);
+  width: 100%;
+  max-width: 26rem;
+}
+// A table, a data view, an org chart and the other wide controls need the full width of the live area. The 26rem cap is for forms and small
+// controls, and for a demo of a narrow table (docs-stack--narrow).
+.docs-stack:not(.docs-stack--narrow):has(
+    star-table,
+    star-tree-table,
+    star-data-view,
+    star-org-chart,
+    star-timeline,
+    star-editor,
+    star-menubar,
+    star-scroll-panel,
+    star-paginator,
+    star-chart,
+    star-image-editor,
+    star-map,
+    star-spreadsheet,
+    star-pivot-grid,
+    star-hierarchical-grid,
+    star-document-viewer,
+    star-scheduler,
+    star-gantt
+  ) {
+  max-width: none;
+}
+// The live area is a wrapping flex row, so a block control placed straight in it would shrink to its
+// content. These controls are wide by design: they fill the row.
+.docs-example__live
+  > :is(
+    star-table,
+    star-tree-table,
+    star-data-view,
+    star-timeline,
+    star-org-chart,
+    star-editor,
+    star-menubar,
+    star-paginator,
+    star-scroll-panel,
+    star-image-editor,
+    star-map,
+    star-spreadsheet,
+    star-pivot-grid,
+    star-hierarchical-grid,
+    star-document-viewer,
+    star-scheduler,
+    star-gantt
+  ) {
+  flex: 1 1 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.docs-example__live > .docs-stack {
+  min-width: 0;
+}
+.docs-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--star-space-4);
+}
+.docs-output {
+  margin: 0;
+  color: var(--star-text-muted);
+  font: var(--star-type-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.docs-table-wrap {
+  margin: var(--star-space-3) 0 var(--star-space-6);
+  overflow-x: auto;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+}
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--star-type-body);
+
+  caption {
+    padding: var(--star-space-3) var(--star-space-4);
+    text-align: start;
+    font: var(--star-type-title-sm);
+    color: var(--star-text-strong);
+    border-bottom: 1px solid var(--star-border);
+  }
+  th,
+  td {
+    padding: var(--star-space-2) var(--star-space-4);
+    text-align: start;
+    vertical-align: top;
+    border-bottom: 1px solid var(--star-border);
+  }
+  thead th {
+    background: var(--docs-tint);
+    font: var(--star-type-label);
+    font-weight: 700;
+    color: var(--star-text-strong);
+    white-space: nowrap;
+  }
+  td {
+    line-height: 1.55;
+  }
+  tbody th {
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  tbody tr:hover > * {
+    background: color-mix(in srgb, var(--star-primary) 3%, var(--star-surface));
+  }
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+}
+// Darker than the danger token in light, lighter in dark: it stays over 4.5:1 on the row hover.
+.docs-table__required {
+  margin-inline-start: var(--star-space-2);
+  font: var(--star-type-eyebrow);
+  color: color-mix(in srgb, var(--star-danger) 80%, var(--star-text-strong));
+  text-transform: uppercase;
+}
+// API tables: the description gets a readable width. A long union type wraps at its `|` and
+// spaces (and at any point when it has none) instead of taking the width of the row.
+.docs-table--api {
+  .docs-table__type {
+    min-width: 9rem;
+    max-width: 16rem;
+  }
+  td.docs-table__type code {
+    overflow-wrap: anywhere;
+  }
+  .docs-table__description,
+  td:last-child {
+    min-width: 18rem;
+  }
+}
+.docs-table__inherited {
+  display: block;
+  margin-block-start: var(--star-space-1);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--star-text-muted);
+}
+
+// ---------- Home ----------
+.docs-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-bottom: var(--star-space-6);
+  padding: var(--star-space-10) var(--star-space-10) var(--star-space-8);
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-2xl);
+  background: var(--star-surface);
+
+  h1 {
+    margin: 0;
+    font-family: var(--star-font-sans);
+    font-size: clamp(2.25rem, 1.5rem + 2.5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--star-text-strong);
+  }
+  .docs-code {
+    max-width: 34rem;
+    margin: var(--star-space-6) 0 0;
+  }
+}
+// The brand mark, drawn large at the end of the hero. Decoration only (aria-hidden).
+.docs-hero__mark {
+  position: absolute;
+  inset-inline-end: var(--star-space-8);
+  top: var(--star-space-8);
+  z-index: -1;
+  width: 12rem;
+  height: 12rem;
+}
+.docs-hero__mark-brackets {
+  fill: none;
+  stroke: color-mix(in srgb, var(--docs-logo-brackets) 28%, transparent);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.docs-hero__mark-star {
+  fill: var(--docs-logo-star);
+}
+[dir='rtl'] .docs-hero__mark {
+  scale: -1 1;
+}
+
+// Hero lights: three soft lights drift slowly around the star of the mark, like light that the
+// star gives off. The offsets are registered custom properties, so the browser animates them and
+// the gradients stay pure CSS (no script, no canvas). The initial values are in px: a registration
+// with a value that depends on the font size (rem) is invalid, and the browser drops it. A veil of
+// the surface color covers the start side, where the text is: the text keeps its contrast.
+@property --docs-glow-star-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-star-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-wide-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-wide-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-soft-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-soft-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+.docs-hero__glow {
+  // The center of the star of the mark: 8rem from the end edge and from the top edge.
+  --docs-glow-x: calc(100% - 8rem);
+  --docs-glow-y: 8rem;
+  // Strength of the lights (percent of the color in the mix).
+  --docs-glow-star: 34%;
+  --docs-glow-wide: 20%;
+  --docs-glow-soft: 26%;
+
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      var(--star-surface) 0%,
+      var(--star-surface) 38%,
+      color-mix(in srgb, var(--star-surface) 70%, transparent) 58%,
+      transparent 78%
+    ),
+    radial-gradient(
+      circle 10rem at calc(var(--docs-glow-x) + var(--docs-glow-star-x))
+        calc(var(--docs-glow-y) + var(--docs-glow-star-y)),
+      color-mix(in srgb, var(--docs-logo-star) var(--docs-glow-star), transparent),
+      transparent
+    ),
+    radial-gradient(
+      circle 16rem at calc(var(--docs-glow-x) - 6rem + var(--docs-glow-soft-x))
+        calc(var(--docs-glow-y) + 5rem + var(--docs-glow-soft-y)),
+      color-mix(in srgb, var(--docs-logo-brackets) var(--docs-glow-soft), transparent),
+      transparent
+    ),
+    radial-gradient(
+      circle 26rem at calc(var(--docs-glow-x) + 4rem + var(--docs-glow-wide-x))
+        calc(var(--docs-glow-y) - 4rem + var(--docs-glow-wide-y)),
+      color-mix(in srgb, var(--star-primary) var(--docs-glow-wide), transparent),
+      transparent
+    );
+}
+// The veil and the lights follow the reading direction: the star is on the start side in RTL.
+[dir='rtl'] .docs-hero__glow {
+  scale: -1 1;
+}
+// The dark theme needs a little more light to show on the dark surface.
+[data-theme='dark'] .docs-hero__glow {
+  --docs-glow-star: 26%;
+  --docs-glow-wide: 26%;
+  --docs-glow-soft: 22%;
+}
+// On a narrow hero the text runs under the lights and the mark is hidden: the star light goes,
+// and the two indigo lights move to the top end corner and soften.
+@media (max-width: 1100px) {
+  .docs-hero__glow {
+    --docs-glow-x: 100%;
+    --docs-glow-y: 0rem;
+    --docs-glow-star: 0%;
+    --docs-glow-wide: 12%;
+    --docs-glow-soft: 12%;
+  }
+  // Same weight as the dark rule above, so the narrow values win in the dark theme too.
+  [data-theme='dark'] .docs-hero__glow {
+    --docs-glow-star: 0%;
+    --docs-glow-wide: 14%;
+    --docs-glow-soft: 12%;
+  }
+}
+// Motion only when the visitor allows it. Each light has its own period, so the pattern does not
+// repeat in an obvious loop. The page stops it while the tab is hidden (docs-hero--paused).
+@media (prefers-reduced-motion: no-preference) {
+  .docs-hero__glow {
+    animation:
+      docs-glow-star 17s ease-in-out infinite alternate,
+      docs-glow-wide 29s ease-in-out infinite alternate,
+      docs-glow-soft 23s ease-in-out infinite alternate;
+  }
+  // The star of the mark beats like a heart: two quick beats, then a rest. The light around it
+  // swells with each beat. Scale turns around the center of the star itself.
+  .docs-hero__mark-star {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: docs-star-beat 2.8s cubic-bezier(0.33, 0, 0.2, 1) infinite;
+  }
+  .docs-hero--paused :is(.docs-hero__glow, .docs-hero__mark-star) {
+    animation-play-state: paused;
+  }
+}
+@keyframes docs-star-beat {
+  0%,
+  40%,
+  100% {
+    scale: 1;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  10% {
+    scale: 1.16;
+    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--docs-logo-star) 70%, transparent));
+  }
+  18% {
+    scale: 1.02;
+  }
+  27% {
+    scale: 1.1;
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--docs-logo-star) 55%, transparent));
+  }
+}
+@keyframes docs-glow-star {
+  33% {
+    --docs-glow-star-x: -1.5rem;
+    --docs-glow-star-y: 1rem;
+  }
+  66% {
+    --docs-glow-star-x: 1rem;
+    --docs-glow-star-y: -1.25rem;
+  }
+  100% {
+    --docs-glow-star-x: -0.5rem;
+    --docs-glow-star-y: 1.5rem;
+  }
+}
+@keyframes docs-glow-wide {
+  50% {
+    --docs-glow-wide-x: -7rem;
+    --docs-glow-wide-y: 5rem;
+  }
+  100% {
+    --docs-glow-wide-x: 3rem;
+    --docs-glow-wide-y: 7rem;
+  }
+}
+@keyframes docs-glow-soft {
+  50% {
+    --docs-glow-soft-x: 5rem;
+    --docs-glow-soft-y: -4rem;
+  }
+  100% {
+    --docs-glow-soft-x: -4rem;
+    --docs-glow-soft-y: 2rem;
+  }
+}
+.docs-page .docs-hero__lead {
+  max-width: 38rem;
+  margin: var(--star-space-3) 0 var(--star-space-6);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--docs-text-muted);
+}
+.docs-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--star-space-3);
+}
+.docs-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--star-space-2);
+  min-height: var(--star-control-height);
+  padding: 0 var(--star-space-5);
+  border: 1px solid var(--star-border-strong);
+  border-radius: var(--star-button-radius);
+  background: var(--star-surface);
+  color: var(--star-text-strong);
+  font: var(--star-type-body-lg);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--docs-tint);
+  }
+}
+.docs-cta--primary {
+  border-color: transparent;
+  background: var(--star-primary-fill);
+  color: var(--star-on-tone);
+  box-shadow: var(--star-shadow-sm);
+
+  &:hover {
+    background: var(--star-primary-hover);
+  }
+}
+.docs-page .docs-hero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--star-space-2) var(--star-space-6);
+  max-width: none;
+  margin: var(--star-space-6) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--docs-text-muted);
+
+  li {
+    max-width: none;
+  }
+  strong {
+    color: var(--star-text-strong);
+  }
+}
+
+.docs-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--star-space-2) var(--star-space-8);
+  margin: var(--star-space-8) 0 0;
+  padding: 0;
+  list-style: none;
+
+  .docs-page & li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--star-space-3);
+    max-width: none;
+    padding: var(--star-space-2) 0;
+    line-height: 1.5;
+  }
+  i {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--star-radius-md);
+    background: var(--star-primary-soft);
+    color: var(--star-primary);
+    font-size: 1.125rem;
+  }
+}
+
+// ---------- Home cards and token swatches ----------
+.docs-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--star-space-3);
+  margin: var(--star-space-4) 0;
+  padding: 0;
+  list-style: none;
+}
+.docs-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--star-space-2);
+  height: 100%;
+  padding: var(--star-space-3) var(--star-space-4);
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+  color: var(--star-text);
+  text-decoration: none;
+
+  strong {
+    color: var(--star-text-strong);
+  }
+  i {
+    color: var(--docs-text-muted);
+  }
+  &:hover {
+    border-color: color-mix(in srgb, var(--star-primary) 50%, var(--star-border));
+    background: var(--docs-tint);
+
+    i {
+      color: var(--star-primary);
+    }
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .docs-card,
+  .docs-card i,
+  .docs-cta,
+  .docs-nav__link {
+    transition:
+      background-color var(--star-duration-fast),
+      border-color var(--star-duration-fast),
+      box-shadow var(--star-duration-fast),
+      color var(--star-duration-fast);
+  }
+}
+.docs-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--star-space-3);
+  margin: var(--star-space-3) 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--star-space-2);
+    font: var(--star-type-code);
+    font-size: 12px;
+  }
+}
+.docs-swatch {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+}
+
+// A chart in a live example fills the example (up to 40rem). Without this the flex row would
+// shrink it to the 300px default width of an SVG.
+.docs-example__live > star-chart {
+  flex: 1 1 28rem;
+  min-width: 0;
+  max-width: 40rem;
+}
+.docs-chart-narrow {
+  max-width: 22rem;
+}
+
+// ---------- Page not found ----------
+.docs-page .docs-not-found__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--star-space-3);
+  max-width: none;
+  margin: var(--star-space-6) 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    max-width: none;
+  }
+}
+.docs-not-found code {
+  overflow-wrap: anywhere;
+}
+
+// The hero mark needs the room beside the text; a narrower page leaves it out.
+@media (max-width: 1100px) {
+  .docs-hero__mark {
+    display: none;
+  }
+}
+@media (max-width: 800px) {
+  .docs-hero {
+    padding: var(--star-space-6) var(--star-space-4);
+    border-radius: var(--star-radius-xl);
+  }
+}

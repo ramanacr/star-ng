@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { StarDatePicker } from '@star-ng/ui/date-picker';
 import { StarIftaLabel, StarInput } from '@star-ng/ui/field';
@@ -7,6 +7,8 @@ import { StarSelect } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './ifta-label.page.scss',
   selector: 'docs-ifta-label-page',
   imports: [DOCS, FormField, StarDatePicker, StarIftaLabel, StarInput, StarInputNumber, StarSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,

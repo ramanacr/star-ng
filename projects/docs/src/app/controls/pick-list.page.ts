@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarEmptyTemplate } from '@star-ng/ui/core';
 import {
   StarItemTemplate,
@@ -14,6 +14,8 @@ interface Member {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './pick-list.page.scss',
   selector: 'docs-pick-list-page',
   imports: [DOCS, StarPickList, StarItemTemplate, StarPickListHeaderTemplate, StarEmptyTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,

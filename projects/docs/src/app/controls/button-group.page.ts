@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton, StarButtonGroup } from '@star-ng/ui/button';
 import { StarMenuItem, StarSplitButton } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './button-group.page.scss',
   selector: 'docs-button-group-page',
   imports: [DOCS, StarButton, StarButtonGroup, StarSplitButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

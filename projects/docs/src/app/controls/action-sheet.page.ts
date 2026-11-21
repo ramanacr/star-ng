@@ -1,9 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarActionSheetItem, StarBottomSheet } from '@star-ng/ui/bottom-sheet';
 import { StarButton } from '@star-ng/ui/button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './action-sheet.page.scss',
   selector: 'docs-action-sheet-page',
   imports: [DOCS, StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

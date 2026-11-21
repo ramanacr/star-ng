@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import {
   STAR_DOCUMENT_RENDERER,
   StarDocumentError,
@@ -9,6 +9,8 @@ import { sampleSet } from '../shared/sample-images';
 import { ImagePagesRenderer, SampleReportRenderer } from '../shared/sample-renderers';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './document-viewer.page.scss',
   selector: 'docs-document-viewer-page',
   imports: [DOCS, StarDocumentViewer, StarDocumentError],
   changeDetection: ChangeDetectionStrategy.OnPush,

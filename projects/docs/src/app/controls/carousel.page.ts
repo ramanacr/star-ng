@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarCarousel, StarCarouselItem } from '@star-ng/ui/media';
 import { DOCS, DocsRow } from '../shared/docs';
 import { sampleSet } from '../shared/sample-images';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './carousel.page.scss',
   selector: 'docs-carousel-page',
   imports: [DOCS, StarCarousel, StarCarouselItem],
   changeDetection: ChangeDetectionStrategy.OnPush,

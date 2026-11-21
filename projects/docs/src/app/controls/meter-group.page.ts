@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarMeterGroup, StarMeterItem } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './meter-group.page.scss',
   selector: 'docs-meter-group-page',
   imports: [DOCS, StarMeterGroup],
   changeDetection: ChangeDetectionStrategy.OnPush,

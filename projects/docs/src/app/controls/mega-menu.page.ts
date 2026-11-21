@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarMegaMenu, StarMenuItem } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './mega-menu.page.scss',
   selector: 'docs-mega-menu-page',
   imports: [DOCS, StarMegaMenu],
   changeDetection: ChangeDetectionStrategy.OnPush,

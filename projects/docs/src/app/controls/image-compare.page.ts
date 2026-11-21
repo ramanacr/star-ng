@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarImageCompare } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -20,6 +20,8 @@ const AFTER = svg(
 );
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './image-compare.page.scss',
   selector: 'docs-image-compare-page',
   imports: [DOCS, StarImageCompare],
   changeDetection: ChangeDetectionStrategy.OnPush,

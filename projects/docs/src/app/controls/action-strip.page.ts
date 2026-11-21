@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarActionStrip } from '@star-ng/ui/action-strip';
 import { StarMenuItem } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-action-strip-page',
+  selector: 'docs-action-strip-page-content',
   imports: [DOCS, StarActionStrip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -122,7 +122,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     </docs-page>
   `,
 })
-export class ActionStripPage {
+export class ActionStripPageContent {
   protected readonly last = signal('none');
   protected readonly orders: readonly string[] = ['Order 1001', 'Order 1002', 'Order 1003'];
 
@@ -190,3 +190,18 @@ readonly actions: readonly StarMenuItem[] = [
     },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`action-strip.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-action-strip-page',
+  imports: [ActionStripPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './action-strip.page.scss',
+  template: '<docs-action-strip-page-content />',
+})
+export class ActionStripPage {}

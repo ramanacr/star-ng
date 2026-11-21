@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import {
+  starApplyPatches,
   StarDiagram,
   StarDiagramChange,
   StarDiagramEdge,
@@ -8,7 +15,6 @@ import {
   StarDiagramNode,
   StarDiagramNodePatch,
   StarDiagramNodeTemplate,
-  starApplyPatches,
   starLayoutGrid,
   starLayoutTree,
 } from '@star-ng/ui/diagram';
@@ -33,7 +39,7 @@ const WORKFLOW_EDGES: readonly StarDiagramEdge[] = [
 ];
 
 @Component({
-  selector: 'docs-diagram-page',
+  selector: 'docs-diagram-page-content',
   imports: [DOCS, StarButton, StarDiagram, StarDiagramNodeTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -116,7 +122,7 @@ const WORKFLOW_EDGES: readonly StarDiagramEdge[] = [
     </docs-page>
   `,
 })
-export class DiagramPage {
+export class DiagramPageContent {
   private readonly workflow = viewChild.required<StarDiagram>('workflow');
   protected readonly nodes = signal<readonly StarDiagramNode[]>(WORKFLOW_NODES);
   protected readonly edges = signal<readonly StarDiagramEdge[]>(WORKFLOW_EDGES);
@@ -236,3 +242,18 @@ layoutTree(): void {
     { name: 'Escape', description: 'Clears the selection.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`diagram.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-diagram-page',
+  imports: [DiagramPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './diagram.page.scss',
+  template: '<docs-diagram-page-content />',
+})
+export class DiagramPage {}

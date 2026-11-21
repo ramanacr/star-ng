@@ -1,9 +1,18 @@
-import { ChangeDetectionStrategy, Component, inject, signal, TemplateRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  TemplateRef,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarBottomSheet, StarBottomSheetContext } from '@star-ng/ui/bottom-sheet';
 import { StarButton } from '@star-ng/ui/button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './bottom-sheet-container.page.scss',
   selector: 'docs-bottom-sheet-container-page',
   imports: [DOCS, StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

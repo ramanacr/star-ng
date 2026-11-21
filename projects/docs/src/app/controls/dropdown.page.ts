@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import {
   StarDropdown,
@@ -9,6 +9,8 @@ import {
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './dropdown.page.scss',
   selector: 'docs-dropdown-page',
   imports: [DOCS, StarButton, StarDropdown, StarDropdownItem, StarDropdownTrigger],
   changeDetection: ChangeDetectionStrategy.OnPush,

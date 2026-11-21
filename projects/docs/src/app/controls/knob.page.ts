@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarKnob } from '@star-ng/ui/knob';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './knob.page.scss',
   selector: 'docs-knob-page',
   imports: [DOCS, StarKnob],
   changeDetection: ChangeDetectionStrategy.OnPush,

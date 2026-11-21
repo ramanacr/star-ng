@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarOrgChart, StarOrgNode, StarOrgNodeTemplate } from '@star-ng/ui/data-display';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './org-chart.page.scss',
   selector: 'docs-org-chart-page',
   imports: [DOCS, StarOrgChart, StarOrgNodeTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,

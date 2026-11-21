@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { StarButton } from '@star-ng/ui/button';
 import { StarPassThrough } from '@star-ng/ui/core';
@@ -6,6 +6,8 @@ import { StarSelect } from '@star-ng/ui/select';
 import { DOCS } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './styling-hooks.guide.scss',
   selector: 'docs-styling-hooks-guide',
   imports: [DOCS, RouterLink, StarButton, StarSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,

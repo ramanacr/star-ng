@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarColumn, StarColumnPins, StarTable } from '@star-ng/ui/table';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatDay, formatMoney, Order, ORDERS } from './table-demo';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './table-columns.page.scss',
   selector: 'docs-table-columns-page',
   imports: [DOCS, StarTable, StarButton, DocsFill],
   changeDetection: ChangeDetectionStrategy.OnPush,

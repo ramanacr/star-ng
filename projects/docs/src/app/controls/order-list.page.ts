@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarItemTemplate, StarOrderList } from '@star-ng/ui/data-display';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -8,6 +14,8 @@ interface Task {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './order-list.page.scss',
   selector: 'docs-order-list-page',
   imports: [DOCS, StarOrderList, StarItemTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,

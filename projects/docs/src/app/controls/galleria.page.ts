@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarFooterTemplate } from '@star-ng/ui/core';
 import {
   StarGalleria,
@@ -10,6 +10,8 @@ import { DOCS, DocsRow } from '../shared/docs';
 import { sampleImage, sampleSet } from '../shared/sample-images';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './galleria.page.scss',
   selector: 'docs-galleria-page',
   imports: [DOCS, StarGalleria, StarGalleriaTemplate, StarFooterTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,

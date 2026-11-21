@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarInputOtp } from '@star-ng/ui/input-otp';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './input-otp.page.scss',
   selector: 'docs-input-otp-page',
   imports: [DOCS, StarInputOtp],
   changeDetection: ChangeDetectionStrategy.OnPush,

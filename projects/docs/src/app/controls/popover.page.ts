@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import { StarPopover } from '@star-ng/ui/popover';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './popover.page.scss',
   selector: 'docs-popover-page',
   imports: [DOCS, StarButton, StarField, StarInput, StarPopover],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarCommand, StarCommandPalette, StarCommandTemplate } from '@star-ng/ui/command-palette';
 import { StarEmptyTemplate } from '@star-ng/ui/core';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-command-palette-page',
+  selector: 'docs-command-palette-page-content',
   imports: [DOCS, StarButton, StarCommandPalette, StarCommandTemplate, StarEmptyTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -88,7 +88,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     </docs-page>
   `,
 })
-export class CommandPalettePage {
+export class CommandPalettePageContent {
   protected readonly open = signal(false);
   protected readonly last = signal('none');
   protected readonly peopleOpen = signal(false);
@@ -193,3 +193,18 @@ readonly people: readonly StarCommand[] = [
     { name: 'Escape', description: 'Closes the palette. The focus goes back where it was.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`command-palette.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-command-palette-page',
+  imports: [CommandPalettePageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './command-palette.page.scss',
+  template: '<docs-command-palette-page-content />',
+})
+export class CommandPalettePage {}

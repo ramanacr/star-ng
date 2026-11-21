@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { STAR_UI_TEXT, StarFilterService } from '@star-ng/ui/core';
 import {
@@ -20,6 +27,8 @@ const isoDay = (date: Date): string =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './query-builder.page.scss',
   selector: 'docs-query-builder-page',
   imports: [
     DOCS,

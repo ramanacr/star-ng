@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarClock, StarFluid } from '@star-ng/ui/core';
 import { StarField, StarInput } from '@star-ng/ui/field';
@@ -26,6 +32,8 @@ export class DocsCompactSelect {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './configuration.guide.scss',
   selector: 'docs-configuration-guide',
   imports: [
     DOCS,

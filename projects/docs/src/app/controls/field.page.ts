@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { email, form, FormField, required } from '@angular/forms/signals';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './field.page.scss',
   selector: 'docs-field-page',
   imports: [DOCS, StarField, StarInput, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,

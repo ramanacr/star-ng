@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   StarColumn,
   StarLazyLoadEvent,
@@ -10,6 +17,8 @@ import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatMoney, Order, orderColumns, ORDERS } from './table-demo';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './table-paging.page.scss',
   selector: 'docs-table-paging-page',
   imports: [DOCS, StarTable, StarPaginatorStartTemplate, StarPaginatorEndTemplate, DocsFill],
   changeDetection: ChangeDetectionStrategy.OnPush,

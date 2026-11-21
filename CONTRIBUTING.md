@@ -45,6 +45,7 @@ This file explains how to work on the StarNG repository: set up, run the checks,
 | `corepack pnpm check:prerender`   | Checks that the last docs build has an HTML file for every page.                         |
 | `corepack pnpm docs:gen`          | Writes the API and example data of the docs.                                             |
 | `corepack pnpm docs:check`        | Fails when the generated docs data is out of date.                                       |
+| `corepack pnpm docs:styles`       | Writes the route stylesheet of each docs page and the shell list of `styles.scss`.       |
 | `corepack pnpm test:tools`        | Tests of the CI tools (change detection and gate). No browser.                           |
 | `corepack pnpm e2e`               | Playwright tests, without the visual tests and the Pages tests.                          |
 | `corepack pnpm e2e:a11y`          | Only the axe accessibility scan.                                                         |
@@ -93,8 +94,20 @@ Examples in the docs, tests and comments use neutral, fictional data: orders, in
 6. Add the docs page `projects/docs/src/app/controls/<name>.page.ts`. Each example is a `<docs-example source="<name>/<id>">` element, so the code that the page shows is the code that runs.
 7. Add the page to `DOCS_NAV` in `projects/docs/src/app/nav.ts`. The side navigation, its search and the routes come from this list.
 8. Run `corepack pnpm docs:gen`. Commit the changed file `projects/docs/src/app/generated/docs-data.ts`. `corepack pnpm lint` fails when it is out of date.
-9. Add tests (see "Test layers"). A new docs page gets visual baselines from CI.
-10. Run `corepack pnpm format`, `corepack pnpm lint`, `corepack pnpm test:ci`, `corepack pnpm build:lib` and `corepack pnpm check:package`.
+9. Run `corepack pnpm docs:styles`. It writes `<name>.page.scss` next to the page: the library partials of the controls on the page (see "Docs styles per route"). Load it in the route component with `styleUrl` and `encapsulation: ViewEncapsulation.None`. `corepack pnpm lint` fails when it is out of date.
+10. Add tests (see "Test layers"). A new docs page gets visual baselines from CI.
+11. Run `corepack pnpm format`, `corepack pnpm lint`, `corepack pnpm test:ci`, `corepack pnpm build:lib` and `corepack pnpm check:package`.
+
+## Docs styles per route
+
+The docs load the library CSS per route, as they load the page JavaScript. The package does not change: consumers still import `star-ng.css` or single partials.
+
+- `projects/docs/src/styles.scss` is the critical CSS: tokens, base rules, unstyled mode, the partials of the controls that the shell renders on every page (header, toast, confirm dialog), and the docs layout (`_docs-layout.scss`).
+- Each page has a generated `<page>.scss`: the partials of its controls. The route component loads it with `styleUrl` and `encapsulation: ViewEncapsulation.None`. Angular puts it in the lazy chunk of the route, and the prerender writes it into the HTML of the page.
+- `tools/docs-page-styles.mjs` (`corepack pnpm docs:styles`) finds the controls of a page in the page file, in the docs files that it imports (example components, dialogs) and in the library files of the imported controls. It keeps the cascade of `star-ng.css`: the partials keep the order of `star-ng.css`, a page stylesheet repeats the shell partials that come after its first partial, and it ends with the docs layout.
+- A page with its own component styles keeps them in a child component (`<Name>Content`), so they come after the route styles.
+- The build counts a route stylesheet as a component style. So the `anyComponentStyle` budget in `angular.json` is 120 kB (warning) and 150 kB (error): the largest route stylesheet (the file manager page) is about 115 kB. The initial budgets do not change.
+- `tools/docs-page-styles.test.mjs` (`corepack pnpm test:tools`) checks that each page has its partials and that the order is kept.
 
 ## The docs data generator
 

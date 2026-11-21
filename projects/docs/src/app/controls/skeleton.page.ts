@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './skeleton.page.scss',
   selector: 'docs-skeleton-page',
   imports: [DOCS, StarSkeleton, StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -5,6 +5,7 @@ import {
   resource,
   signal,
   untracked,
+  ViewEncapsulation,
 } from '@angular/core';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import {
@@ -29,6 +30,8 @@ import { FOLDERS, loadFolderChildren, PROJECTS, updateNode } from './tree-table-
 type Row = Record<string, unknown>;
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './tree-table.page.scss',
   selector: 'docs-tree-table-page',
   imports: [
     DOCS,

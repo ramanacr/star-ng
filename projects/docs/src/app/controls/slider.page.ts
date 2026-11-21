@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarRangeSlider, StarSlider } from '@star-ng/ui/slider';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './slider.page.scss',
   selector: 'docs-slider-page',
   imports: [DOCS, StarSlider, StarRangeSlider],
   changeDetection: ChangeDetectionStrategy.OnPush,

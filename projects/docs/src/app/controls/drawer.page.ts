@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarDrawer } from '@star-ng/ui/drawer';
 import { StarField, StarInput } from '@star-ng/ui/field';
@@ -7,6 +7,8 @@ import { DOCS, DocsRow } from '../shared/docs';
 type DrawerPosition = 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './drawer.page.scss',
   selector: 'docs-drawer-page',
   imports: [DOCS, StarButton, StarDrawer, StarField, StarInput],
   changeDetection: ChangeDetectionStrategy.OnPush,

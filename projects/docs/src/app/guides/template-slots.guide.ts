@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DOCS } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './template-slots.guide.scss',
   selector: 'docs-template-slots-guide',
   imports: [DOCS, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,

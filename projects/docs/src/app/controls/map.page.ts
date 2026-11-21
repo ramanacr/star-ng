@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   StarGeoJsonFeatureCollection,
   StarLonLat,
@@ -178,7 +184,7 @@ const CAPITALS: readonly Capital[] = [
 ];
 
 @Component({
-  selector: 'docs-map-page',
+  selector: 'docs-map-page-content',
   imports: [DOCS, StarMap, StarMapMarker, StarMapTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -310,7 +316,7 @@ const CAPITALS: readonly Capital[] = [
     </docs-page>
   `,
 })
-export class MapPage {
+export class MapPageContent {
   protected readonly selection = signal<readonly string[]>(['regions:eastvale']);
   protected readonly zoom = signal<number | null>(null);
   protected readonly lastClick = signal('(none)');
@@ -436,3 +442,18 @@ readonly tileLayers = computed<StarMapLayer[]>(() => [
     { name: 'Escape', description: 'Hides the tooltip.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`map.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-map-page',
+  imports: [MapPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './map.page.scss',
+  template: '<docs-map-page-content />',
+})
+export class MapPage {}

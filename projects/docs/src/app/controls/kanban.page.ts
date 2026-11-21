@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import {
   StarKanban,
   starKanbanApplyMove,
@@ -81,7 +81,7 @@ const TASKS: readonly Task[] = [
 ];
 
 @Component({
-  selector: 'docs-kanban-page',
+  selector: 'docs-kanban-page-content',
   imports: [DOCS, StarKanban, StarKanbanCard, StarKanbanHeader, StarTag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -200,7 +200,7 @@ const TASKS: readonly Task[] = [
     </docs-page>
   `,
 })
-export class KanbanPage {
+export class KanbanPageContent {
   protected readonly columns: readonly StarKanbanColumn[] = [
     { key: 'todo', title: 'To do' },
     { key: 'doing', title: 'In progress', limit: 2 },
@@ -317,3 +317,18 @@ onLaneMove(move: StarKanbanMove<Task>): void {
     { name: 'Escape', description: 'Puts a held card back where it was.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`kanban.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-kanban-page',
+  imports: [KanbanPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './kanban.page.scss',
+  template: '<docs-kanban-page-content />',
+})
+export class KanbanPage {}

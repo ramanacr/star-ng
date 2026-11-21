@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarContextMenu, StarMenu, StarMenuItem } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './context-menu.page.scss',
   selector: 'docs-context-menu-page',
   imports: [DOCS, StarContextMenu, StarMenu],
   changeDetection: ChangeDetectionStrategy.OnPush,

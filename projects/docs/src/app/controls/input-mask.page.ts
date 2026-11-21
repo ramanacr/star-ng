@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarInputMask } from '@star-ng/ui/input-mask';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './input-mask.page.scss',
   selector: 'docs-input-mask-page',
   imports: [DOCS, StarInputMask, StarField],
   changeDetection: ChangeDetectionStrategy.OnPush,

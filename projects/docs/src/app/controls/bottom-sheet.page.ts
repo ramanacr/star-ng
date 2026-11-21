@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal, TemplateRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  TemplateRef,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   StarActionSheetItem,
   StarBottomSheet,
@@ -9,6 +16,8 @@ import { DOCS, DocsRow } from '../shared/docs';
 import { ExportInvoiceData, ExportInvoiceSheet } from './export-invoice-sheet';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './bottom-sheet.page.scss',
   selector: 'docs-bottom-sheet-page',
   imports: [DOCS, StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

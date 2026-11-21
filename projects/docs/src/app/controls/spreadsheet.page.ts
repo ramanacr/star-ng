@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   StarSpreadsheet,
   StarSpreadsheetCells,
@@ -78,6 +84,8 @@ const SHEETS: readonly StarSpreadsheetSheet[] = [
 ];
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './spreadsheet.page.scss',
   selector: 'docs-spreadsheet-page',
   imports: [DOCS, StarSpreadsheet],
   changeDetection: ChangeDetectionStrategy.OnPush,

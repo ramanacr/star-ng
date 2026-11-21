@@ -1,5 +1,12 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { StarField, StarInput } from '@star-ng/ui/field';
@@ -17,6 +24,8 @@ import {
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './tabs.page.scss',
   selector: 'docs-tabs-page',
   imports: [
     DOCS,

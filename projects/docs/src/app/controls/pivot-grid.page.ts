@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   StarPivotCellClickEvent,
   StarPivotConfig,
@@ -42,6 +48,8 @@ const FIELDS: readonly StarPivotField<Sale>[] = [
 ];
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './pivot-grid.page.scss',
   selector: 'docs-pivot-grid-page',
   imports: [DOCS, StarPivotGrid],
   changeDetection: ChangeDetectionStrategy.OnPush,

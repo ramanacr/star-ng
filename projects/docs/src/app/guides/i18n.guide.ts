@@ -5,6 +5,7 @@ import {
   inject,
   Injectable,
   signal,
+  ViewEncapsulation,
 } from '@angular/core';
 import {
   provideStarUiText,
@@ -51,6 +52,8 @@ export class DocsLanguage {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './i18n.guide.scss',
   selector: 'docs-i18n-guide',
   imports: [
     DOCS,

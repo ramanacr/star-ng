@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarDivider, StarToolbar } from '@star-ng/ui/layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './toolbar.page.scss',
   selector: 'docs-toolbar-page',
   imports: [DOCS, StarToolbar, StarDivider, StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  signal,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarInput } from '@star-ng/ui/field';
 import type { StarMenuItem } from '@star-ng/ui/menu';
@@ -72,6 +79,8 @@ function applyEdit(rows: readonly StockLine[], event: StarCellEditEvent<StockLin
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './table-interaction.page.scss',
   selector: 'docs-table-interaction-page',
   imports: [DOCS, StarTable, StarButton, StarInput, DocsFill, DocsRefTable],
   changeDetection: ChangeDetectionStrategy.OnPush,

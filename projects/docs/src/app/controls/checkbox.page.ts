@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, validate } from '@angular/forms/signals';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
 import { StarIconTemplate } from '@star-ng/ui/core';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './checkbox.page.scss',
   selector: 'docs-checkbox-page',
   imports: [DOCS, StarCheckbox, StarIconTemplate, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,

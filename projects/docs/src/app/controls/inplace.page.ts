@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarInput } from '@star-ng/ui/field';
 import { StarInplace, StarInplaceContent, StarInplaceDisplay } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './inplace.page.scss',
   selector: 'docs-inplace-page',
   imports: [DOCS, StarInplace, StarInplaceDisplay, StarInplaceContent, StarInput],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarDataView, StarDataViewItem } from '@star-ng/ui/data-display';
@@ -11,6 +17,8 @@ interface Product {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './data-view.page.scss',
   selector: 'docs-data-view-page',
   imports: [DOCS, StarDataView, StarDataViewItem, StarButton, STAR_SLOTS],
   changeDetection: ChangeDetectionStrategy.OnPush,

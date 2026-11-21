@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarAvatar, StarAvatarGroup } from '@star-ng/ui/avatar';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './avatar-group.page.scss',
   selector: 'docs-avatar-group-page',
   imports: [DOCS, StarAvatar, StarAvatarGroup],
   changeDetection: ChangeDetectionStrategy.OnPush,

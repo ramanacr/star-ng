@@ -1,8 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarPageEvent, StarPaginator, StarPaginatorTemplate } from '@star-ng/ui/paginator';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './paginator.page.scss',
   selector: 'docs-paginator-page',
   imports: [DOCS, StarPaginator, StarPaginatorTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,

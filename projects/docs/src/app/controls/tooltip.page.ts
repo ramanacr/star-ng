@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarTooltip } from '@star-ng/ui/tooltip';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './tooltip.page.scss',
   selector: 'docs-tooltip-page',
   imports: [DOCS, StarButton, StarTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,

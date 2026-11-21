@@ -5,6 +5,7 @@ import {
   resource,
   signal,
   untracked,
+  ViewEncapsulation,
 } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
@@ -19,6 +20,8 @@ interface Project {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './tree-select.page.scss',
   selector: 'docs-tree-select-page',
   imports: [DOCS, StarTreeSelect, StarNodeTemplate, STAR_SLOTS, StarField, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,

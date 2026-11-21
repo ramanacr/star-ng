@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarIconTemplate } from '@star-ng/ui/core';
 import {
   StarSelectButton,
@@ -14,6 +14,8 @@ interface View {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './select-button.page.scss',
   selector: 'docs-select-button-page',
   imports: [
     DOCS,

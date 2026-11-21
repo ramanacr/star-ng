@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarChip, StarChipsArea } from '@star-ng/ui/layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './chip.page.scss',
   selector: 'docs-chip-page',
   imports: [DOCS, StarChip, StarChipsArea],
   changeDetection: ChangeDetectionStrategy.OnPush,

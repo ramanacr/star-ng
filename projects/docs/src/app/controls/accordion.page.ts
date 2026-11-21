@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarAccordion, StarAccordionContent, StarAccordionPanel } from '@star-ng/ui/accordion';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './accordion.page.scss',
   selector: 'docs-accordion-page',
   imports: [DOCS, StarAccordion, StarAccordionPanel, StarAccordionContent],
   changeDetection: ChangeDetectionStrategy.OnPush,

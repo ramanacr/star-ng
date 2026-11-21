@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import {
   StarCellTemplate,
@@ -11,6 +11,8 @@ import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatMoney, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-demo';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './table-selection.page.scss',
   selector: 'docs-table-selection-page',
   imports: [DOCS, StarTable, StarCellTemplate, StarTag, StarButton, DocsFill],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarScrollPanel } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-scroll-panel-page',
+  selector: 'docs-scroll-panel-page-content',
   imports: [DOCS, StarScrollPanel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -55,7 +55,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
   `,
 })
-export class ScrollPanelPage {
+export class ScrollPanelPageContent {
   protected readonly slots: readonly DocsRow[] = [
     { name: '(default)', description: 'The content that scrolls.' },
   ];
@@ -70,3 +70,18 @@ export class ScrollPanelPage {
     { name: 'Page up / Page down / Home / End', description: 'Scrolls by a page or to the ends.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`scroll-panel.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-scroll-panel-page',
+  imports: [ScrollPanelPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './scroll-panel.page.scss',
+  template: '<docs-scroll-panel-page-content />',
+})
+export class ScrollPanelPage {}
