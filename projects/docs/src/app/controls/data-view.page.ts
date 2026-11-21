@@ -168,7 +168,8 @@ interface Product {
         The PrimeNG p-dataview names that StarNG gives in another way: value is items;
         onChangeLayout is layoutChange; onPage is pageChange; the list and grid templates are the
         one starDataViewItem template (it gets layout); emptymessage is starEmpty; paginatorleft and
-        paginatorright are starPaginatorTemplate with start and end; loadingicon, listicon and
+        paginatorright are starPaginatorTemplate with start and end; paginatordropdownitem is
+        starPaginatorOption with rows; loadingicon, listicon and
         gridicon are starIcon with loading, list and grid; paginatorStyleClass and gridStyleClass
         are the pass-through pt. Not needed: trackBy (the items are tracked by index),
         paginatorDropdownAppendTo and paginatorDropdownScrollHeight (the paginator selects are
@@ -261,6 +262,11 @@ readonly products: readonly Product[] = [ /* as above */ ];`;
       name: 'ng-template[starPaginatorTemplate]',
       description:
         'Content child. "start" or "end" adds content next to the paginator; it gets the page state. PrimeNG paginatorleft and paginatorright.',
+    },
+    {
+      name: 'ng-template[starPaginatorOption]',
+      description:
+        'Content child. "rows" or "jump" replaces the options of that paginator select; see star-paginator. PrimeNG paginatordropdownitem.',
     },
     {
       name: 'ng-template[starIcon]',

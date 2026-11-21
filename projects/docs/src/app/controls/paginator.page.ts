@@ -74,7 +74,8 @@ import { DOCS, DocsRow } from '../shared/docs';
         The PrimeNG p-paginator names that StarNG gives in another way: onPageChange is pageChange,
         showFirstLastIcon is showFirstLast, templateLeft and templateRight are starPaginatorTemplate
         with start and end, and the page link icon templates are starIcon with first, previous, next
-        and last. Not needed: appendTo and dropdownScrollHeight (the selects are star-select popups
+        and last, dropdownItemTemplate and jumpToPageItemTemplate are starPaginatorOption with rows
+        and jump, and dropdownicon is starIcon with dropdown (the arrow of both selects). Not needed: appendTo and dropdownScrollHeight (the selects are star-select popups
         in the top layer).
       </p>
 
@@ -85,7 +86,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       </p>
 
       <docs-api
-        [of]="['StarPaginator', 'StarPaginatorTemplate']"
+        [of]="['StarPaginator', 'StarPaginatorTemplate', 'StarPaginatorOption']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -106,7 +107,12 @@ export class PaginatorPage {
     {
       name: 'ng-template[starIcon]',
       description:
-        'Content child. "first", "previous", "next" or "last" replaces the icon of that button. PrimeNG firstpagelinkicon and the other link icons.',
+        'Content child. "first", "previous", "next" or "last" replaces the icon of that button; "dropdown" replaces the arrow of the rows and jump selects. PrimeNG firstpagelinkicon, the other link icons and dropdownicon.',
+    },
+    {
+      name: 'ng-template[starPaginatorOption]',
+      description:
+        'Content child. "rows" replaces the options of the rows-per-page select, "jump" the options of the page select. $implicit is the rows count or the page number (from 1); label, selected and index. PrimeNG dropdownItemTemplate and jumpToPageItemTemplate.',
     },
   ];
   protected readonly rows = signal(10);

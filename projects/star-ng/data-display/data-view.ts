@@ -36,7 +36,12 @@ import {
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
-import { StarPageEvent, StarPaginator } from '@star-ng/ui/paginator';
+import {
+  StarPageEvent,
+  StarPaginator,
+  StarPaginatorOption,
+  StarPaginatorOptionContext,
+} from '@star-ng/ui/paginator';
 
 /** Item template: `<ng-template starDataViewItem let-item let-layout="layout">`. */
 @Directive({ selector: 'ng-template[starDataViewItem]' })
@@ -79,7 +84,9 @@ export interface StarDataViewLazyLoadEvent {
  * Slots (content children): `starHeader` (content above the layout switch), `starFooter`
  * (content below the items and the paginator), `starEmpty` (replaces the empty message;
  * `$implicit` is the filter text), `starLoading` (replaces the loading indicator),
- * `starPaginatorTemplate` with `start` and `end` (content next to the paginator), and `starIcon`
+ * `starPaginatorTemplate` with `start` and `end` (content next to the paginator),
+ * `starPaginatorOption` with `rows` and `jump` (options of the paginator selects; PrimeNG
+ * `paginatordropdownitem`), and `starIcon`
  * with `list`, `grid` and `loading`. The item template is `starDataViewItem` (it gets `layout`,
  * so one template covers PrimeNG `#list` and `#grid`). Keep interactive content in your own items
  * and in the header and footer slots: the data view has no keyboard model of its own for them.
@@ -95,7 +102,7 @@ export interface StarDataViewLazyLoadEvent {
   selector: 'star-data-view',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [NgTemplateOutlet, StarPaginator],
+  imports: [NgTemplateOutlet, StarPaginator, StarPaginatorOption],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDataView) }],
   host: {
@@ -210,7 +217,26 @@ export interface StarDataViewLazyLoadEvent {
           [ariaLabel]="pagerName(at)"
           [liveReport]="paginatorPosition() !== 'both' || at === 'bottom'"
           (pageChange)="onPage($event)"
-        />
+        >
+          @for (kind of optionKinds; track kind) {
+            @if (pagerOptions().get(kind); as custom) {
+              <ng-template
+                [starPaginatorOption]="kind"
+                let-value
+                let-label="label"
+                let-selected="selected"
+                let-index="index"
+              >
+                <ng-container
+                  *ngTemplateOutlet="
+                    custom;
+                    context: { $implicit: value, label: label, selected: selected, index: index }
+                  "
+                />
+              </ng-template>
+            }
+          }
+        </star-paginator>
         @if (pagerSlots().get('end'); as custom) {
           <ng-container *ngTemplateOutlet="custom; context: { $implicit: pageState() }" />
         }
@@ -298,6 +324,13 @@ export class StarDataView<T = unknown> {
   );
   protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
   protected readonly iconContext: StarIconContext = {};
+  protected readonly optionKinds = ['rows', 'jump'] as const;
+  /** `starPaginatorOption` slots, passed on to the inner paginator. */
+  protected readonly pagerOptions = starSlotMap<StarPaginatorOptionContext>(
+    this.slots,
+    this,
+    'paginatorOption',
+  );
 
   private readonly query = signal('');
   protected readonly emptyContext = computed<StarEmptyContext>(() => ({ $implicit: this.query() }));
