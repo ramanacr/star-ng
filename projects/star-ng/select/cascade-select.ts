@@ -243,7 +243,8 @@ export class StarCascadeSelect<
   readonly loadingIcon = input('ph-bold ph-spinner-gap star-spin');
   /**
    * The control fills the width of its container. Default: `fluid` of `provideStarNg`, else
-   * `false`; a `starFluid` container widens it too. PrimeNG `fluid`.
+   * `false`; a `starFluid` container widens it too, and a nearer `data-star-fluid="false"`
+   * (`starFluid="false"`) turns it off. PrimeNG `fluid`.
    */
   readonly fluid = input(this.defaults.fluid ?? false, { transform: booleanAttribute });
   /** `tabindex` of the trigger button. */

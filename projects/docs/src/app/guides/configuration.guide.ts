@@ -232,6 +232,12 @@ export class DocsCompactSelect {
           <star-button type="submit">Save order</star-button>
           <div starFluid="false">
             <star-button variant="secondary" type="button">Cancel</star-button>
+            <star-cascade-select
+              fluid
+              ariaLabel="Warehouse"
+              [options]="regions"
+              optionLabel="name"
+            />
           </div>
         </form>
       </docs-example>

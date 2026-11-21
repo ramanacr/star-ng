@@ -77,6 +77,14 @@ test.describe('wave N2 depth', () => {
     expect(Math.abs((await width('star-cascade-select')) - formWidth)).toBeLessThan(2);
     // The second button is under starFluid="false".
     expect(await width('star-button', 1)).toBeLessThan(formWidth / 2);
+    // The opt-out also stops the fluid of the cascade select (from fluid or provideStarNg).
+    const display = (index: number) =>
+      form
+        .locator('star-cascade-select')
+        .nth(index)
+        .evaluate((el) => getComputedStyle(el).display);
+    expect(await display(0)).toBe('flex');
+    expect(await display(1)).toBe('block');
   });
 
   test('icon: decorative and named icons', async ({ page }) => {
