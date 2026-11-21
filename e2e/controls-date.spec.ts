@@ -951,32 +951,51 @@ test.describe('popups with time columns fit a small window', () => {
     }
     const overflow = await popup.evaluate((element) => element.scrollHeight - element.clientHeight);
     expect(overflow).toBeLessThanOrEqual(1);
+    // The column scrolls its chosen option into view (smoothly when motion is on): both boxes
+    // are read together, and the check repeats until the scroll has ended.
     for (const column of await popup.getByRole('listbox').all()) {
-      const selected = column.locator('[aria-selected="true"]');
-      if ((await selected.count()) === 0) continue;
-      const outer = (await column.boundingBox())!;
-      const inner = (await selected.boundingBox())!;
-      expect(inner.y).toBeGreaterThanOrEqual(outer.y - 1);
-      expect(inner.y + inner.height).toBeLessThanOrEqual(outer.y + outer.height + 1);
+      if ((await column.locator('[aria-selected="true"]').count()) === 0) continue;
+      await expect
+        .poll(() =>
+          column.evaluate((element) => {
+            const outer = element.getBoundingClientRect();
+            const inner = element.querySelector('[aria-selected="true"]')!.getBoundingClientRect();
+            return inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1;
+          }),
+        )
+        .toBe(true);
     }
+  }
+
+  /**
+   * The boxes of the calendar and of the time part, read together once the popup has settled:
+   * the overlay can still move the popup for a frame or two after it opens, so the read repeats
+   * (two frames apart) until two reads in a row are the same.
+   */
+  async function settledBoxes(popup: Locator): Promise<{ calendar: DOMRect; time: DOMRect }> {
+    await expect(popup).toBeVisible();
+    return popup.evaluate(async (root) => {
+      const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      const read = () => ({
+        calendar: root.querySelector('star-calendar')!.getBoundingClientRect().toJSON(),
+        time: root.querySelector('.star-date__time')!.getBoundingClientRect().toJSON(),
+      });
+      let last = '';
+      for (let tries = 0; tries < 30; tries++) {
+        await frame();
+        await frame();
+        const boxes = read();
+        const key = JSON.stringify(boxes);
+        if (key === last) return boxes;
+        last = key;
+      }
+      return read();
+    });
   }
 
   /** The time part is at the inline end of the calendar (on the right in ltr), in the same row. */
   async function expectTimeBesideCalendar(popup: Locator): Promise<void> {
-    // Both boxes in one read after two frames, so the popup has settled its position.
-    const { calendar, time } = await popup.evaluate(
-      (root) =>
-        new Promise<{ calendar: DOMRect; time: DOMRect }>((resolve) =>
-          requestAnimationFrame(() =>
-            requestAnimationFrame(() =>
-              resolve({
-                calendar: root.querySelector('star-calendar')!.getBoundingClientRect().toJSON(),
-                time: root.querySelector('.star-date__time')!.getBoundingClientRect().toJSON(),
-              }),
-            ),
-          ),
-        ),
-    );
+    const { calendar, time } = await settledBoxes(popup);
     expect(time.x).toBeGreaterThanOrEqual(calendar.x + calendar.width - 1);
     expect(Math.abs(time.y - calendar.y)).toBeLessThan(3);
     // The calendar sets the height of the row: the time part is not higher.
@@ -1051,9 +1070,11 @@ test.describe('popups with time columns fit a small window', () => {
     const live = example(page, 'Date and time');
     await placeField(live.getByRole('textbox', { name: 'Meeting start' }), 'middle');
     await live.getByRole('button', { name: 'Choose date' }).click();
-    const calendar = (await panel(page).locator('star-calendar').boundingBox())!;
-    const time = (await panel(page).locator('.star-date__time').boundingBox())!;
+    // One read of both boxes after the popup has settled (a read while the overlay still
+    // placed the popup was once off by a fraction of a pixel).
+    const { calendar, time } = await settledBoxes(panel(page));
     expect(time.x + time.width).toBeLessThanOrEqual(calendar.x + 1);
+    expect(Math.abs(time.y - calendar.y)).toBeLessThan(3);
     await expectInWindow(panel(page));
   });
 });
