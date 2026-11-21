@@ -116,10 +116,10 @@ export interface StarCarouselResponsiveOption {
     '[attr.aria-label]': 'ariaLabel()',
     '[class.star-carousel--vertical]': "orientation() === 'vertical'",
     '[style.--star-visible]': 'visible()',
-    '(mouseenter)': 'hovering.set(true)',
-    '(mouseleave)': 'hovering.set(false)',
-    '(focusin)': 'hovering.set(true)',
-    '(focusout)': 'hovering.set(false)',
+    '(mouseenter)': 'hovered.set(true)',
+    '(mouseleave)': 'hovered.set(false)',
+    '(focusin)': 'focused.set(true)',
+    '(focusout)': 'onFocusOut($event)',
   },
   template: `
     @if (headerSlot(); as custom) {
@@ -202,7 +202,7 @@ export interface StarCarouselResponsiveOption {
       tabindex="0"
       [style.height]="orientation() === 'vertical' ? verticalViewPortHeight() : null"
       [attr.aria-label]="ariaLabel()"
-      [attr.aria-live]="playing() ? 'off' : 'polite'"
+      [attr.aria-live]="autoplay() && playing() ? 'off' : 'polite'"
       (scrollend)="syncPage()"
     >
       @for (item of items(); track $index; let i = $index) {
@@ -266,7 +266,8 @@ export class StarCarousel<T = unknown> {
   readonly numScroll = input<number | null>(null);
   /**
    * `numVisible` and `numScroll` per screen width: the option with the smallest `breakpoint` that
-   * is not below the window width wins. PrimeNG `responsiveOptions`.
+   * is not below the window width wins. `breakpoint` is a pixel width (`'768px'`); other units
+   * are not converted. The width is read after the first render. PrimeNG `responsiveOptions`.
    */
   readonly responsiveOptions = input<readonly StarCarouselResponsiveOption[]>([]);
   /** `'horizontal'` (default) or `'vertical'` (set `verticalViewPortHeight`). PrimeNG `orientation`. */
@@ -299,7 +300,11 @@ export class StarCarousel<T = unknown> {
   protected readonly iconContext: StarIconContext = {};
 
   protected readonly playing = signal(true);
-  protected readonly hovering = signal(false);
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  protected readonly hovered = signal(false);
+  protected readonly focused = signal(false);
+  /** Autoplay waits while the pointer is over the carousel or the focus is inside it. */
+  protected readonly paused = computed(() => this.hovered() || this.focused());
   /** Window width for `responsiveOptions` (`Infinity` on the server: no option applies). */
   private readonly width = signal(Number.POSITIVE_INFINITY);
   private readonly active = computed(() => {
@@ -335,7 +340,7 @@ export class StarCarousel<T = unknown> {
       const ms = this.autoplay();
       if (!ms) return;
       const id = setInterval(() => {
-        if (!this.playing() || this.hovering() || starPrefersReducedMotion(this.doc)) return;
+        if (!this.playing() || this.paused() || starPrefersReducedMotion(this.doc)) return;
         this.goTo(this.page() >= this.pages() - 1 ? 0 : this.page() + 1);
       }, ms);
       onCleanup(() => clearInterval(id));
@@ -347,11 +352,20 @@ export class StarCarousel<T = unknown> {
     });
     const view = this.doc.defaultView;
     if (isPlatformBrowser(inject(PLATFORM_ID)) && view) {
-      this.width.set(view.innerWidth);
       const onResize = () => this.width.set(view.innerWidth);
-      afterNextRender(() => view.addEventListener('resize', onResize, { passive: true }));
+      // After the first render, so the client starts with the prerendered markup.
+      afterNextRender(() => {
+        onResize();
+        view.addEventListener('resize', onResize, { passive: true });
+      });
       inject(DestroyRef).onDestroy(() => view.removeEventListener('resize', onResize));
     }
+  }
+
+  /** The focus left the carousel (not only one of its buttons). */
+  protected onFocusOut(event: FocusEvent): void {
+    const next = event.relatedTarget as Node | null;
+    if (!next || !this.hostElement.contains(next)) this.focused.set(false);
   }
 
   /** Goes to the previous page (to the last one from the first with `circular`). */

@@ -116,6 +116,30 @@ describe('StarCarousel depth', () => {
     expect(t.el.querySelectorAll('.own-dot').length).toBe(4);
   });
 
+  it('is a live region without autoplay', async () => {
+    const t = await setup();
+    expect(t.el.querySelector('.star-carousel__track')!.getAttribute('aria-live')).toBe('polite');
+  });
+
+  it('keeps the pause while the focus stays inside after the pointer leaves', async () => {
+    const t = await setup();
+    const host = t.el.querySelector<HTMLElement>('star-carousel')!;
+    const carousel = t.fixture.debugElement.query((d) => d.name === 'star-carousel')
+      .componentInstance as unknown as { paused: () => boolean };
+    host.dispatchEvent(new MouseEvent('mouseenter'));
+    t.buttons()[1].dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    host.dispatchEvent(new MouseEvent('mouseleave'));
+    expect(carousel.paused()).toBe(true);
+    t.buttons()[1].dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: t.buttons()[0] }),
+    );
+    expect(carousel.paused()).toBe(true);
+    t.buttons()[1].dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: document.body }),
+    );
+    expect(carousel.paused()).toBe(false);
+  });
+
   it('switches to a vertical track', async () => {
     const t = await setup((h) => h.orientation.set('vertical'));
     const host = t.el.querySelector<HTMLElement>('star-carousel')!;
