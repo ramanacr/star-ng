@@ -204,11 +204,44 @@ export class StarConfirmService {
         ></span>
       }
     </ng-template>
-    <ng-template #buttonIcon let-options let-kind="kind">
-      @if (parts().get(kind); as custom) {
-        <span data-star-part="buttonIcon" class="star-confirm__button-icon" aria-hidden="true">
-          <ng-container *ngTemplateOutlet="custom; context: context(options)" />
-        </span>
+    <!-- The buttons of the popup and the dialog (or the footer slot). -->
+    <ng-template #actions let-options let-size="size">
+      @if (parts().get('footer'); as custom) {
+        <ng-container *ngTemplateOutlet="custom; context: context(options)" />
+      } @else {
+        @let accept = focusAccept(options);
+        @if (options.rejectVisible !== false) {
+          <star-button
+            [size]="size"
+            variant="ghost"
+            [attr.data-autofocus]="accept ? null : ''"
+            (pressed)="answer(false)"
+          >
+            @if (parts().get('rejectIcon'); as custom) {
+              <span
+                data-star-part="buttonIcon"
+                class="star-confirm__button-icon"
+                aria-hidden="true"
+              >
+                <ng-container *ngTemplateOutlet="custom; context: context(options)" />
+              </span>
+            }
+            {{ options.rejectLabel ?? text.reject }}
+          </star-button>
+        }
+        <star-button
+          [size]="size"
+          [variant]="acceptVariant(options)"
+          [attr.data-autofocus]="accept ? '' : null"
+          (pressed)="answer(true)"
+        >
+          @if (parts().get('acceptIcon'); as custom) {
+            <span data-star-part="buttonIcon" class="star-confirm__button-icon" aria-hidden="true">
+              <ng-container *ngTemplateOutlet="custom; context: context(options)" />
+            </span>
+          }
+          {{ options.acceptLabel ?? text.accept }}
+        </star-button>
       }
     </ng-template>
     <ng-template #message let-options>
@@ -240,37 +273,7 @@ export class StarConfirmService {
             </div>
           </div>
           <div data-star-part="actionList" class="star-confirm__actions">
-            @if (parts().get('footer'); as custom) {
-              <ng-container *ngTemplateOutlet="custom; context: context(popup)" />
-            } @else {
-              @if (popup.rejectVisible !== false) {
-                <star-button
-                  size="sm"
-                  variant="ghost"
-                  [attr.data-autofocus]="focusAccept(popup) ? null : ''"
-                  (pressed)="answer(false)"
-                >
-                  <ng-container
-                    *ngTemplateOutlet="
-                      buttonIcon;
-                      context: { $implicit: popup, kind: 'rejectIcon' }
-                    "
-                  />
-                  {{ popup.rejectLabel ?? text.reject }}
-                </star-button>
-              }
-              <star-button
-                size="sm"
-                [variant]="acceptVariant(popup)"
-                [attr.data-autofocus]="focusAccept(popup) ? '' : null"
-                (pressed)="answer(true)"
-              >
-                <ng-container
-                  *ngTemplateOutlet="buttonIcon; context: { $implicit: popup, kind: 'acceptIcon' }"
-                />
-                {{ popup.acceptLabel ?? text.accept }}
-              </star-button>
-            }
+            <ng-container *ngTemplateOutlet="actions; context: { $implicit: popup, size: 'sm' }" />
           </div>
         </div>
       }
@@ -302,37 +305,10 @@ export class StarConfirmService {
           </div>
         </div>
       }
+      <!-- One root element per block: the dialog projects the footer by its attribute. -->
       @if (request) {
         <div data-star-part="footer" starDialogFooter class="star-dialog__footer">
-          @if (parts().get('footer'); as custom) {
-            <ng-container *ngTemplateOutlet="custom; context: context(request)" />
-          } @else {
-            @if (request.rejectVisible !== false) {
-              <star-button
-                variant="ghost"
-                [attr.data-autofocus]="focusAccept(request) ? null : ''"
-                (pressed)="confirm.settle(false)"
-              >
-                <ng-container
-                  *ngTemplateOutlet="
-                    buttonIcon;
-                    context: { $implicit: request, kind: 'rejectIcon' }
-                  "
-                />
-                {{ request.rejectLabel ?? text.reject }}
-              </star-button>
-            }
-            <star-button
-              [variant]="acceptVariant(request)"
-              [attr.data-autofocus]="focusAccept(request) ? '' : null"
-              (pressed)="confirm.settle(true)"
-            >
-              <ng-container
-                *ngTemplateOutlet="buttonIcon; context: { $implicit: request, kind: 'acceptIcon' }"
-              />
-              {{ request.acceptLabel ?? text.accept }}
-            </star-button>
-          }
+          <ng-container *ngTemplateOutlet="actions; context: { $implicit: request, size: 'md' }" />
         </div>
       }
     </star-dialog>
