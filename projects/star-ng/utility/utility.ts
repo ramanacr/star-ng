@@ -451,22 +451,19 @@ export interface StarMeterGroupItemContext {
 }
 
 /**
- * Template slot of `star-meter-group`:
- * - `label`: replaces the legend (PrimeNG `#label`); context `StarMeterGroupContext`.
+ * Group slot of `star-meter-group`, with the context `StarMeterGroupContext` (all items):
+ * - `label`: replaces the legend (PrimeNG `#label`).
  * - `start` and `end`: content before and after the bar and the legend (PrimeNG `#start`, `#end`).
- * - `meter`: content inside each part of the bar (PrimeNG `#meter`); context
- *   `StarMeterGroupItemContext`. The part keeps `role="meter"` and its values.
- * - `icon`: the icon of each legend item (PrimeNG `#icon`).
+ *
+ * The slots of one item (`meter`, `icon`) are `starMeterGroupItem`.
  */
 @Directive({
   selector: 'ng-template[starMeterGroupTemplate]',
   providers: [{ provide: StarSlot, useExisting: StarMeterGroupTemplate }],
 })
-export class StarMeterGroupTemplate extends StarSlot<
-  StarMeterGroupContext & StarMeterGroupItemContext
-> {
+export class StarMeterGroupTemplate extends StarSlot<StarMeterGroupContext> {
   readonly name = 'meterGroup';
-  readonly starMeterGroupTemplate = input.required<'label' | 'meter' | 'start' | 'end' | 'icon'>();
+  readonly starMeterGroupTemplate = input.required<'label' | 'start' | 'end'>();
 
   override slotKey(): string {
     return this.starMeterGroupTemplate();
@@ -475,7 +472,33 @@ export class StarMeterGroupTemplate extends StarSlot<
   static ngTemplateContextGuard(
     _dir: StarMeterGroupTemplate,
     _ctx: unknown,
-  ): _ctx is StarMeterGroupContext & StarMeterGroupItemContext {
+  ): _ctx is StarMeterGroupContext {
+    return true;
+  }
+}
+
+/**
+ * Item slot of `star-meter-group`, with the context `StarMeterGroupItemContext` (one item):
+ * - `meter`: content inside each part of the bar (PrimeNG `#meter`). The part keeps
+ *   `role="meter"` and its values.
+ * - `icon`: the icon of each legend item (PrimeNG `#icon`).
+ */
+@Directive({
+  selector: 'ng-template[starMeterGroupItem]',
+  providers: [{ provide: StarSlot, useExisting: StarMeterGroupItemTemplate }],
+})
+export class StarMeterGroupItemTemplate extends StarSlot<StarMeterGroupItemContext> {
+  readonly name = 'meterGroupItem';
+  readonly starMeterGroupItem = input.required<'meter' | 'icon'>();
+
+  override slotKey(): string {
+    return this.starMeterGroupItem();
+  }
+
+  static ngTemplateContextGuard(
+    _dir: StarMeterGroupItemTemplate,
+    _ctx: unknown,
+  ): _ctx is StarMeterGroupItemContext {
     return true;
   }
 }
@@ -485,8 +508,8 @@ export class StarMeterGroupTemplate extends StarSlot<
  * with a labelled legend. `role="meter"` per part, so each value is announced.
  * `<star-meter-group [items]="storage" [max]="100" unit="GB" ariaLabel="Storage" />`
  *
- * Slots (content children): `starMeterGroupTemplate` with `label`, `meter`, `start`, `end` and
- * `icon`.
+ * Slots (content children): `starMeterGroupTemplate` with `label`, `start` and `end`;
+ * `starMeterGroupItem` with `meter` and `icon`.
  *
  * PrimeNG names that star-ng covers in another way: `value` = `items`. The legend is
  * `aria-hidden`: the meters carry the values.
@@ -532,7 +555,7 @@ export class StarMeterGroupTemplate extends StarSlot<
           [style.height.%]="orientation() === 'vertical' ? percent(item) : null"
           [style.background]="color(i)"
         >
-          @if (slots().get('meter'); as custom) {
+          @if (itemSlots().get('meter'); as custom) {
             <ng-container *ngTemplateOutlet="custom; context: itemContext(item, i)" />
           }
         </span>
@@ -555,7 +578,7 @@ export class StarMeterGroupTemplate extends StarSlot<
         <ul data-star-part="legend" class="star-meter-group__legend" aria-hidden="true">
           @for (item of items(); track item.label; let i = $index) {
             <li data-star-part="legendItem">
-              @if (slots().get('icon'); as custom) {
+              @if (itemSlots().get('icon'); as custom) {
                 <span data-star-part="legendIcon" class="star-meter-group__icon">
                   <ng-container *ngTemplateOutlet="custom; context: itemContext(item, i)" />
                 </span>
@@ -596,7 +619,16 @@ export class StarMeterGroup {
   readonly labelOrientation = input<'horizontal' | 'vertical'>('horizontal');
 
   private readonly contentSlots = contentChildren(StarSlot, { descendants: true });
-  protected readonly slots = starSlotMap<unknown>(this.contentSlots, this, 'meterGroup');
+  protected readonly slots = starSlotMap<StarMeterGroupContext>(
+    this.contentSlots,
+    this,
+    'meterGroup',
+  );
+  protected readonly itemSlots = starSlotMap<StarMeterGroupItemContext>(
+    this.contentSlots,
+    this,
+    'meterGroupItem',
+  );
 
   protected readonly total = computed(
     () => this.max() ?? (this.items().reduce((sum, item) => sum + item.value, 0) || 1),

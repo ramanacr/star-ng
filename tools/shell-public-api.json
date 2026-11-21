@@ -206,6 +206,7 @@
     "StarMeterGroup",
     "StarMeterGroupContext",
     "StarMeterGroupItemContext",
+    "StarMeterGroupItemTemplate",
     "StarMeterGroupTemplate",
     "StarMeterItem",
     "StarRelativeTimePipe",

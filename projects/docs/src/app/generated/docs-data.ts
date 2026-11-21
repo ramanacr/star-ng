@@ -3788,6 +3788,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "No moves, no removal, and the chips cannot take focus."
       },
       {
+        "name": "trackBy",
+        "type": "(index: number, item: T) => unknown",
+        "default": "(_index: number, item: T) => item",
+        "required": false,
+        "description": "Identity of an item, so a chip keeps its element (and the focus and a drag) when the items move. Default: the item itself. Give one for items that can repeat or are new objects."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -12340,15 +12347,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "legendText"
     ]
   },
+  "StarMeterGroupItemTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starMeterGroupItem]",
+    "entry": "@star-ng/ui/utility",
+    "description": "Item slot of `star-meter-group`, with the context `StarMeterGroupItemContext` (one item): - `meter`: content inside each part of the bar (PrimeNG `#meter`). The part keeps `role=\"meter\"` and its values. - `icon`: the icon of each legend item (PrimeNG `#icon`).",
+    "inputs": [
+      {
+        "name": "starMeterGroupItem",
+        "type": "'meter' | 'icon'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarMeterGroupTemplate": {
     "kind": "directive",
     "selector": "ng-template[starMeterGroupTemplate]",
     "entry": "@star-ng/ui/utility",
-    "description": "Template slot of `star-meter-group`: - `label`: replaces the legend (PrimeNG `#label`); context `StarMeterGroupContext`. - `start` and `end`: content before and after the bar and the legend (PrimeNG `#start`, `#end`). - `meter`: content inside each part of the bar (PrimeNG `#meter`); context `StarMeterGroupItemContext`. The part keeps `role=\"meter\"` and its values. - `icon`: the icon of each legend item (PrimeNG `#icon`).",
+    "description": "Group slot of `star-meter-group`, with the context `StarMeterGroupContext` (all items): - `label`: replaces the legend (PrimeNG `#label`). - `start` and `end`: content before and after the bar and the legend (PrimeNG `#start`, `#end`).",
     "inputs": [
       {
         "name": "starMeterGroupTemplate",
-        "type": "'label' | 'meter' | 'start' | 'end' | 'icon'",
+        "type": "'label' | 'start' | 'end'",
         "default": null,
         "required": true,
         "description": ""

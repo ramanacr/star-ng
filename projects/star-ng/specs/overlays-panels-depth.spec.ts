@@ -11,6 +11,7 @@ import { StarTag } from '@star-ng/ui/tag';
 import {
   StarBlockUi,
   StarMeterGroup,
+  StarMeterGroupItemTemplate,
   StarMeterGroupTemplate,
   StarScrollTop,
   StarSplitter,
@@ -171,7 +172,7 @@ describe('Message slots', () => {
 });
 
 @Component({
-  imports: [StarMeterGroup, StarMeterGroupTemplate],
+  imports: [StarMeterGroup, StarMeterGroupTemplate, StarMeterGroupItemTemplate],
   template: `
     <star-meter-group
       ariaLabel="Storage"
@@ -190,7 +191,7 @@ describe('Message slots', () => {
       <ng-template starMeterGroupTemplate="label" let-items
         ><b class="own-label">{{ items[0].label }}</b></ng-template
       >
-      <ng-template starMeterGroupTemplate="meter" let-item let-percent="percent"
+      <ng-template starMeterGroupItem="meter" let-item let-percent="percent"
         ><b class="own-meter">{{ item.label }} {{ percent }}</b></ng-template
       >
     </star-meter-group>
