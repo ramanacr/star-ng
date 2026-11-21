@@ -61,11 +61,23 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       (pointermove)="$event.buttons === 1 && onPointer($event)"
       (blur)="touch.emit()"
     >
-      <path data-star-part="track" class="star-knob__track" [attr.d]="arc(1)" />
-      <path data-star-part="valueItem" class="star-knob__value" [attr.d]="arc(ratio())" />
-      <text data-star-part="text" class="star-knob__text" x="50" y="57" text-anchor="middle">
-        {{ text() }}
-      </text>
+      <path
+        data-star-part="track"
+        class="star-knob__track"
+        [attr.d]="arc(1)"
+        [attr.stroke-width]="strokeWidth()"
+      />
+      <path
+        data-star-part="valueItem"
+        class="star-knob__value"
+        [attr.d]="arc(ratio())"
+        [attr.stroke-width]="strokeWidth()"
+      />
+      @if (showValue()) {
+        <text data-star-part="text" class="star-knob__text" x="50" y="57" text-anchor="middle">
+          {{ text() }}
+        </text>
+      }
     </svg>
   `,
 })
@@ -77,7 +89,15 @@ export class StarKnob implements FormValueControl<number> {
   readonly size = input(120);
   /** `{value}` is replaced by the number, for example `{value}%`. */
   readonly valueTemplate = input('{value}');
+  /** Width of the track and the value arc, in units of the 100 × 100 view box. PrimeNG `strokeWidth`. */
+  readonly strokeWidth = input<number | null>(null);
+  /** Shows the value text in the middle. Default `true`. PrimeNG `showValue`. */
+  readonly showValue = input(true, { transform: booleanAttribute });
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
+  /** A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`). */
+  readonly required = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
@@ -85,7 +105,9 @@ export class StarKnob implements FormValueControl<number> {
   private readonly dial = viewChild.required<ElementRef<SVGSVGElement>>('dial');
   /** The parent `star-field` when it labels the knob: an SVG slider is not labelable. */
   private readonly field = injectStarFieldLink(null, () => this.focus());
-  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly labelledBy = computed(() =>
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   focus(options?: FocusOptions): void {
@@ -280,6 +302,46 @@ type StarEyeDropperType = new () => { open(): Promise<{ sRGBHex: string }> };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+/** Reads `#rgb`, `#rrggbb`, `rgb(r, g, b)` or `hsb(h, s%, b%)` as `#rrggbb`, else `null`. */
+function starColorToHex(text: string | null | undefined): string | null {
+  const value = (text ?? '').trim().toLowerCase();
+  if (/^#[0-9a-f]{6}$/.test(value)) return value;
+  if (/^#[0-9a-f]{3}$/.test(value)) {
+    return '#' + [...value.slice(1)].map((char) => char + char).join('');
+  }
+  const numbers = (value.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+  if (value.startsWith('rgb') && numbers.length >= 3) {
+    return (
+      '#' +
+      numbers
+        .slice(0, 3)
+        .map((n) => clamp(Math.round(n), 0, 255).toString(16).padStart(2, '0'))
+        .join('')
+    );
+  }
+  if ((value.startsWith('hsb') || value.startsWith('hsv')) && numbers.length >= 3) {
+    return hsvToHex({
+      h: clamp(numbers[0], 0, 360),
+      s: clamp(numbers[1], 0, 100),
+      v: clamp(numbers[2], 0, 100),
+    });
+  }
+  return null;
+}
+
+/** Writes `#rrggbb` in the `format` of the color picker. */
+function starColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): string {
+  if (format === 'rgb') {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+  if (format === 'hsb') {
+    const hsv = hexToHsv(hex) ?? { h: 0, s: 0, v: 0 };
+    return `hsb(${Math.round(hsv.h)}, ${Math.round(hsv.s)}%, ${Math.round(hsv.v)}%)`;
+  }
+  return hex;
+}
+
 /**
  * Color picker (PrimeNG `p-colorpicker`): preset swatches, a custom color panel and a hex field.
  * Value: `#rrggbb`.
@@ -306,6 +368,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       [attr.aria-label]="labelledBy() ? null : (ariaLabel() ?? text.colorLabel)"
       [attr.aria-labelledby]="labelledBy()"
       [attr.aria-describedby]="fieldDescribedBy()"
+      [attr.aria-required]="required() || null"
     >
       @for (swatch of shownSwatches(); track swatch) {
         <button
@@ -314,7 +377,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           role="radio"
           class="star-color__swatch"
           [style.background]="swatch"
-          [attr.aria-checked]="swatch.toLowerCase() === value().toLowerCase()"
+          [attr.aria-checked]="swatch.toLowerCase() === hex()"
           [attr.aria-label]="swatch"
           [disabled]="disabled()"
           (click)="commit(swatch)"
@@ -329,7 +392,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       cdkOverlayOrigin
       #origin="cdkOverlayOrigin"
       aria-haspopup="dialog"
-      [style.background]="value()"
+      [style.background]="hex()"
       [attr.aria-label]="text.customColor"
       [attr.aria-expanded]="open()"
       [attr.aria-controls]="open() ? panelId : null"
@@ -352,7 +415,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
     <input
       data-star-part="hexInput"
       class="star-input star-input--sm star-color__hex"
-      [value]="value()"
+      [value]="hex()"
       [disabled]="disabled()"
       [attr.aria-label]="text.hexValue(ariaLabel() ?? (field?.label() || text.colorLabel))"
       maxlength="7"
@@ -400,7 +463,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
             class="star-color__thumb"
             [style.inset-inline-start.%]="hsv().s"
             [style.top.%]="100 - hsv().v"
-            [style.background]="value()"
+            [style.background]="hex()"
           ></span>
         </div>
         <div
@@ -430,10 +493,10 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           <span
             data-star-part="previewText"
             class="star-color__preview"
-            [style.background]="value()"
+            [style.background]="hex()"
             aria-hidden="true"
           ></span>
-          <span data-star-part="codeText" class="star-color__code">{{ value() }}</span>
+          <span data-star-part="codeText" class="star-color__code">{{ hex() }}</span>
           <button
             data-star-part="barButton"
             type="button"
@@ -457,8 +520,15 @@ export class StarColorPicker implements FormValueControl<string> {
   private readonly doc = inject(DOCUMENT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  /** The color, as `#rrggbb`. */
+  /**
+   * The color: `#rrggbb` (`format="hex"`), `rgb(r, g, b)` (`'rgb'`) or `hsb(h, s%, b%)`
+   * (`'hsb'`). The control reads all three.
+   */
   readonly value = model('#4f46e5');
+  /** Text format of the value that the control writes. PrimeNG `format`. */
+  readonly format = input<'hex' | 'rgb' | 'hsb'>('hex');
+  /** The value as `#rrggbb` (black when it cannot be read). */
+  protected readonly hex = computed(() => starColorToHex(this.value()) ?? '#000000');
   /**
    * The preset swatches (`#rrggbb`). When you do not set it, the swatches come from the theme:
    * after the first render, the control reads `--star-primary`, `--star-accent`, `--star-success`,
@@ -476,13 +546,19 @@ export class StarColorPicker implements FormValueControl<string> {
    * dropper. A value that the application sets does not emit. PrimeNG `onChange`.
    */
   readonly changed = output<string>();
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
+  /** A color is needed (`aria-required` on the swatch group); also bound from Signal Forms `required()`. */
+  readonly required = input(false, { transform: booleanAttribute });
   /** The custom color panel opened. PrimeNG `onShow`. */
   readonly opened = output<void>();
   /** The custom color panel closed. PrimeNG `onHide`. */
   readonly closed = output<void>();
   /** The parent `star-field` when it labels the swatch group (a group is not labelable). */
   protected readonly field = injectStarFieldLink(null, () => this.focus());
-  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly labelledBy = computed(() =>
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   /** Focuses the chosen swatch, else the first one. */
@@ -536,8 +612,9 @@ export class StarColorPicker implements FormValueControl<string> {
 
   /** Sets the value that the user chose and emits `changed`. */
   protected commit(hex: string): void {
-    this.value.set(hex);
-    this.changed.emit(hex);
+    const value = starColorFromHex(hex, this.format());
+    this.value.set(value);
+    this.changed.emit(value);
   }
   protected readonly shownSwatches = computed(
     () => this.swatches() ?? this.themeSwatches() ?? SWATCHES,
@@ -555,7 +632,7 @@ export class StarColorPicker implements FormValueControl<string> {
    * the value is a gray, white or black, where the hex text has no hue.
    */
   protected readonly hsv = linkedSignal<string, Hsv>({
-    source: this.value,
+    source: this.hex,
     computation: (hex, previous) => {
       const before = previous?.value;
       if (before && hsvToHex(before) === hex.toLowerCase()) return before;
@@ -680,7 +757,7 @@ export class StarColorPicker implements FormValueControl<string> {
     const raw = input.value.trim();
     const hex = raw.startsWith('#') ? raw : `#${raw}`;
     if (/^#[0-9a-f]{6}$/i.test(hex)) this.commit(hex.toLowerCase());
-    else input.value = this.value();
+    else input.value = this.hex();
   }
 
   /** Keeps the pointer on the slider while it drags, and the focus on the slider. */
