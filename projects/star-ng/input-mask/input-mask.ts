@@ -9,6 +9,7 @@ import {
   input,
   model,
   output,
+  signal,
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
@@ -24,10 +25,17 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
 /** Mask slot tokens (PrimeNG `p-inputmask` syntax): `9` digit, `a` letter, `*` letter or digit. */
 const TOKENS: Record<string, RegExp> = { '9': /\d/, a: /\p{L}/u, '*': /[\p{L}\d]/u };
 
-/** The tokens with `a` replaced by a custom character pattern (`characterPattern`). */
+/**
+ * The tokens with `a` replaced by a custom character pattern (`characterPattern`). A pattern that
+ * is not a valid regular expression keeps the default `a` token.
+ */
 function tokensFor(characterPattern?: string | null): Record<string, RegExp> {
   if (!characterPattern) return TOKENS;
-  return { ...TOKENS, a: new RegExp(`^(?:${characterPattern})$`, 'u') };
+  try {
+    return { ...TOKENS, a: new RegExp(`^(?:${characterPattern})$`, 'u') };
+  } catch {
+    return TOKENS;
+  }
 }
 
 /** Applies a mask to raw characters; returns the masked text (unfilled slots as `slotChar`). */
@@ -37,7 +45,15 @@ export function applyMask(
   slotChar = '_',
   characterPattern?: string | null,
 ): string {
-  const tokens = tokensFor(characterPattern);
+  return applyTokens(mask, raw, slotChar, tokensFor(characterPattern));
+}
+
+function applyTokens(
+  mask: string,
+  raw: string,
+  slotChar: string,
+  tokens: Record<string, RegExp>,
+): string {
   let out = '';
   let r = 0;
   for (const char of mask) {
@@ -102,6 +118,7 @@ export function unmask(mask: string, masked: string, slotChar = '_'): string {
       [attr.aria-labelledby]="ariaLabelledBy()"
       [attr.aria-describedby]="field?.describedBy() ?? null"
       [attr.aria-invalid]="showInvalid() || null"
+      (beforeinput)="onBeforeInput(input, $any($event))"
       (input)="onInput(input)"
       (focus)="onFocus(input)"
       (blur)="onBlur(input)"
@@ -167,51 +184,118 @@ export class StarInputMask implements FormValueControl<string> {
   private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
 
   protected readonly numericOnly = computed(() => !/[a*]/.test(this.mask()));
+  /** The slot tokens, compiled once per `characterPattern`. */
+  private readonly tokens = computed(() => tokensFor(this.characterPattern()));
+  private readonly focused = signal(false);
+  /** The mask with every slot empty. */
+  private readonly emptyMask = computed(() =>
+    applyTokens(this.mask(), '', this.slotChar(), this.tokens()),
+  );
   protected readonly display = computed(() => {
     const value = this.value();
-    if (!value) return '';
+    // While focused an empty field shows the empty slots.
+    if (!value) return this.focused() ? this.emptyMask() : '';
     // keepCharPositions: a masked value keeps its empty slots.
     if (this.keepCharPositions() && value.length === this.mask().length) {
       return this.positional(value);
     }
-    return applyMask(this.mask(), value, this.slotChar(), this.characterPattern());
+    return applyTokens(this.mask(), value, this.slotChar(), this.tokens());
   });
 
   private slotsFilled(masked: string): boolean {
     return !masked.includes(this.slotChar());
   }
 
+  /** The slot token at a position of the mask, or `undefined` for a literal. */
+  private tokenAt(index: number): RegExp | undefined {
+    return this.tokens()[this.mask()[index]];
+  }
+
   protected onFocus(input: HTMLInputElement): void {
-    if (!input.value) {
-      input.value = applyMask(this.mask(), '', this.slotChar(), this.characterPattern());
-    }
+    this.focused.set(true);
+    if (!input.value) input.value = this.emptyMask();
     queueMicrotask(() => this.placeCaret(input));
   }
 
-  protected onInput(input: HTMLInputElement): void {
-    // Take every letter or digit in order: works for typing inside the mask and for pasting
-    // raw text such as "5551234567". Mask literals are punctuation, so they drop out.
-    const caret = input.selectionStart ?? input.value.length;
-    const masked =
-      this.keepCharPositions() && input.value.length === this.mask().length
+  /**
+   * `keepCharPositions`: the edit runs on the slots at the caret, so the other characters keep
+   * their places. Typing and paste fill the slots from the caret (over the old characters, over
+   * the literals); Backspace and Delete empty one slot, or every slot of a selection.
+   */
+  protected onBeforeInput(input: HTMLInputElement, event: InputEvent): void {
+    if (!this.keepCharPositions() || this.readonly() || this.disabled()) return;
+    const type = event.inputType;
+    const insert =
+      type === 'insertText' || type === 'insertFromPaste' || type === 'insertReplacementText';
+    const remove = type === 'deleteContentBackward' || type === 'deleteContentForward';
+    if (!insert && !remove) return;
+    event.preventDefault();
+    const length = this.mask().length;
+    const chars = [
+      ...(input.value.length === length
         ? this.positional(input.value)
-        : applyMask(
-            this.mask(),
-            [...input.value]
-              .filter((char) => char !== this.slotChar() && /[\p{L}\d]/u.test(char))
-              .join(''),
-            this.slotChar(),
-            this.characterPattern(),
-          );
+        : this.display() || this.emptyMask()),
+    ];
+    const from = input.selectionStart ?? 0;
+    const to = input.selectionEnd ?? from;
+    const slot = this.slotChar();
+    let caret = from;
+    if (remove && to > from) {
+      for (let i = from; i < to; i++) if (this.tokenAt(i)) chars[i] = slot;
+    } else if (type === 'deleteContentBackward') {
+      let i = from - 1;
+      while (i >= 0 && !this.tokenAt(i)) i--;
+      if (i >= 0) {
+        chars[i] = slot;
+        caret = i;
+      }
+    } else if (type === 'deleteContentForward') {
+      let i = from;
+      while (i < length && !this.tokenAt(i)) i++;
+      if (i < length) chars[i] = slot;
+    } else {
+      const data = event.data ?? event.dataTransfer?.getData('text/plain') ?? '';
+      if (to > from) for (let i = from; i < to; i++) if (this.tokenAt(i)) chars[i] = slot;
+      let i = from;
+      for (const char of data) {
+        while (i < length && !this.tokenAt(i)) i++;
+        if (i >= length) break;
+        if (!this.tokenAt(i)!.test(char)) continue;
+        chars[i++] = char;
+      }
+      while (i < length && !this.tokenAt(i)) i++;
+      caret = Math.min(i, length);
+    }
+    this.write(input, chars.join(''), caret);
+  }
+
+  protected onInput(input: HTMLInputElement): void {
+    // Take every character that a slot takes, in order: works for typing inside the mask and for
+    // pasting raw text such as "5551234567". Mask literals drop out.
+    const tokens = Object.values(this.tokens());
+    const raw = [...input.value]
+      .filter((char) => char !== this.slotChar() && tokens.some((token) => token.test(char)))
+      .join('');
+    input.value = applyTokens(this.mask(), raw, this.slotChar(), this.tokens());
+    this.placeCaret(input);
+    this.store(input.value);
+  }
+
+  /** Writes masked text to the field, puts the caret and stores the value. */
+  private write(input: HTMLInputElement, masked: string, caret: number): void {
     input.value = masked;
-    if (this.keepCharPositions()) input.setSelectionRange?.(caret, caret);
-    else this.placeCaret(input);
+    input.setSelectionRange?.(caret, caret);
+    this.store(masked);
+  }
+
+  private store(masked: string): void {
     const typed = unmask(this.mask(), masked, this.slotChar());
     this.value.set(this.unmask() ? typed : typed ? masked : '');
     if (this.slotsFilled(masked)) this.completed.emit(this.value());
   }
 
   protected onBlur(input: HTMLInputElement): void {
+    this.focused.set(false);
     const typed = unmask(this.mask(), input.value, this.slotChar());
     if (!typed || (this.autoClear() && !this.slotsFilled(input.value))) {
       this.value.set('');
@@ -222,13 +306,13 @@ export class StarInputMask implements FormValueControl<string> {
 
   /** `keepCharPositions`: each slot keeps the character at its own position, if it fits. */
   private positional(text: string): string {
-    const empty = applyMask(this.mask(), '', this.slotChar(), this.characterPattern());
+    const slot = this.slotChar();
     return [...this.mask()]
       .map((char, i) => {
-        if (empty[i] !== this.slotChar()) return char;
+        const token = this.tokenAt(i);
+        if (!token) return char;
         const typed = text[i] ?? '';
-        const fits = typed && applyMask(char, typed, this.slotChar(), this.characterPattern());
-        return fits && fits !== this.slotChar() ? typed : this.slotChar();
+        return typed && typed !== slot && token.test(typed) ? typed : slot;
       })
       .join('');
   }

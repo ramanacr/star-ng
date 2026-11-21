@@ -77,4 +77,21 @@ test.describe('form inputs depth (wave N1)', () => {
     await page.keyboard.press('End');
     await expect(live.locator('p.docs-output')).toHaveText('Last end: 50 to 60');
   });
+
+  test('input mask: keepCharPositions keeps the later digits on Backspace', async ({ page }) => {
+    await openPage(page, '/controls/input-mask', 'Input mask');
+    const field = example(page, 'Clear, fixed positions and filled').getByRole('textbox', {
+      name: 'Member number',
+    });
+    await field.click();
+    await page.keyboard.type('12345678');
+    await expect(field).toHaveValue('1234-5678');
+    await field.evaluate((input: HTMLInputElement) => input.setSelectionRange(2, 2));
+    await page.keyboard.press('Backspace');
+    await expect(field).toHaveValue('1_34-5678');
+    await page.keyboard.press('Delete');
+    await expect(field).toHaveValue('1__4-5678');
+    await page.keyboard.type('9');
+    await expect(field).toHaveValue('19_4-5678');
+  });
 });

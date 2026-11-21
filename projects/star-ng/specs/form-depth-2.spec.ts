@@ -293,14 +293,60 @@ describe('form controls depth, part 2 (N1)', () => {
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
     expect(host.code()).toBe('12-34');
-    // keepCharPositions: deleting the 2nd digit leaves a slot, the later digits stay in place.
-    input.value = '1_-34';
-    input.setSelectionRange(1, 1);
-    input.dispatchEvent(new InputEvent('input', { inputType: 'deleteContentBackward' }));
-    await fixture.whenStable();
-    expect(input.value).toBe('1_-34');
     q<HTMLButtonElement>(mask, '[data-star-part="clearButton"]').click();
     await fixture.whenStable();
+    expect(host.code()).toBe('');
+  });
+
+  it('input mask: keepCharPositions with real Backspace, Delete, typing and paste', async () => {
+    const { fixture, host, root } = await setup();
+    const input = q<HTMLInputElement>(root, '.mk input');
+    /** One key press: a cancelable `beforeinput` at the caret, as the browser sends it. */
+    const press = async (
+      inputType: string,
+      from: number,
+      to = from,
+      data: string | null = null,
+    ) => {
+      input.focus();
+      input.setSelectionRange(from, to);
+      const event = new InputEvent('beforeinput', {
+        inputType,
+        data,
+        cancelable: true,
+        bubbles: true,
+      });
+      input.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(true);
+      await fixture.whenStable();
+    };
+    input.dispatchEvent(new Event('focus'));
+    for (const [i, digit] of [...'1234'].entries()) {
+      await press('insertText', [0, 1, 3, 4][i], undefined, digit);
+    }
+    expect(input.value).toBe('12-34');
+    expect(host.code()).toBe('12-34');
+    // Backspace after "2": its slot empties, "34" stays in place.
+    await press('deleteContentBackward', 2);
+    expect(input.value).toBe('1_-34');
+    expect(input.selectionStart).toBe(1);
+    // Delete before "3".
+    await press('deleteContentForward', 3);
+    expect(input.value).toBe('1_-_4');
+    // Typing fills the slot at the caret and jumps over the literal.
+    await press('insertText', 1, 1, '9');
+    expect(input.value).toBe('19-_4');
+    expect(input.selectionStart).toBe(3);
+    // Paste fills the slots from the caret, over the old characters.
+    await press('insertFromPaste', 3, 3, '56');
+    expect(input.value).toBe('19-56');
+    expect(host.code()).toBe('19-56');
+    // A typed character that the slot does not take is ignored.
+    await press('insertText', 0, 0, 'x');
+    expect(input.value).toBe('19-56');
+    // Backspace over a selection empties all of its slots.
+    await press('deleteContentBackward', 0, 5);
+    expect(input.value).toBe('__-__');
     expect(host.code()).toBe('');
   });
 
