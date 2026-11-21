@@ -434,7 +434,10 @@
       <tbody data-star-part="pinnedTopPanel" class="star-table__pinned star-table__pinned--top">
         @for (row of pinnedTop(); track trackKey(row); let p = $index) {
           <ng-container
-            *ngTemplateOutlet="dataRow; context: { $implicit: row, i: -1 - p, entry: pinnedEntry }"
+            *ngTemplateOutlet="
+              dataRow;
+              context: { $implicit: row, i: -1 - p, entry: pinnedEntryAt('top', p) }
+            "
           />
         }
       </tbody>
@@ -628,7 +631,11 @@
           <ng-container
             *ngTemplateOutlet="
               dataRow;
-              context: { $implicit: row, i: -1 - pinnedTop().length - p, entry: pinnedEntry }
+              context: {
+                $implicit: row,
+                i: -1 - pinnedTop().length - p,
+                entry: pinnedEntryAt('bottom', p),
+              }
             "
           />
         }

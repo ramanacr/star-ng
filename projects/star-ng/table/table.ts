@@ -828,7 +828,10 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
    * Pinned rows: row keys (`dataKey` value, else the row object) at the `top` or the `bottom` of
    * the body. A pinned row leaves the paged rows and stays in view in its own part of the body
    * (below the sticky header, or above the footer), also with virtual scroll. It still follows the
-   * filters; in lazy mode it shows while the loaded page holds it. Two-way. `pinRow()`,
+   * filters; in lazy mode the table keeps the last row object it saw (from the loaded rows or
+   * `pinRow()`), so the row shows on every page. A pinned row also shows while its group is closed.
+   * With virtual scroll it has `aria-rowindex` (top pins after the header rows, bottom pins after
+   * the body rows). Two-way. `pinRow()`,
    * `unpinRow()` and the context menu items `'pinRowTop'`, `'pinRowBottom'` and `'unpinRow'`
    * change it. Ignite UI `pinRow`, AG Grid `pinnedTopRowData` / `pinnedBottomRowData`.
    */
@@ -1266,9 +1269,19 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   });
 
   /** The rows split into the pinned top rows, the paged rows and the pinned bottom rows. */
-  protected readonly pinSplit = computed(() =>
-    splitPinnedRows(this.withAdded(), this.pinnedRows(), (row) => this.trackKey(row)),
-  );
+  protected readonly pinSplit = computed(() => {
+    const pins = this.pinnedRows();
+    const split = splitPinnedRows(this.withAdded(), pins, (row) => this.trackKey(row));
+    if (!this.lazy()) return split;
+    // Lazy mode: a pinned row stays when its page is not loaded (the last object seen for it).
+    const seen = this.pinnedObjects;
+    for (const row of [...split.top, ...split.bottom]) seen.set(this.trackKey(row), row);
+    const keep = (keys: readonly unknown[] | undefined) =>
+      (keys ?? []).flatMap((key) => (seen.has(key) ? [seen.get(key) as T] : []));
+    return { top: keep(pins.top), rest: split.rest, bottom: keep(pins.bottom) };
+  });
+  /** Row objects of the pinned rows by key, for lazy mode. */
+  private readonly pinnedObjects = new Map<unknown, T>();
   protected readonly pinnedTop = computed(() => this.pinSplit().top);
   protected readonly pinnedBottom = computed(() => this.pinSplit().bottom);
 
@@ -1348,7 +1361,8 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   protected readonly ariaRowCount = computed(() => {
     if (!this.virtualScroll()) return null;
     const body = this.layout()?.bodyRows ?? this.pageRows().length;
-    return this.headerRows() + body + (this.hasFooter() ? 1 : 0);
+    const pinned = this.pinnedTop().length + this.pinnedBottom().length;
+    return this.headerRows() + pinned + body + (this.hasFooter() ? 1 : 0);
   });
 
   /** Expanded row keys, for a fast look-up per row. */
@@ -1477,7 +1491,8 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
       });
       return entries;
     }
-    const header = this.headerRows();
+    // Pinned top rows come between the header rows and the body rows.
+    const header = this.headerRows() + this.pinnedTop().length;
     const focused = this.focusedIndex();
     const variable = this.variableWindow();
     if (variable) {
@@ -1963,6 +1978,8 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
 
   protected isRowCollapsed(row: T): boolean {
     if (this.rowSpanMode()) return false;
+    // A pinned row shows in its pinned part also when its group is closed.
+    if (this.pinnedTop().length + this.pinnedBottom().length && this.rowPinOf(row)) return false;
     return !!this.groupBy() && this.isGroupCollapsed(this.groupOf(row));
   }
 
@@ -2309,6 +2326,7 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
    */
   pinRow(row: T, side: StarRowPinSide): void {
     if (this.rowPinOf(row) === side) return;
+    this.pinnedObjects.set(this.trackKey(row), row);
     this.pinnedRows.set(withRowPin(this.pinnedRows(), this.trackKey(row), side));
     this.rowPin.emit({ row, side });
   }
@@ -2317,6 +2335,7 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   unpinRow(row: T): void {
     if (!this.rowPinOf(row)) return;
     this.pinnedRows.set(withRowPin(this.pinnedRows(), this.trackKey(row), null));
+    this.pinnedObjects.delete(this.trackKey(row));
     this.rowPin.emit({ row, side: null });
   }
 
@@ -3280,8 +3299,17 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
 
   /** Height of the sticky header, for the pinned top rows. */
   protected readonly headHeight = signal(0);
-  /** Row entry of a pinned row (no ARIA row index, no virtual item). */
-  protected readonly pinnedEntry = { aria: null, item: null } as const;
+  /**
+   * Row entry of a pinned row: no virtual item; with virtual scroll an `aria-rowindex` after the
+   * header rows (top) or after the body rows (bottom).
+   */
+  protected pinnedEntryAt(side: StarRowPinSide, position: number) {
+    if (!this.virtualScroll()) return { aria: null, item: null };
+    const header = this.headerRows();
+    if (side === 'top') return { aria: header + position + 1, item: null };
+    const body = this.layout()?.bodyRows ?? this.pageRows().length;
+    return { aria: header + this.pinnedTop().length + body + position + 1, item: null };
+  }
 
   /** Pinned top rows, page rows, pinned bottom rows: the rows that the keys move between. */
   protected readonly shownRows = computed(() => {

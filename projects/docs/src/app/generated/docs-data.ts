@@ -19409,7 +19409,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarRowPins",
         "default": "{}",
         "required": false,
-        "description": "Pinned rows: row keys (`dataKey` value, else the row object) at the `top` or the `bottom` of the body. A pinned row leaves the paged rows and stays in view in its own part of the body (below the sticky header, or above the footer), also with virtual scroll. It still follows the filters; in lazy mode it shows while the loaded page holds it. Two-way. `pinRow()`, `unpinRow()` and the context menu items `'pinRowTop'`, `'pinRowBottom'` and `'unpinRow'` change it. Ignite UI `pinRow`, AG Grid `pinnedTopRowData` / `pinnedBottomRowData`."
+        "description": "Pinned rows: row keys (`dataKey` value, else the row object) at the `top` or the `bottom` of the body. A pinned row leaves the paged rows and stays in view in its own part of the body (below the sticky header, or above the footer), also with virtual scroll. It still follows the filters; in lazy mode the table keeps the last row object it saw (from the loaded rows or `pinRow()`), so the row shows on every page. A pinned row also shows while its group is closed. With virtual scroll it has `aria-rowindex` (top pins after the header rows, bottom pins after the body rows). Two-way. `pinRow()`, `unpinRow()` and the context menu items `'pinRowTop'`, `'pinRowBottom'` and `'unpinRow'` change it. Ignite UI `pinRow`, AG Grid `pinnedTopRowData` / `pinnedBottomRowData`."
       },
       {
         "name": "advancedQuery",

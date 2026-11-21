@@ -106,6 +106,10 @@ class SlotHost {
       [virtualScroll]="virtual()"
       [scrollHeight]="virtual() ? '150px' : null"
       [virtualRowHeight]="40"
+      [groupBy]="groupBy()"
+      [collapsedGroups]="collapsed()"
+      [lazy]="lazy()"
+      [totalRecords]="lazy() ? 8 : 0"
     />
   `,
 })
@@ -122,6 +126,9 @@ class FeatureHost {
   readonly advanced = signal(false);
   readonly query2 = signal<StarQueryGroup>({ operator: 'and', rules: [] });
   readonly virtual = signal(false);
+  readonly groupBy = signal<keyof Order | null>(null);
+  readonly collapsed = signal<readonly string[]>([]);
+  readonly lazy = signal(false);
 }
 
 const texts = (root: Element, selector: string) =>
@@ -227,6 +234,52 @@ describe('StarTable depth (N1)', () => {
       const root = fixture.nativeElement as HTMLElement;
       const pinned = root.querySelector('tbody[data-star-part="pinnedTopPanel"] tr');
       expect(pinned?.querySelector('td')?.textContent?.trim()).toBe('ORD-150');
+    });
+
+    it('a pinned row stays in the pinned part when its group is closed', async () => {
+      const fixture = TestBed.createComponent(FeatureHost);
+      const host = fixture.componentInstance;
+      host.groupBy.set('status');
+      host.collapsed.set(['Open']);
+      host.pins.set({ top: ['ORD-1'] });
+      await fixture.whenStable();
+      const row = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+        'tbody[data-star-part="pinnedTopPanel"] tr',
+      )!;
+      expect(row.hidden).toBe(false);
+    });
+
+    it('pinned rows have aria-rowindex with virtual scroll, before and after the body', async () => {
+      const fixture = TestBed.createComponent(FeatureHost);
+      const host = fixture.componentInstance;
+      host.virtual.set(true);
+      host.pins.set({ top: ['ORD-2'], bottom: ['ORD-4'] });
+      await fixture.whenStable();
+      const root = fixture.nativeElement as HTMLElement;
+      const top = root.querySelector('tbody[data-star-part="pinnedTopPanel"] tr')!;
+      const first = root.querySelector('tbody[data-star-part="body"] tr[data-star-part="row"]')!;
+      const bottom = root.querySelector('tbody[data-star-part="pinnedBottomPanel"] tr')!;
+      // One header row: the top pin is row 2, the body starts at 3, the bottom pin follows it.
+      expect(top.getAttribute('aria-rowindex')).toBe('2');
+      expect(first.getAttribute('aria-rowindex')).toBe('3');
+      expect(bottom.getAttribute('aria-rowindex')).toBe('5');
+      expect(root.querySelector('table')!.getAttribute('aria-rowcount')).toBe('5');
+    });
+
+    it('lazy mode keeps the pinned row objects when their page is not loaded', async () => {
+      const fixture = TestBed.createComponent(FeatureHost);
+      const host = fixture.componentInstance;
+      host.lazy.set(true);
+      await fixture.whenStable();
+      host.table().pinRow(ORDERS[0], 'top');
+      host.rows = [{ id: 'ORD-9', customer: 'Ivy Moon', status: 'Paid', total: 3 }];
+      fixture.changeDetectorRef.markForCheck();
+      fixture.componentRef.changeDetectorRef.detectChanges();
+      await fixture.whenStable();
+      const root = fixture.nativeElement as HTMLElement;
+      const top = root.querySelector('tbody[data-star-part="pinnedTopPanel"] tr');
+      expect(top?.querySelector('td')?.textContent?.trim()).toBe('ORD-1');
+      expect(bodyIds(root)).toEqual(['ORD-9']);
     });
 
     it('the context menu offers pin top, pin bottom and unpin', async () => {
