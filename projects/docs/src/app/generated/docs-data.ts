@@ -2766,7 +2766,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly StarCarouselResponsiveOption[]",
         "default": "[]",
         "required": false,
-        "description": "`numVisible` and `numScroll` per screen width: the option with the smallest `breakpoint` that is not below the window width wins. PrimeNG `responsiveOptions`."
+        "description": "`numVisible` and `numScroll` per screen width: the option with the smallest `breakpoint` that is not below the window width wins. `breakpoint` is a pixel width (`'768px'`); other units are not converted. The width is read after the first render. PrimeNG `responsiveOptions`."
       },
       {
         "name": "orientation",
@@ -15793,7 +15793,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "true",
         "required": false,
-        "description": "Escape closes the popover (default `true`). PrimeNG `closeOnEscape`."
+        "description": "Escape closes the popover (default `true`). PrimeNG `closeOnEscape`. With `false`, put a close button in the content, so keyboard users can close it."
       },
       {
         "name": "pt",

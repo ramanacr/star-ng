@@ -113,7 +113,10 @@ export class StarPopover {
   readonly focusOnShow = input(true, { transform: booleanAttribute });
   /** A click outside closes the popover (default `true`). PrimeNG `dismissable`. */
   readonly dismissable = input(true, { transform: booleanAttribute });
-  /** Escape closes the popover (default `true`). PrimeNG `closeOnEscape`. */
+  /**
+   * Escape closes the popover (default `true`). PrimeNG `closeOnEscape`. With `false`, put a close
+   * button in the content, so keyboard users can close it.
+   */
   readonly closeOnEscape = input(true, { transform: booleanAttribute });
 
   private readonly slots = contentChildren(StarSlot, { descendants: true });

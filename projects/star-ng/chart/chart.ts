@@ -17,6 +17,7 @@ import {
   output,
   PLATFORM_ID,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   injectStarControlDefaults,
@@ -153,8 +154,10 @@ export interface StarChartPluginContext {
 
 /**
  * A plugin of `star-chart` (the `plugins` input), for example a target line or a background band.
- * The hooks run after each render of the chart and after `refresh()`. PrimeNG `plugins`
- * (Chart.js plugins); this interface is small and works on the SVG.
+ * The hooks run after each render of the chart and after `refresh()`, untracked (a signal that a
+ * hook reads does not draw the chart again; call `refresh()`). Draw only into `layer`; an error
+ * in a hook is logged and the other plugins still run. PrimeNG `plugins` (Chart.js plugins);
+ * this interface is small and works on the SVG.
  */
 export interface StarChartPlugin {
   /** Name of the plugin; the layers have `data-star-plugin="<id>:before"` and `"<id>:after"`. */
@@ -1826,16 +1829,25 @@ export class StarChart {
           else svg.appendChild(group);
           return group;
         };
+        // A plugin runs untracked (its signal reads do not draw again) and alone: an error is
+        // logged and the next plugin still runs.
+        const run = (plugin: StarChartPlugin, hook: () => void) => {
+          try {
+            untracked(hook);
+          } catch (error) {
+            console.error(`StarNG chart: plugin "${plugin.id}" failed.`, error);
+          }
+        };
         // `beforeDraw` layers go first in reverse order, so the first plugin is the lowest.
         for (const plugin of [...plugins].reverse()) {
           if (!plugin.beforeDraw) continue;
           const group = layer(`${plugin.id}:before`, true);
-          plugin.beforeDraw({ svg, layer: group, ...context });
+          run(plugin, () => plugin.beforeDraw!({ svg, layer: group, ...context }));
         }
         for (const plugin of plugins) {
           if (!plugin.afterDraw) continue;
           const group = layer(`${plugin.id}:after`, false);
-          plugin.afterDraw({ svg, layer: group, ...context });
+          run(plugin, () => plugin.afterDraw!({ svg, layer: group, ...context }));
         }
       },
     });

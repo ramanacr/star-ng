@@ -181,6 +181,54 @@ class ChartHost {
   ]);
 }
 
+@Component({
+  imports: [StarChart],
+  template: `
+    <star-chart
+      title="Orders"
+      type="bar"
+      [labels]="['Jan']"
+      [series]="[{ label: 'Orders', data: [3] }]"
+      [plugins]="plugins"
+    />
+  `,
+})
+class SafeChartHost {
+  readonly outside = signal(0);
+  readonly runs: string[] = [];
+  readonly plugins: readonly StarChartPlugin[] = [
+    {
+      id: 'broken',
+      afterDraw: () => {
+        throw new Error('broken plugin');
+      },
+    },
+    {
+      id: 'reader',
+      afterDraw: () => {
+        this.runs.push(`read ${this.outside()}`);
+      },
+    },
+  ];
+}
+
+describe('Chart plugin isolation', () => {
+  it('runs the next plugin after a throw and does not track the signals a plugin reads', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const fixture = TestBed.createComponent(SafeChartHost);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.runs).toEqual(['read 0']);
+      fixture.componentInstance.outside.set(1);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.runs).toEqual(['read 0']);
+      expect(error).toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+    }
+  });
+});
+
 describe('Chart plugins and refresh', () => {
   it('runs beforeDraw under and afterDraw over the plot, again on refresh', async () => {
     const fixture = TestBed.createComponent(ChartHost);

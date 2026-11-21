@@ -465,6 +465,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Editor: link targets in values set through the model are rewritten (security hardening). A link with `target="_blank"` gets `rel="noopener noreferrer"`, and `_self`, `_parent` and `_top` lose the `target`. Migration: a value read back from the editor can differ from the value written; compare or store the value that the editor gives back.
 - Internal refactors with no API change (shared helpers of the table, tree table and tree).
 - Table: the Apply button of the filter menu and the Save and Cancel buttons of row edit use the shared UI texts `apply`, `save` and `cancel` (no separate table keys).
+- Menus: the list of a `star-menu` (popup and inline) is now inside a `framePanel` element with `display: contents` (a framed box when the menu has `start` or `end` content). A style selector that needs the list as a direct child of the overlay pane (`.cdk-overlay-pane > .star-menu`) no longer matches.
 
 ### Deprecated
 
