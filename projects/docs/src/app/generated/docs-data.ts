@@ -8236,6 +8236,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarFooterRowTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starFooterRow]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the data cells of the footer row: `<ng-template starFooterRow let-columns let-rows=\"rows\">` with `<td>` cells (one per column, or one with `colspan`). PrimeNG `#footer` template. The table keeps the `<tfoot>` row and its lead and trail cells; the row shows also when no column has a `footer` or a `summary`.",
+    "inputs": [
+      {
+        "name": "starFooterRowOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type the context in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarFooterTemplate": {
     "kind": "directive",
     "selector": "ng-template[starFooter]",
@@ -8708,6 +8725,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Emits when an interactive gauge loses the focus."
       }
     ]
+  },
+  "StarGroupFooterTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starGroupFooter]",
+    "entry": "@star-ng/ui/table",
+    "description": "A footer row below each group of `groupBy`: `<ng-template starGroupFooter let-label let-rows=\"rows\">` with `<td>` cells. PrimeNG `#groupfooter` template. Without it, `groupSummary` draws the summary cells; with it, the template replaces them.",
+    "inputs": [
+      {
+        "name": "starGroupFooterOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type `let-rows` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarGroupTemplate": {
     "kind": "directive",
@@ -14363,6 +14397,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "endPanel"
     ]
   },
+  "StarPaginatorEndTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starPaginatorEnd]",
+    "entry": "@star-ng/ui/table",
+    "description": "Content at the end of the table paginator: `<ng-template starPaginatorEnd let-state>`. PrimeNG `#paginatorright` template (here logical: end).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarPaginatorStartTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starPaginatorStart]",
+    "entry": "@star-ng/ui/table",
+    "description": "Content at the start of the table paginator: `<ng-template starPaginatorStart let-state>`. PrimeNG `#paginatorleft` template (here logical: start).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarPaginatorTemplate": {
     "kind": "directive",
     "selector": "ng-template[starPaginatorTemplate]",
@@ -16438,6 +16490,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root"
     ]
+  },
+  "StarRowTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starRow]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the data cells of each body row: `<ng-template starRow let-row let-columns=\"columns\">` with one `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">` per column. PrimeNG `#body` template. The table keeps the `<tr>` (its keys, selection, row click and context menu), the lead cells (reorder, expander, selection) and the row actions cell, so the grid semantics of cell navigation stay. `starTableCell` gives each cell its grid attributes (`data-field`, the roving `tabindex`, `aria-colindex`, `aria-selected`). The table does not draw the editors of the cells in this template.",
+    "inputs": [
+      {
+        "name": "starRowOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type `let-row` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarScheduler": {
     "kind": "component",
@@ -18703,10 +18772,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [
       {
         "name": "selectionMode",
-        "type": "'single' | 'multiple' | 'cell' | 'range' | null",
+        "type": "'single' | 'multiple' | 'cell' | 'range' | 'column' | null",
         "default": "null",
         "required": false,
-        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`.",
+        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`. `'column'` selects whole columns (`columnSelection`): each header gets a select button; a click selects that column, Ctrl / Cmd + click adds or removes it, Shift + click selects the columns from the last clicked one. Ignite UI `columnSelection`.",
         "inheritedFrom": "StarTableInteraction"
       },
       {
@@ -19086,6 +19155,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Batch edit: saved edits, new rows and deleted rows collect in a pending change set instead of single events. Changed cells are marked, deleted rows are struck through. `commitEdits()` emits `batchSave`, `discardEdits()` drops the set, `undo()` / `redo()` (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z in the table) step through it. With `lazy`, set `dataKey`: the change set keys rows by `dataKey`, and a new page has new row objects. Ignite `batchEditing`."
       },
       {
+        "name": "filterDelay",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Delay in milliseconds before typed filter text applies: the text field of the filter row and of the filter menu (without Apply), and `globalFilter`. `0` (default) applies at once. PrimeNG `filterDelay`."
+      },
+      {
+        "name": "advancedFilter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows an \"Advanced filter\" button above the table. It opens a dialog with `star-query-builder` over the columns that have a `filter`; Apply sets `advancedQuery`. Ignite UI advanced filtering dialog."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -19238,6 +19321,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "[]",
         "required": false,
         "description": "Keys (`dataKey`) of the rows in edit with `editMode=\"row\"`. Two-way. PrimeNG `editingRowKeys`."
+      },
+      {
+        "name": "pinnedRows",
+        "type": "StarRowPins",
+        "default": "{}",
+        "required": false,
+        "description": "Pinned rows: row keys (`dataKey` value, else the row object) at the `top` or the `bottom` of the body. A pinned row leaves the paged rows and stays in view in its own part of the body (below the sticky header, or above the footer), also with virtual scroll. It still follows the filters; in lazy mode it shows while the loaded page holds it. Two-way. `pinRow()`, `unpinRow()` and the context menu items `'pinRowTop'`, `'pinRowBottom'` and `'unpinRow'` change it. Ignite UI `pinRow`, AG Grid `pinnedTopRowData` / `pinnedBottomRowData`."
+      },
+      {
+        "name": "advancedQuery",
+        "type": "StarQueryGroup",
+        "default": "{ operator: 'and', rules: [] }",
+        "required": false,
+        "description": "Rules of the advanced filter (`StarQueryGroup`), applied with `starQueryToPredicate` after the column filters. Two-way; it works also without the `advancedFilter` button. Not in lazy mode: the owner filters on the server."
+      },
+      {
+        "name": "columnSelection",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Selected column fields with `selectionMode=\"column\"`, in display order. Two-way."
       }
     ],
     "outputs": [
@@ -19271,6 +19375,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "The user (or `pinColumn()`) pinned or unpinned a column. AG Grid `columnPinned`."
+      },
+      {
+        "name": "rowPin",
+        "type": "StarRowPinEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "The user (or `pinRow()` / `unpinRow()`) pinned or unpinned a row. Ignite UI `rowPinned`."
       },
       {
         "name": "rowClick",
@@ -19395,6 +19506,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "toolsPanel",
+      "advancedFilterButton",
       "columnList",
       "columnItem",
       "columnsText",
@@ -19416,12 +19528,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "sortButton",
       "sortIcon",
       "sortRankText",
+      "columnSelectButton",
+      "columnSelectIcon",
       "resizerText",
       "rowActionCell",
       "filtersRow",
       "filtersCell",
       "filterInput",
       "rangePanel",
+      "pinnedTopPanel",
       "body",
       "scrollBodyRow",
       "loadingItem",
@@ -19436,6 +19551,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "groupCountText",
       "groupFooterRow",
       "groupFooterCell",
+      "emptyCell",
+      "emptyIcon",
+      "pinnedBottomPanel",
+      "foot",
+      "footer",
+      "footerCell",
+      "summaryLabel",
+      "markText",
+      "text",
+      "advancedButtonsPanel",
       "expandIcon",
       "radioInput",
       "cellInput",
@@ -19447,16 +19572,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "saveIcon",
       "cancelIcon",
       "expansionRow",
-      "expansionCell",
-      "emptyCell",
-      "emptyIcon",
-      "foot",
-      "footer",
-      "footerCell",
-      "summaryLabel",
-      "markText",
-      "text"
+      "expansionCell"
     ]
+  },
+  "StarTableCell": {
+    "kind": "directive",
+    "selector": "td[starTableCell]",
+    "entry": "@star-ng/ui/table",
+    "description": "A data cell of a `starRow` template: `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">`. It sets the grid attributes that the built-in cells have, so cell navigation, cell selection, the context menu and paste work in the custom row.",
+    "inputs": [
+      {
+        "name": "starTableCell",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "`field` of the column of the cell."
+      },
+      {
+        "name": "starTableCellRow",
+        "type": "unknown",
+        "default": null,
+        "required": true,
+        "description": "The row of the cell."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarTableFilterMenu": {
     "kind": "component",
@@ -19514,6 +19655,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Most rules that \"Add rule\" allows (PrimeNG `maxConstraints`)."
       },
       {
+        "name": "checklist",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Excel-style list of a `'multiselect'` filter: a search box that narrows the choices (case- and accent-insensitive `contains`, or a `contains` mode of `StarFilterService`), Select all and Clear (of the shown choices)."
+      },
+      {
         "name": "showApply",
         "type": "boolean",
         "default": "true",
@@ -19559,6 +19707,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "input",
       "valueOption",
       "filterAllOption",
+      "valueSearchInput",
+      "checklistButtonsPanel",
+      "selectAllButton",
+      "clearAllButton",
       "choicesPanel",
       "choiceLabel",
       "choiceInput",
@@ -19576,10 +19728,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [
       {
         "name": "selectionMode",
-        "type": "'single' | 'multiple' | 'cell' | 'range' | null",
+        "type": "'single' | 'multiple' | 'cell' | 'range' | 'column' | null",
         "default": "null",
         "required": false,
-        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`."
+        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`. `'column'` selects whole columns (`columnSelection`): each header gets a select button; a click selects that column, Ctrl / Cmd + click adds or removes it, Shift + click selects the columns from the last clicked one. Ignite UI `columnSelection`."
       },
       {
         "name": "cellNavigation",
@@ -22414,9 +22566,12 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-interaction/range": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"stockRows\"\n      [columns]=\"viewColumns\"\n      dataKey=\"sku\"\n      ariaLabel=\"Stock with range selection\"\n      selectionMode=\"range\"\n      [pinnedColumns]=\"{ sku: 'start' }\"\n      [(cellSelection)]=\"cells\"\n      paginator\n      [rows]=\"8\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ cells().length }} {{ cells().length === 1 ? 'cell' : 'cells' }}\n  </p>\n</div>",
   "table-interaction/search": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <input\n      starInput\n      type=\"search\"\n      aria-label=\"Find in stock\"\n      placeholder=\"Find in stock\"\n      [value]=\"search()\"\n      (input)=\"search.set($any($event.target).value)\"\n      (keydown.enter)=\"found.findNext()\"\n    />\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"found.findPrevious()\">\n      Previous\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"found.findNext()\">\n      Next\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"found.clearSearch()\">\n      Clear\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #found\n      [value]=\"stockRows\"\n      [columns]=\"viewColumns\"\n      dataKey=\"sku\"\n      ariaLabel=\"Stock with search\"\n      [(searchText)]=\"search\"\n      paginator\n      [rows]=\"8\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Matches: {{ found.searchMatches().count }}, active:\n    {{ found.searchMatches().active + 1 || 'none' }}\n  </p>\n</div>",
   "table-layout/column-groups": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"salesColumns\"\n    [columnGroups]=\"salesGroups\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales by region and quarter\"\n    columnToggle\n    reorderableColumns\n  >\n    <ng-template starColumnGroupHeader=\"Q2\" let-group let-span=\"span\">\n      {{ group.header }}, {{ span }} months\n    </ng-template>\n  </star-table>\n</docs-fill>",
+  "table-layout/custom-rows": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 5)\"\n    [columns]=\"customRowColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with custom rows\"\n    cellNavigation\n  >\n    <ng-template starRow [starRowOf]=\"orders\" let-row let-columns=\"columns\">\n      <td [starTableCell]=\"columns[0].field\" [starTableCellRow]=\"row\">\n        <strong>{{ row.id }}</strong>\n      </td>\n      <td [starTableCell]=\"columns[1].field\" [starTableCellRow]=\"row\">\n        {{ row.customer }} <small>({{ row.region }})</small>\n      </td>\n      <td [starTableCell]=\"columns[2].field\" [starTableCellRow]=\"row\">\n        {{ money(row.total) }}\n      </td>\n    </ng-template>\n    <ng-template starFooterRow [starFooterRowOf]=\"orders\" let-columns let-rows=\"rows\">\n      <td [attr.colspan]=\"columns.length\">{{ rows.length }} orders</td>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-layout/expansion": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-toggle-switch [(checked)]=\"single\">One row open at a time</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.collapseAll()\">\n      Collapse all\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #detailed\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with detail\"\n      [rowExpandMode]=\"single() ? 'single' : 'multiple'\"\n      [(expandedKeys)]=\"expanded\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n        <dl class=\"detail\">\n          <dt>Email</dt>\n          <dd>{{ row.email }}</dd>\n          <dt>Quantity</dt>\n          <dd>{{ row.quantity }} x {{ row.product }}</dd>\n        </dl>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Open: {{ expanded().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"footerColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with totals\"\n  />\n</docs-fill>",
+  "table-layout/group-footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 8)\"\n    [columns]=\"customRowColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with group footers\"\n    groupBy=\"region\"\n  >\n    <ng-template\n      starGroupFooter\n      [starGroupFooterOf]=\"orders\"\n      let-label\n      let-rows=\"rows\"\n      let-columns=\"columns\"\n    >\n      <td [attr.colspan]=\"columns.length\">{{ label }}: {{ rows.length }} orders</td>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-layout/groups": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"grouped\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 12)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders in groups\"\n      [groupBy]=\"grouped() ? 'region' : null\"\n      [(collapsedGroups)]=\"closed\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
+  "table-layout/pinned-rows": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"customRowColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with pinned rows\"\n      [(pinnedRows)]=\"pinnedRows\"\n      [contextMenuDefaults]=\"['pinRowTop', 'pinRowBottom', 'unpinRow']\"\n      stickyHeader\n      scrollHeight=\"16rem\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Top: {{ pinnedRows().top?.join(', ') || 'none' }}. Bottom:\n    {{ pinnedRows().bottom?.join(', ') || 'none' }}\n  </p>\n</div>",
   "table-layout/rowspan": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"rowSpanColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales with merged regions\"\n    groupBy=\"region\"\n    rowGroupMode=\"rowspan\"\n    selectionMode=\"multiple\"\n  />\n</docs-fill>",
   "table-layout/stack": "<div class=\"docs-stack docs-stack--narrow\">\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders stacked\"\n    responsiveLayout=\"stack\"\n  />\n</div>",
   "table-layout/summaries": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"summaryGroups\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"sales\"\n      [columns]=\"summaryColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sales with summaries\"\n      locale=\"en-US\"\n      [groupBy]=\"summaryGroups() ? 'region' : null\"\n      groupSummary\n    />\n  </docs-fill>\n</div>",
@@ -22427,15 +22582,20 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-layout/virtual-stack": "<docs-fill>\n  <star-table\n    [value]=\"stackedTickets\"\n    [columns]=\"ticketColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Tickets stacked\"\n    responsiveLayout=\"stack\"\n    virtualScroll\n    scrollHeight=\"24rem\"\n  />\n</docs-fill>",
   "table-paging/client": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Paged orders\"\n      paginator\n      [(first)]=\"first\"\n      [(rows)]=\"rows\"\n      [rowsPerPageOptions]=\"[5, 10, 20]\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">first = {{ first() }}, rows = {{ rows() }}</p>\n</div>",
   "table-paging/lazy": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"lazyRows()\"\n      [columns]=\"lazyColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders from the server\"\n      lazy\n      paginator\n      [rows]=\"5\"\n      [rowsPerPageOptions]=\"[5, 10]\"\n      [totalRecords]=\"lazyTotal()\"\n      [loading]=\"lazyLoading()\"\n      (lazyLoad)=\"load($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Last request: {{ request() }}</p>\n</div>",
+  "table-paging/paginator-slots": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with paginator content\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starPaginatorStart let-state>\n      <span>Page {{ state.page + 1 }} of {{ state.pageCount }}</span>\n    </ng-template>\n    <ng-template starPaginatorEnd>\n      <span>{{ orders.length }} orders</span>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-selection/actions": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"actionOrders()\"\n      [columns]=\"actionColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with actions\"\n      selectionMode=\"single\"\n      [(selection)]=\"actionSelection\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"actions\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-button\n          size=\"sm\"\n          variant=\"secondary\"\n          [disabled]=\"row.status === 'Cancelled'\"\n          (pressed)=\"cancel(row)\"\n        >\n          Cancel {{ row.id }}\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ actionSelection()[0]?.id ?? 'none' }}\n  </p>\n</div>",
   "table-selection/checkbox": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with selectable rows\"\n      selectionMode=\"multiple\"\n      [(selectionKeys)]=\"keys\"\n      [rowSelectable]=\"notCancelled\"\n      [selectionPageOnly]=\"false\"\n      (selectionChanging)=\"limit($event)\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ keys()?.length ?? 0 }} selected{{ refused() ? ', more than 20 refused' : '' }}\n  </p>\n</div>",
   "table-selection/click": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 5)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with row click\"\n      (rowClick)=\"opened.set($event.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
+  "table-selection/columns": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columnPickColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column selection\"\n      selectionMode=\"column\"\n      [(columnSelection)]=\"pickedColumns\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Columns: {{ pickedColumns().join(', ') || 'none' }}\n  </p>\n</div>",
   "table-selection/meta": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 8)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with meta-key selection\"\n      selectionMode=\"multiple\"\n      metaKeySelection\n      [(selection)]=\"metaSelected\"\n      (rowSelect)=\"lastEvent.set('Selected ' + $event.row.id)\"\n      (rowUnselect)=\"lastEvent.set('Cleared ' + $event.row.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ metaSelected().length }} selected. {{ lastEvent() }}\n  </p>\n</div>",
   "table-selection/multiple": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selectOpen()\">\n      Select open orders\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selected.set([])\">\n      Clear selection\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with checkboxes\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
   "table-selection/single": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with one choice\"\n      selectionMode=\"single\"\n      [(selection)]=\"chosen\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen()[0]?.id ?? 'none' }}</p>\n</div>",
+  "table-sort-filter/advanced": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with an advanced filter\"\n      advancedFilter\n      [(advancedQuery)]=\"advancedQuery\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Rules: {{ advancedQuery().rules.length }}</p>\n</div>",
   "table-sort-filter/columns": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"filtered.clearFilters()\">\n    Clear filters\n  </star-button>\n  <docs-fill>\n    <star-table\n      #filtered\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column filters\"\n      [(filters)]=\"filters\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Filters: {{ filterText() }}</p>\n</div>",
   "table-sort-filter/combined": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search combined orders\"\n    placeholder=\"Search combined orders\"\n    [value]=\"combinedQuery()\"\n    (input)=\"combinedQuery.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with search, filters and sort\"\n      [globalFilter]=\"combinedQuery()\"\n      size=\"sm\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-sort-filter/custom": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"customColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with a custom match mode\"\n      filterDisplay=\"menu\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/delay": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders after a pause\"\n    placeholder=\"Search orders after a pause\"\n    [value]=\"delayQuery()\"\n    (input)=\"delayQuery.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders filtered after a pause\"\n      [globalFilter]=\"delayQuery()\"\n      [filterDelay]=\"400\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/excel": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"excelColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with an Excel-style filter\"\n    paginator\n    [rows]=\"4\"\n  />\n</docs-fill>",
   "table-sort-filter/global": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"query()\"\n    (input)=\"query.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Searchable orders\"\n      [globalFilter]=\"query()\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-sort-filter/menu": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"menuColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Invoices with filter menus\"\n      filterDisplay=\"menu\"\n      [(filters)]=\"menuFilters\"\n      (filter)=\"menuCount.set($event.filteredValue.length)\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ menuCount() ?? orders.length }} invoices match. Filters: {{ menuText() }}\n  </p>\n</div>",
   "table-sort-filter/multi": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders sorted by several columns\"\n      multiSort\n      [(sortMeta)]=\"sortMeta\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Sorts: {{ sortText() }}</p>\n</div>",

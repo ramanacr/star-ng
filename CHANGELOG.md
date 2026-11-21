@@ -321,6 +321,13 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: keyboard and scroll API: `focusCell(rowKey, field)`, `navigateTo(rowIndex, field)`, `scrollToRow(rowKeyOrIndex, { align })` and `scrollToColumn(field, { align })` (`'nearest'`, `'start'`, `'center'`, `'end'`; `StarScrollOptions`, `StarScrollAlign`). They open the page of a client paginator, render virtual rows and columns first and scroll smoothly unless motion is reduced.
 - UI texts `copiedCells`, `pastedCells`, `skippedCells`, `copyWithHeaders`, `sortAscending`, `sortDescending`, `hideColumn` and `exportCsv` (English, German, Spanish).
 - Table: `StarTablePasteEvent` (the `beforePaste` payload) has `readonly canceled: boolean` next to `cancel()`, like the other cancelable events. Code that builds this object itself must add the member.
+- Table: template slots `starRow` (the data cells of each row, with the new `td[starTableCell]` directive that keeps the grid attributes of cell navigation; context `StarRowSlotContext`), `starFooterRow`, `starGroupFooter`, `starPaginatorStart` and `starPaginatorEnd` (PrimeNG `#body`, `#footer`, `#groupfooter`, `#paginatorleft`, `#paginatorright`).
+- Table: row pinning. Two-way `pinnedRows` (`StarRowPins`: row keys at the `top` or the `bottom`), `pinRow(row, side)`, `unpinRow(row)`, `rowPin` output (`StarRowPinEvent`) and the context menu items `pinRowTop`, `pinRowBottom` and `unpinRow`. Pinned rows leave the paged rows and stay in view in sticky body parts, also with virtual scroll (Ignite UI row pinning).
+- Table: `filterDelay` waits before typed filter text (filter row, filter menu without Apply, `globalFilter`) applies (PrimeNG `filterDelay`).
+- Table: Excel-style filter (`excelFilter` on a `'multiselect'` column): a header menu with a search box, Select all, Clear and a value check list (Ignite UI excel style filtering).
+- Table: advanced filter. `advancedFilter` adds a button that opens a dialog with `star-query-builder` over all columns; two-way `advancedQuery` (`StarQueryGroup`) filters the rows after the column filters (Ignite UI advanced filtering).
+- Table: column selection (`selectionMode="column"`, two-way `columnSelection`): a select button in each header; click, Ctrl / Cmd + click and Shift + click (Ignite UI column selection).
+- UI texts `pinRowTop`, `pinRowBottom`, `unpinRow`, `advancedFilter` and `selectColumn` (English, German, Spanish).
 
 #### Tabs
 

@@ -2,6 +2,7 @@ import type { StarUiText } from '@star-ng/ui/core';
 import type { StarMenuItem } from '@star-ng/ui/menu';
 import type { StarColumn, StarSortOrder } from './table';
 import type { StarPinSide } from './table-pinning';
+import type { StarRowPinSide } from './table-row-pins';
 
 /**
  * Context menu of `star-table`: the built-in items. PrimeNG `contextMenu`, AG Grid
@@ -18,7 +19,10 @@ export type StarTableMenuDefault =
   | 'sortAsc'
   | 'sortDesc'
   | 'hideColumn'
-  | 'export';
+  | 'export'
+  | 'pinRowTop'
+  | 'pinRowBottom'
+  | 'unpinRow';
 
 /** Items of `contextMenu`: a list, or a function of the row and the column (`null` off a cell). */
 export type StarTableMenuItems<T> =
@@ -37,18 +41,22 @@ export interface StarTableMenuActions<T> {
   readonly column: StarColumn<T> | null;
   readonly side: StarPinSide | null;
   readonly canHide: boolean;
+  /** Edge where the row of the menu is pinned, or `null`. */
+  readonly rowSide?: StarRowPinSide | null;
   copy(headers: boolean): void;
   pin(side: StarPinSide | null): void;
   sort(order: StarSortOrder): void;
   hide(): void;
   exportCsv(): void;
+  pinRow?(side: StarRowPinSide | null): void;
 }
 
 /**
  * The built-in items in the order of `keys`. Column items (pin, sort, hide) need a column: off a
  * cell they are left out, and sort items need a `sortable` column. An item that would change
  * nothing (pin to the side the column is on, unpin a column that is not pinned, hide the last
- * column) is disabled.
+ * column) is disabled. Row items (`pinRowTop`, `pinRowBottom`, `unpinRow`) work on any row cell; the
+ * item for the edge the row is on, and `unpinRow` for a row that is not pinned, are disabled.
  */
 export function defaultMenuItems<T>(
   keys: readonly StarTableMenuDefault[],
@@ -69,6 +77,21 @@ export function defaultMenuItems<T>(
         label: text.exportCsv,
         icon: 'ph-bold ph-download-simple',
         command: () => actions.exportCsv(),
+      });
+    } else if (key === 'pinRowTop' || key === 'pinRowBottom') {
+      const target: StarRowPinSide = key === 'pinRowTop' ? 'top' : 'bottom';
+      items.push({
+        label: target === 'top' ? text.pinRowTop : text.pinRowBottom,
+        icon: 'ph-bold ph-push-pin',
+        disabled: actions.rowSide === target,
+        command: () => actions.pinRow?.(target),
+      });
+    } else if (key === 'unpinRow') {
+      items.push({
+        label: text.unpinRow,
+        icon: 'ph-bold ph-push-pin-slash',
+        disabled: !actions.rowSide,
+        command: () => actions.pinRow?.(null),
       });
     } else if (!column) {
       continue;

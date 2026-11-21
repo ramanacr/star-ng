@@ -8,7 +8,7 @@ import {
 } from '@star-ng/ui/table';
 import { StarTag } from '@star-ng/ui/tag';
 import { DOCS, DocsRow } from '../shared/docs';
-import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-demo';
+import { DocsFill, formatMoney, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-demo';
 
 @Component({
   selector: 'docs-table-selection-page',
@@ -185,6 +185,31 @@ import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Column selection"
+        source="table-selection/columns"
+        [script]="columnScript"
+        note="selectionMode column adds a select button to each header. A click selects that column only, Ctrl or Cmd + click adds or removes it, and Shift + click selects the columns from the last clicked one. columnSelection is a two-way model of the selected fields, in display order."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="orders"
+              [columns]="columnPickColumns"
+              dataKey="id"
+              ariaLabel="Orders with column selection"
+              selectionMode="column"
+              [(columnSelection)]="pickedColumns"
+              paginator
+              [rows]="4"
+            />
+          </docs-fill>
+          <p class="docs-output" role="status">
+            Columns: {{ pickedColumns().join(', ') || 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
       <docs-api [of]="['StarTable']" [keyboard]="keyboard" />
 
       <h2>Technical notes</h2>
@@ -204,6 +229,14 @@ export class TableSelectionPage {
   protected readonly severityOf = (status: Order['status']) => STATUS_SEVERITY[status];
 
   protected readonly selected = signal<readonly Order[]>([]);
+  protected readonly pickedColumns = signal<readonly string[]>([]);
+  protected readonly columnPickColumns: StarColumn<Order>[] = [
+    { field: 'id', header: 'Order' },
+    { field: 'customer', header: 'Customer' },
+    { field: 'region', header: 'Region' },
+    { field: 'total', header: 'Total', align: 'end', format: (row) => formatMoney(row.total) },
+  ];
+  protected readonly columnScript = `readonly pickedColumns = signal<readonly string[]>([]);`;
   protected selectOpen(): void {
     this.selected.set(ORDERS.filter((order) => order.status === 'Open'));
   }

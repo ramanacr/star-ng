@@ -1,14 +1,28 @@
 <ng-content select="[starTableCaption]" />
-@if (columnToggle() || pinnableColumns()) {
+@if (columnToggle() || pinnableColumns() || advancedFilter()) {
   <div data-star-part="toolsPanel" class="star-table__tools">
-    <star-button
-      size="sm"
-      variant="secondary"
-      leadingIcon="ph-bold ph-columns"
-      (pressed)="columnsPanel.toggle($event)"
-    >
-      {{ text.columns }}
-    </star-button>
+    @if (advancedFilter()) {
+      <star-button
+        data-star-part="advancedFilterButton"
+        size="sm"
+        variant="secondary"
+        [leadingIcon]="advancedActive() ? 'ph-fill ph-funnel-simple' : 'ph-bold ph-funnel-simple'"
+        aria-haspopup="dialog"
+        (pressed)="openAdvanced()"
+      >
+        {{ text.advancedFilter }}
+      </star-button>
+    }
+    @if (columnToggle() || pinnableColumns()) {
+      <star-button
+        size="sm"
+        variant="secondary"
+        leadingIcon="ph-bold ph-columns"
+        (pressed)="columnsPanel.toggle($event)"
+      >
+        {{ text.columns }}
+      </star-button>
+    }
     <star-popover #columnsPanel [ariaLabel]="text.columns">
       <ul data-star-part="columnList" class="star-table__columns">
         @for (column of orderedColumns(); track column.field) {
@@ -87,6 +101,10 @@
 >
   <table
     data-star-part="grid"
+    #grid
+    [starContextMenu]="rowMenu"
+    (menuOpened)="onMenuOpened()"
+    (menuClosed)="onMenuClosed()"
     [attr.role]="cellMode() ? 'grid' : null"
     [attr.aria-multiselectable]="
       cellMode() && (selectionMode() === 'range' || selectionMode() === 'multiple') ? true : null
@@ -204,6 +222,7 @@
                 [attr.data-field]="column.field"
                 [class]="'star-table__th star-table__cell--' + (column.align ?? 'start')"
                 [class.star-table__th--drop]="dropField() === column.field"
+                [class.star-table__th--selected]="isColumnSelected(column)"
                 [attr.aria-sort]="ariaSort(column)"
                 [attr.draggable]="reorderableColumns() ? 'true' : null"
                 (dragstart)="onDragStart(column, $event)"
@@ -230,7 +249,25 @@
                 } @else {
                   <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
                 }
-                @if (column.filter && filterDisplay() === 'menu') {
+                @if (columnSelectionMode()) {
+                  <button
+                    data-star-part="columnSelectButton"
+                    type="button"
+                    class="star-table__toggle star-table__col-select"
+                    [attr.aria-pressed]="isColumnSelected(column)"
+                    [attr.aria-label]="text.selectColumn(column.header)"
+                    (click)="onColumnSelect(column, $event)"
+                  >
+                    <i
+                      data-star-part="columnSelectIcon"
+                      [class]="
+                        isColumnSelected(column) ? 'ph-fill ph-check-square' : 'ph-bold ph-square'
+                      "
+                      aria-hidden="true"
+                    ></i>
+                  </button>
+                }
+                @if (column.filter && (filterDisplay() === 'menu' || column.excelFilter)) {
                   <star-table-filter-menu
                     [header]="column.header"
                     [type]="column.filter"
@@ -244,7 +281,12 @@
                     "
                     [maxRules]="filterMaxRules()"
                     [showApply]="showApplyButton()"
-                    (filterChange)="setFilter(column.field, $event ?? '')"
+                    [checklist]="!!column.excelFilter"
+                    (filterChange)="
+                      showApplyButton()
+                        ? setFilter(column.field, $event ?? '')
+                        : setFilterDelayed(column.field, $event ?? '')
+                    "
                   />
                 }
                 @if (resizableColumns()) {
@@ -337,9 +379,9 @@
                   class="star-input star-input--sm star-table__filter"
                   [attr.aria-label]="text.filterBy(column.header)"
                   [value]="filterValue(column.field)"
-                  (input)="setFilter(column.field, $any($event.target).value)"
+                  (input)="setFilterDelayed(column.field, $any($event.target).value)"
                 />
-              } @else if (column.filter === 'multiselect') {
+              } @else if (column.filter === 'multiselect' && !column.excelFilter) {
                 <star-multi-select
                   class="star-table__filter"
                   size="sm"
@@ -388,13 +430,16 @@
         </tr>
       }
     </thead>
-    <tbody
-      data-star-part="body"
-      #body
-      [starContextMenu]="rowMenu"
-      (menuOpened)="onMenuOpened()"
-      (menuClosed)="onMenuClosed()"
-    >
+    @if (pinnedTop().length && !loading()) {
+      <tbody data-star-part="pinnedTopPanel" class="star-table__pinned star-table__pinned--top">
+        @for (row of pinnedTop(); track trackKey(row); let p = $index) {
+          <ng-container
+            *ngTemplateOutlet="dataRow; context: { $implicit: row, i: -1 - p, entry: pinnedEntry }"
+          />
+        }
+      </tbody>
+    }
+    <tbody data-star-part="body" #body>
       @if (loading() && loadingSlot(); as loader) {
         <tr data-star-part="scrollBodyRow">
           <td data-star-part="loadingItem" class="star-table__loading" [attr.colspan]="colspan()">
@@ -512,37 +557,43 @@
               @if (rowSelectionMode()) {
                 <td data-star-part="selectionCell" class="star-table__select"></td>
               }
-              @for (column of renderedColumns(); track column.field) {
-                @if (column === columnWindow().first) {
-                  <td
-                    data-star-part="spacerCell"
-                    class="star-table__col-spacer"
-                    aria-hidden="true"
-                    [style.width.px]="columnWindow().before"
-                    [style.min-width.px]="columnWindow().before"
-                  ></td>
-                }
-                <td
-                  data-star-part="groupFooterCell"
-                  [class]="'star-table__cell--' + (column.align ?? 'start')"
-                  [starTablePin]="pinOf(column)"
-                  [attr.aria-colindex]="colIndex(column)"
-                  [attr.data-label]="column.header"
-                >
-                  @if (summaries?.get(column.field); as summary) {
-                    <ng-container
-                      *ngTemplateOutlet="summaryCell; context: { $implicit: summary }"
-                    />
+              @if (groupFooterSlot(); as custom) {
+                <ng-container
+                  *ngTemplateOutlet="custom; context: groupFooterContext(entry.label)"
+                />
+              } @else {
+                @for (column of renderedColumns(); track column.field) {
+                  @if (column === columnWindow().first) {
+                    <td
+                      data-star-part="spacerCell"
+                      class="star-table__col-spacer"
+                      aria-hidden="true"
+                      [style.width.px]="columnWindow().before"
+                      [style.min-width.px]="columnWindow().before"
+                    ></td>
                   }
-                </td>
-                @if (column === columnWindow().last) {
                   <td
-                    data-star-part="spacerCell"
-                    class="star-table__col-spacer"
-                    aria-hidden="true"
-                    [style.width.px]="columnWindow().after"
-                    [style.min-width.px]="columnWindow().after"
-                  ></td>
+                    data-star-part="groupFooterCell"
+                    [class]="'star-table__cell--' + (column.align ?? 'start')"
+                    [starTablePin]="pinOf(column)"
+                    [attr.aria-colindex]="colIndex(column)"
+                    [attr.data-label]="column.header"
+                  >
+                    @if (summaries?.get(column.field); as summary) {
+                      <ng-container
+                        *ngTemplateOutlet="summaryCell; context: { $implicit: summary }"
+                      />
+                    }
+                  </td>
+                  @if (column === columnWindow().last) {
+                    <td
+                      data-star-part="spacerCell"
+                      class="star-table__col-spacer"
+                      aria-hidden="true"
+                      [style.width.px]="columnWindow().after"
+                      [style.min-width.px]="columnWindow().after"
+                    ></td>
+                  }
                 }
               }
               @if (rowEditMode()) {
@@ -550,374 +601,9 @@
               }
             </tr>
           } @else {
-            @let row = entry.row;
-            @let i = entry.index;
-            <tr
-              data-star-part="row"
-              [attr.aria-rowindex]="entry.aria"
-              [attr.data-vi]="entry.item"
-              [hidden]="isRowCollapsed(row)"
-              class="star-table__row"
-              [class.star-table__row--alt]="i % 2 === 1"
-              [class.star-table__row--selected]="isSelected(row)"
-              [class.star-table__row--clickable]="clickable()"
-              [class.star-table__row--expanded]="expandable() && isExpanded(row)"
-              [class.star-table__row--editing]="isRowInEdit(row)"
-              [class.star-table__row--deleted]="isDeleted(row)"
-              [attr.aria-selected]="rowSelectionMode() ? isSelected(row) : null"
-              [attr.tabindex]="rowTabIndex(row)"
-              [attr.data-select-key]="rowSelectionMode() ? rowKeyText(row) : null"
-              [attr.data-row]="cellKeys() ? rowKeyText(row) : null"
-              [class.star-table__row--menu]="isMenuRow(row)"
-              (click)="onRowClick(row, $event)"
-              (contextmenu)="onRowContextMenu(row, $event)"
-              (focusin)="onRowFocus(row)"
-              (keydown)="onRowKey(row, $event); onSelectionKey(row, $event)"
-            >
-              @if (reorderableRows()) {
-                <td
-                  data-star-part="reorderCell"
-                  class="star-table__reorder"
-                  [attr.data-field]="cellKeys() ? '$reorder' : null"
-                  [attr.tabindex]="leadTabIndex(row, '$reorder')"
-                >
-                  <button
-                    data-star-part="toggleButton"
-                    type="button"
-                    class="star-table__toggle"
-                    [disabled]="!canMoveRow(row, -1)"
-                    [attr.aria-label]="text.moveUp"
-                    (click)="moveRow(row, -1)"
-                  >
-                    <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
-                  </button>
-                  <button
-                    data-star-part="toggleButton"
-                    type="button"
-                    class="star-table__toggle"
-                    [disabled]="!canMoveRow(row, 1)"
-                    [attr.aria-label]="text.moveDown"
-                    (click)="moveRow(row, 1)"
-                  >
-                    <i
-                      data-star-part="moveIcon"
-                      class="ph-bold ph-arrow-down"
-                      aria-hidden="true"
-                    ></i>
-                  </button>
-                </td>
-              }
-              @if (expandable()) {
-                <td
-                  data-star-part="expanderCell"
-                  class="star-table__expander"
-                  [attr.data-field]="cellKeys() ? '$expander' : null"
-                  [attr.tabindex]="leadTabIndex(row, '$expander')"
-                >
-                  <button
-                    data-star-part="toggleButton"
-                    type="button"
-                    class="star-table__toggle"
-                    [attr.aria-expanded]="isExpanded(row)"
-                    [attr.aria-controls]="isExpanded(row) ? detailId(i) : null"
-                    [attr.aria-label]="isExpanded(row) ? text.collapseRow : text.expandRow"
-                    (click)="toggleExpansion(row)"
-                  >
-                    <i
-                      data-star-part="expandIcon"
-                      class="ph-bold ph-caret-right"
-                      aria-hidden="true"
-                    ></i>
-                  </button>
-                </td>
-              }
-              @if (selectionMode() === 'multiple') {
-                <td
-                  data-star-part="selectionCell"
-                  class="star-table__select"
-                  [attr.data-field]="cellKeys() ? '$select' : null"
-                  [attr.tabindex]="leadTabIndex(row, '$select')"
-                >
-                  <star-checkbox
-                    #rowBox
-                    [checked]="isSelected(row)"
-                    [disabled]="!canSelect(row)"
-                    [ariaLabel]="selectRowLabel(row)"
-                    (checkedChange)="toggleRow(row, rowBox)"
-                    (click)="$event.stopPropagation(); boxEvent = $event"
-                  />
-                </td>
-              } @else if (selectionMode() === 'single') {
-                <td
-                  data-star-part="selectionCell"
-                  class="star-table__select"
-                  [attr.data-field]="cellKeys() ? '$select' : null"
-                  [attr.tabindex]="leadTabIndex(row, '$select')"
-                >
-                  <input
-                    data-star-part="radioInput"
-                    type="radio"
-                    class="star-table__radio"
-                    [name]="radioName"
-                    [checked]="isSelected(row)"
-                    [disabled]="!canSelect(row)"
-                    [attr.data-select-key]="rowKeyText(row)"
-                    [attr.aria-label]="selectRowLabel(row)"
-                    (change)="selectOnly(row, $event)"
-                    (click)="$event.stopPropagation()"
-                  />
-                </td>
-              }
-              @for (column of renderedColumns(); track column.field; let firstCell = $first) {
-                @if (column === columnWindow().first) {
-                  <td
-                    data-star-part="spacerCell"
-                    class="star-table__col-spacer"
-                    aria-hidden="true"
-                    [style.width.px]="columnWindow().before"
-                    [style.min-width.px]="columnWindow().before"
-                  ></td>
-                }
-                @let span = rowSpan(i, column);
-                @if (span !== 0) {
-                  <td
-                    data-star-part="rowCell"
-                    [attr.rowspan]="span > 1 ? span : null"
-                    [attr.aria-colindex]="colIndex(column)"
-                    [class]="'star-table__cell--' + (column.align ?? 'start')"
-                    [class.star-table__cell--merged]="span > 1"
-                    [starTablePin]="pinOf(column)"
-                    [attr.headers]="headerIds()?.headers?.get(column.field) ?? null"
-                    [class.star-table__cell--changed]="isChanged(row, column)"
-                    [attr.data-label]="column.header"
-                    [attr.data-field]="cellKeys() ? column.field : null"
-                    [attr.tabindex]="cellTabIndex(row, column)"
-                    [class.star-table__cell--selected]="isCellSelected(row, column)"
-                    [attr.aria-selected]="
-                      cellMode() && cellSelectionMode() ? isCellSelected(row, column) : null
-                    "
-                  >
-                    @if (firstCell && isDeleted(row)) {
-                      <span class="star-sr-only">{{ text.rowDeleted }}: </span>
-                    }
-                    @if (isRowInEdit(row) && isEditable(row, column)) {
-                      @let rowError = editorError(row, column);
-                      @if (column.editor === 'select') {
-                        <select
-                          data-star-part="cellInput"
-                          class="star-input star-input--sm star-table__editor"
-                          [attr.data-row-editor]="rowKeyText(row)"
-                          [attr.aria-label]="text.editCell(column.header)"
-                          [attr.aria-invalid]="rowError ? 'true' : null"
-                          [attr.aria-describedby]="rowError ? errorId(i, column) : null"
-                          (change)="setDraft(row, column, $any($event.target))"
-                          (keydown)="onRowEditorKey(row, $event)"
-                        >
-                          @for (choice of column.editOptions ?? []; track choice) {
-                            <option
-                              data-star-part="editorOption"
-                              [value]="choice"
-                              [selected]="choice === draftText(row, column)"
-                            >
-                              {{ choice }}
-                            </option>
-                          }
-                        </select>
-                      } @else {
-                        <input
-                          data-star-part="cellInput"
-                          class="star-input star-input--sm star-table__editor"
-                          type="text"
-                          [attr.inputmode]="column.editor === 'number' ? 'decimal' : null"
-                          [attr.data-row-editor]="rowKeyText(row)"
-                          [attr.aria-label]="text.editCell(column.header)"
-                          [attr.aria-invalid]="rowError ? 'true' : null"
-                          [attr.aria-describedby]="rowError ? errorId(i, column) : null"
-                          [attr.aria-required]="column.required || null"
-                          [value]="draftText(row, column)"
-                          (input)="setDraft(row, column, $any($event.target))"
-                          (keydown)="onRowEditorKey(row, $event)"
-                        />
-                      }
-                      @if (rowError) {
-                        <span
-                          data-star-part="errorText"
-                          class="star-table__error"
-                          [id]="errorId(i, column)"
-                          >{{ rowError }}</span
-                        >
-                      }
-                    } @else if (isEditing(row, column)) {
-                      @if (column.editor === 'select') {
-                        <!-- A choice commits at once; Escape or closing the list cancels. -->
-                        <star-select
-                          #selectEditor
-                          class="star-table__editor"
-                          size="sm"
-                          [options]="column.editOptions ?? []"
-                          [value]="cellText(row, column)"
-                          [ariaLabel]="text.editCell(column.header)"
-                          (valueChange)="commitEdit(row, column, $event ?? '')"
-                          (closed)="onEditorClosed(row, column)"
-                          (keydown.escape)="cancelEdit($event, row, column)"
-                        />
-                      } @else {
-                        @let cellError = editorError(row, column);
-                        <input
-                          data-star-part="cellInput"
-                          class="star-input star-input--sm star-table__editor"
-                          [type]="column.editor === 'number' ? 'number' : 'text'"
-                          [attr.aria-label]="text.editCell(column.header)"
-                          [attr.aria-invalid]="cellError ? 'true' : null"
-                          [attr.aria-describedby]="cellError ? errorId(i, column) : null"
-                          [attr.aria-required]="column.required || null"
-                          [value]="editText(row, column)"
-                          (input)="setDraft(row, column, $any($event.target))"
-                          (blur)="
-                            commitEdit(
-                              row,
-                              column,
-                              $any($event.target).value,
-                              $any($event.target).validity?.badInput
-                            )
-                          "
-                          (keydown.enter)="
-                            commitEdit(
-                              row,
-                              column,
-                              $any($event.target).value,
-                              $any($event.target).validity?.badInput
-                            )
-                          "
-                          (keydown.escape)="cancelEdit($event, row, column)"
-                        />
-                        @if (cellError) {
-                          <span
-                            data-star-part="errorText"
-                            class="star-table__error"
-                            [id]="errorId(i, column)"
-                            >{{ cellError }}</span
-                          >
-                        }
-                      }
-                    } @else if (!rowEditMode() && isEditable(row, column)) {
-                      <button
-                        data-star-part="editButton"
-                        type="button"
-                        class="star-table__edit"
-                        [attr.data-edit]="editKey(row, column)"
-                        [attr.tabindex]="editTabIndex(row, column)"
-                        (click)="startEdit(row, column)"
-                      >
-                        <!-- The name is the action and the visible value (WCAG 2.5.3). -->
-                        <span class="star-sr-only">{{ text.editCell(column.header) }}: </span>
-                        <span data-star-part="editText" class="star-table__edit-value">
-                          <ng-container
-                            *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
-                          />
-                        </span>
-                        @if (isChanged(row, column)) {
-                          <span class="star-sr-only">, {{ text.cellChanged }}</span>
-                        }
-                        <i
-                          data-star-part="editIcon"
-                          class="ph-bold ph-pencil-simple"
-                          aria-hidden="true"
-                        ></i>
-                      </button>
-                    } @else {
-                      <ng-container
-                        *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
-                      />
-                      @if (isChanged(row, column)) {
-                        <span class="star-sr-only">, {{ text.cellChanged }}</span>
-                      }
-                    }
-                  </td>
-                }
-                @if (column === columnWindow().last) {
-                  <td
-                    data-star-part="spacerCell"
-                    class="star-table__col-spacer"
-                    aria-hidden="true"
-                    [style.width.px]="columnWindow().after"
-                    [style.min-width.px]="columnWindow().after"
-                  ></td>
-                }
-              }
-              @if (rowEditMode()) {
-                <td
-                  data-star-part="rowActionCell"
-                  class="star-table__row-actions"
-                  [attr.aria-colindex]="ariaColCount()"
-                  [attr.data-field]="cellKeys() ? '$actions' : null"
-                  [attr.tabindex]="leadTabIndex(row, '$actions')"
-                >
-                  @if (isRowInEdit(row)) {
-                    @if (rowEditActionsSlot(); as custom) {
-                      <ng-container *ngTemplateOutlet="custom; context: rowActionsContext(row)" />
-                    } @else {
-                      <button
-                        data-star-part="toggleButton"
-                        type="button"
-                        class="star-table__toggle"
-                        [attr.data-row-save]="rowKeyText(row)"
-                        [attr.aria-label]="text.save"
-                        [attr.aria-disabled]="rowValid(row) ? null : 'true'"
-                        (click)="saveRowEdit(row)"
-                      >
-                        <i
-                          data-star-part="saveIcon"
-                          class="ph-bold ph-check"
-                          aria-hidden="true"
-                        ></i>
-                      </button>
-                      <button
-                        data-star-part="toggleButton"
-                        type="button"
-                        class="star-table__toggle"
-                        [attr.aria-label]="text.cancel"
-                        (click)="cancelRowEdit(row)"
-                      >
-                        <i data-star-part="cancelIcon" class="ph-bold ph-x" aria-hidden="true"></i>
-                      </button>
-                    }
-                  } @else if (!isDeleted(row)) {
-                    <button
-                      data-star-part="toggleButton"
-                      type="button"
-                      class="star-table__toggle"
-                      [attr.data-row-edit]="rowKeyText(row)"
-                      [attr.aria-label]="text.editRow"
-                      (click)="initRowEdit(row)"
-                    >
-                      <i
-                        data-star-part="editIcon"
-                        class="ph-bold ph-pencil-simple"
-                        aria-hidden="true"
-                      ></i>
-                    </button>
-                  }
-                </td>
-              }
-            </tr>
-            @if (expansionTemplate(); as detail) {
-              @if (isExpanded(row) && !isRowCollapsed(row)) {
-                <tr
-                  data-star-part="expansionRow"
-                  class="star-table__expansion"
-                  [id]="detailId(i)"
-                  [attr.aria-rowindex]="entry.aria === null ? null : entry.aria + 1"
-                  [attr.data-vi]="entry.item"
-                >
-                  <td data-star-part="expansionCell" [attr.colspan]="colspan()">
-                    <ng-container
-                      *ngTemplateOutlet="detail; context: { $implicit: row, index: i }"
-                    />
-                  </td>
-                </tr>
-              }
-            }
+            <ng-container
+              *ngTemplateOutlet="dataRow; context: { $implicit: entry.row, i: entry.index, entry }"
+            />
           }
         } @empty {
           <tr data-star-part="scrollBodyRow">
@@ -933,6 +619,21 @@
         }
       }
     </tbody>
+    @if (pinnedBottom().length && !loading()) {
+      <tbody
+        data-star-part="pinnedBottomPanel"
+        class="star-table__pinned star-table__pinned--bottom"
+      >
+        @for (row of pinnedBottom(); track trackKey(row); let p = $index) {
+          <ng-container
+            *ngTemplateOutlet="
+              dataRow;
+              context: { $implicit: row, i: -1 - pinnedTop().length - p, entry: pinnedEntry }
+            "
+          />
+        }
+      </tbody>
+    }
     @if (hasFooter()) {
       <tfoot data-star-part="foot">
         <tr
@@ -949,37 +650,41 @@
           @if (rowSelectionMode()) {
             <td data-star-part="selectionCell" class="star-table__select"></td>
           }
-          @for (column of renderedColumns(); track column.field) {
-            @if (column === columnWindow().first) {
-              <td
-                data-star-part="spacerCell"
-                class="star-table__col-spacer"
-                aria-hidden="true"
-                [style.width.px]="columnWindow().before"
-                [style.min-width.px]="columnWindow().before"
-              ></td>
-            }
-            <td
-              data-star-part="footerCell"
-              [class]="'star-table__cell--' + (column.align ?? 'start')"
-              [starTablePin]="pinOf(column)"
-              [attr.aria-colindex]="colIndex(column)"
-              [attr.data-label]="column.header"
-            >
-              @if (column.footer !== undefined) {
-                {{ footerText(column) }}
-              } @else if (footerSummaries().get(column.field); as summary) {
-                <ng-container *ngTemplateOutlet="summaryCell; context: { $implicit: summary }" />
+          @if (footerRowSlot(); as custom) {
+            <ng-container *ngTemplateOutlet="custom; context: footerRowContext()" />
+          } @else {
+            @for (column of renderedColumns(); track column.field) {
+              @if (column === columnWindow().first) {
+                <td
+                  data-star-part="spacerCell"
+                  class="star-table__col-spacer"
+                  aria-hidden="true"
+                  [style.width.px]="columnWindow().before"
+                  [style.min-width.px]="columnWindow().before"
+                ></td>
               }
-            </td>
-            @if (column === columnWindow().last) {
               <td
-                data-star-part="spacerCell"
-                class="star-table__col-spacer"
-                aria-hidden="true"
-                [style.width.px]="columnWindow().after"
-                [style.min-width.px]="columnWindow().after"
-              ></td>
+                data-star-part="footerCell"
+                [class]="'star-table__cell--' + (column.align ?? 'start')"
+                [starTablePin]="pinOf(column)"
+                [attr.aria-colindex]="colIndex(column)"
+                [attr.data-label]="column.header"
+              >
+                @if (column.footer !== undefined) {
+                  {{ footerText(column) }}
+                } @else if (footerSummaries().get(column.field); as summary) {
+                  <ng-container *ngTemplateOutlet="summaryCell; context: { $implicit: summary }" />
+                }
+              </td>
+              @if (column === columnWindow().last) {
+                <td
+                  data-star-part="spacerCell"
+                  class="star-table__col-spacer"
+                  aria-hidden="true"
+                  [style.width.px]="columnWindow().after"
+                  [style.min-width.px]="columnWindow().after"
+                ></td>
+              }
             }
           }
           @if (rowEditMode()) {
@@ -1048,5 +753,390 @@
     [(rows)]="rows"
     [rowsPerPageOptions]="rowsPerPageOptions()"
     (pageChange)="emitLazy()"
-  />
+  >
+    @if (paginatorStartSlot(); as start) {
+      <ng-template starPaginatorTemplate="start" let-state>
+        <ng-container *ngTemplateOutlet="start; context: { $implicit: state }" />
+      </ng-template>
+    }
+    @if (paginatorEndSlot(); as end) {
+      <ng-template starPaginatorTemplate="end" let-state>
+        <ng-container *ngTemplateOutlet="end; context: { $implicit: state }" />
+      </ng-template>
+    }
+  </star-paginator>
 }
+@if (advancedFilter()) {
+  <star-dialog [(visible)]="advancedOpen" [header]="text.advancedFilter" size="lg">
+    @if (advancedOpen()) {
+      <star-query-builder [fields]="queryFields()" [(value)]="advancedDraft" />
+    }
+    <div
+      data-star-part="advancedButtonsPanel"
+      class="star-table__advanced-buttons"
+      starDialogFooter
+    >
+      <star-button variant="ghost" (pressed)="clearAdvanced()">{{ text.clear }}</star-button>
+      <star-button variant="secondary" (pressed)="advancedOpen.set(false)">{{
+        text.cancel
+      }}</star-button>
+      <star-button (pressed)="applyAdvanced()">{{ text.apply }}</star-button>
+    </div>
+  </star-dialog>
+}
+<ng-template #dataRow let-row let-i="i" let-entry="entry">
+  <tr
+    data-star-part="row"
+    [attr.aria-rowindex]="entry.aria"
+    [attr.data-vi]="entry.item"
+    [hidden]="isRowCollapsed(row)"
+    class="star-table__row"
+    [class.star-table__row--pinned]="i < 0"
+    [class.star-table__row--alt]="i % 2 === 1"
+    [class.star-table__row--selected]="isSelected(row)"
+    [class.star-table__row--clickable]="clickable()"
+    [class.star-table__row--expanded]="expandable() && isExpanded(row)"
+    [class.star-table__row--editing]="isRowInEdit(row)"
+    [class.star-table__row--deleted]="isDeleted(row)"
+    [attr.aria-selected]="rowSelectionMode() ? isSelected(row) : null"
+    [attr.tabindex]="rowTabIndex(row)"
+    [attr.data-select-key]="rowSelectionMode() ? rowKeyText(row) : null"
+    [attr.data-row]="cellKeys() ? rowKeyText(row) : null"
+    [class.star-table__row--menu]="isMenuRow(row)"
+    (click)="onRowClick(row, $event)"
+    (contextmenu)="onRowContextMenu(row, $event)"
+    (focusin)="onRowFocus(row)"
+    (keydown)="onRowKey(row, $event); onSelectionKey(row, $event)"
+  >
+    @if (reorderableRows()) {
+      <td
+        data-star-part="reorderCell"
+        class="star-table__reorder"
+        [attr.data-field]="cellKeys() ? '$reorder' : null"
+        [attr.tabindex]="leadTabIndex(row, '$reorder')"
+      >
+        <button
+          data-star-part="toggleButton"
+          type="button"
+          class="star-table__toggle"
+          [disabled]="!canMoveRow(row, -1)"
+          [attr.aria-label]="text.moveUp"
+          (click)="moveRow(row, -1)"
+        >
+          <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+        </button>
+        <button
+          data-star-part="toggleButton"
+          type="button"
+          class="star-table__toggle"
+          [disabled]="!canMoveRow(row, 1)"
+          [attr.aria-label]="text.moveDown"
+          (click)="moveRow(row, 1)"
+        >
+          <i data-star-part="moveIcon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+        </button>
+      </td>
+    }
+    @if (expandable()) {
+      <td
+        data-star-part="expanderCell"
+        class="star-table__expander"
+        [attr.data-field]="cellKeys() ? '$expander' : null"
+        [attr.tabindex]="leadTabIndex(row, '$expander')"
+      >
+        <button
+          data-star-part="toggleButton"
+          type="button"
+          class="star-table__toggle"
+          [attr.aria-expanded]="isExpanded(row)"
+          [attr.aria-controls]="isExpanded(row) ? detailId(i) : null"
+          [attr.aria-label]="isExpanded(row) ? text.collapseRow : text.expandRow"
+          (click)="toggleExpansion(row)"
+        >
+          <i data-star-part="expandIcon" class="ph-bold ph-caret-right" aria-hidden="true"></i>
+        </button>
+      </td>
+    }
+    @if (selectionMode() === 'multiple') {
+      <td
+        data-star-part="selectionCell"
+        class="star-table__select"
+        [attr.data-field]="cellKeys() ? '$select' : null"
+        [attr.tabindex]="leadTabIndex(row, '$select')"
+      >
+        <star-checkbox
+          #rowBox
+          [checked]="isSelected(row)"
+          [disabled]="!canSelect(row)"
+          [ariaLabel]="selectRowLabel(row)"
+          (checkedChange)="toggleRow(row, rowBox)"
+          (click)="$event.stopPropagation(); boxEvent = $event"
+        />
+      </td>
+    } @else if (selectionMode() === 'single') {
+      <td
+        data-star-part="selectionCell"
+        class="star-table__select"
+        [attr.data-field]="cellKeys() ? '$select' : null"
+        [attr.tabindex]="leadTabIndex(row, '$select')"
+      >
+        <input
+          data-star-part="radioInput"
+          type="radio"
+          class="star-table__radio"
+          [name]="radioName"
+          [checked]="isSelected(row)"
+          [disabled]="!canSelect(row)"
+          [attr.data-select-key]="rowKeyText(row)"
+          [attr.aria-label]="selectRowLabel(row)"
+          (change)="selectOnly(row, $event)"
+          (click)="$event.stopPropagation()"
+        />
+      </td>
+    }
+    @if (rowSlot(); as custom) {
+      <ng-container *ngTemplateOutlet="custom; context: rowSlotContext(row, i)" />
+    } @else {
+      @for (column of renderedColumns(); track column.field; let firstCell = $first) {
+        @if (column === columnWindow().first) {
+          <td
+            data-star-part="spacerCell"
+            class="star-table__col-spacer"
+            aria-hidden="true"
+            [style.width.px]="columnWindow().before"
+            [style.min-width.px]="columnWindow().before"
+          ></td>
+        }
+        @let span = rowSpan(i, column);
+        @if (span !== 0) {
+          <td
+            data-star-part="rowCell"
+            [attr.rowspan]="span > 1 ? span : null"
+            [attr.aria-colindex]="colIndex(column)"
+            [class]="'star-table__cell--' + (column.align ?? 'start')"
+            [class.star-table__cell--merged]="span > 1"
+            [starTablePin]="pinOf(column)"
+            [attr.headers]="headerIds()?.headers?.get(column.field) ?? null"
+            [class.star-table__cell--changed]="isChanged(row, column)"
+            [attr.data-label]="column.header"
+            [attr.data-field]="cellKeys() ? column.field : null"
+            [attr.tabindex]="cellTabIndex(row, column)"
+            [class.star-table__cell--selected]="isCellSelected(row, column)"
+            [class.star-table__cell--col-selected]="isColumnSelected(column)"
+            [attr.aria-selected]="
+              cellMode() && cellSelectionMode() ? isCellSelected(row, column) : null
+            "
+          >
+            @if (firstCell && isDeleted(row)) {
+              <span class="star-sr-only">{{ text.rowDeleted }}: </span>
+            }
+            @if (isRowInEdit(row) && isEditable(row, column)) {
+              @let rowError = editorError(row, column);
+              @if (column.editor === 'select') {
+                <select
+                  data-star-part="cellInput"
+                  class="star-input star-input--sm star-table__editor"
+                  [attr.data-row-editor]="rowKeyText(row)"
+                  [attr.aria-label]="text.editCell(column.header)"
+                  [attr.aria-invalid]="rowError ? 'true' : null"
+                  [attr.aria-describedby]="rowError ? errorId(i, column) : null"
+                  (change)="setDraft(row, column, $any($event.target))"
+                  (keydown)="onRowEditorKey(row, $event)"
+                >
+                  @for (choice of column.editOptions ?? []; track choice) {
+                    <option
+                      data-star-part="editorOption"
+                      [value]="choice"
+                      [selected]="choice === draftText(row, column)"
+                    >
+                      {{ choice }}
+                    </option>
+                  }
+                </select>
+              } @else {
+                <input
+                  data-star-part="cellInput"
+                  class="star-input star-input--sm star-table__editor"
+                  type="text"
+                  [attr.inputmode]="column.editor === 'number' ? 'decimal' : null"
+                  [attr.data-row-editor]="rowKeyText(row)"
+                  [attr.aria-label]="text.editCell(column.header)"
+                  [attr.aria-invalid]="rowError ? 'true' : null"
+                  [attr.aria-describedby]="rowError ? errorId(i, column) : null"
+                  [attr.aria-required]="column.required || null"
+                  [value]="draftText(row, column)"
+                  (input)="setDraft(row, column, $any($event.target))"
+                  (keydown)="onRowEditorKey(row, $event)"
+                />
+              }
+              @if (rowError) {
+                <span
+                  data-star-part="errorText"
+                  class="star-table__error"
+                  [id]="errorId(i, column)"
+                  >{{ rowError }}</span
+                >
+              }
+            } @else if (isEditing(row, column)) {
+              @if (column.editor === 'select') {
+                <!-- A choice commits at once; Escape or closing the list cancels. -->
+                <star-select
+                  #selectEditor
+                  class="star-table__editor"
+                  size="sm"
+                  [options]="column.editOptions ?? []"
+                  [value]="cellText(row, column)"
+                  [ariaLabel]="text.editCell(column.header)"
+                  (valueChange)="commitEdit(row, column, $event ?? '')"
+                  (closed)="onEditorClosed(row, column)"
+                  (keydown.escape)="cancelEdit($event, row, column)"
+                />
+              } @else {
+                @let cellError = editorError(row, column);
+                <input
+                  data-star-part="cellInput"
+                  class="star-input star-input--sm star-table__editor"
+                  [type]="column.editor === 'number' ? 'number' : 'text'"
+                  [attr.aria-label]="text.editCell(column.header)"
+                  [attr.aria-invalid]="cellError ? 'true' : null"
+                  [attr.aria-describedby]="cellError ? errorId(i, column) : null"
+                  [attr.aria-required]="column.required || null"
+                  [value]="editText(row, column)"
+                  (input)="setDraft(row, column, $any($event.target))"
+                  (blur)="
+                    commitEdit(
+                      row,
+                      column,
+                      $any($event.target).value,
+                      $any($event.target).validity?.badInput
+                    )
+                  "
+                  (keydown.enter)="
+                    commitEdit(
+                      row,
+                      column,
+                      $any($event.target).value,
+                      $any($event.target).validity?.badInput
+                    )
+                  "
+                  (keydown.escape)="cancelEdit($event, row, column)"
+                />
+                @if (cellError) {
+                  <span
+                    data-star-part="errorText"
+                    class="star-table__error"
+                    [id]="errorId(i, column)"
+                    >{{ cellError }}</span
+                  >
+                }
+              }
+            } @else if (!rowEditMode() && isEditable(row, column)) {
+              <button
+                data-star-part="editButton"
+                type="button"
+                class="star-table__edit"
+                [attr.data-edit]="editKey(row, column)"
+                [attr.tabindex]="editTabIndex(row, column)"
+                (click)="startEdit(row, column)"
+              >
+                <!-- The name is the action and the visible value (WCAG 2.5.3). -->
+                <span class="star-sr-only">{{ text.editCell(column.header) }}: </span>
+                <span data-star-part="editText" class="star-table__edit-value">
+                  <ng-container
+                    *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
+                  />
+                </span>
+                @if (isChanged(row, column)) {
+                  <span class="star-sr-only">, {{ text.cellChanged }}</span>
+                }
+                <i
+                  data-star-part="editIcon"
+                  class="ph-bold ph-pencil-simple"
+                  aria-hidden="true"
+                ></i>
+              </button>
+            } @else {
+              <ng-container
+                *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
+              />
+              @if (isChanged(row, column)) {
+                <span class="star-sr-only">, {{ text.cellChanged }}</span>
+              }
+            }
+          </td>
+        }
+        @if (column === columnWindow().last) {
+          <td
+            data-star-part="spacerCell"
+            class="star-table__col-spacer"
+            aria-hidden="true"
+            [style.width.px]="columnWindow().after"
+            [style.min-width.px]="columnWindow().after"
+          ></td>
+        }
+      }
+    }
+    @if (rowEditMode()) {
+      <td
+        data-star-part="rowActionCell"
+        class="star-table__row-actions"
+        [attr.aria-colindex]="ariaColCount()"
+        [attr.data-field]="cellKeys() ? '$actions' : null"
+        [attr.tabindex]="leadTabIndex(row, '$actions')"
+      >
+        @if (isRowInEdit(row)) {
+          @if (rowEditActionsSlot(); as custom) {
+            <ng-container *ngTemplateOutlet="custom; context: rowActionsContext(row)" />
+          } @else {
+            <button
+              data-star-part="toggleButton"
+              type="button"
+              class="star-table__toggle"
+              [attr.data-row-save]="rowKeyText(row)"
+              [attr.aria-label]="text.save"
+              [attr.aria-disabled]="rowValid(row) ? null : 'true'"
+              (click)="saveRowEdit(row)"
+            >
+              <i data-star-part="saveIcon" class="ph-bold ph-check" aria-hidden="true"></i>
+            </button>
+            <button
+              data-star-part="toggleButton"
+              type="button"
+              class="star-table__toggle"
+              [attr.aria-label]="text.cancel"
+              (click)="cancelRowEdit(row)"
+            >
+              <i data-star-part="cancelIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+            </button>
+          }
+        } @else if (!isDeleted(row)) {
+          <button
+            data-star-part="toggleButton"
+            type="button"
+            class="star-table__toggle"
+            [attr.data-row-edit]="rowKeyText(row)"
+            [attr.aria-label]="text.editRow"
+            (click)="initRowEdit(row)"
+          >
+            <i data-star-part="editIcon" class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+          </button>
+        }
+      </td>
+    }
+  </tr>
+  @if (expansionTemplate(); as detail) {
+    @if (isExpanded(row) && !isRowCollapsed(row)) {
+      <tr
+        data-star-part="expansionRow"
+        class="star-table__expansion"
+        [id]="detailId(i)"
+        [attr.aria-rowindex]="entry.aria === null ? null : entry.aria + 1"
+        [attr.data-vi]="entry.item"
+      >
+        <td data-star-part="expansionCell" [attr.colspan]="colspan()">
+          <ng-container *ngTemplateOutlet="detail; context: { $implicit: row, index: i }" />
+        </td>
+      </tr>
+    }
+  }
+</ng-template>

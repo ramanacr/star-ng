@@ -61,6 +61,7 @@ import {
   uncoveredRow,
 } from './table-navigation';
 import type { StarHeaderWidths, StarPinSide } from './table-pinning';
+import type { StarRowPinSide } from './table-row-pins';
 import type { StarTableSearchMatches, StarTableTextPart } from './table-search';
 import type { VirtualLayout } from './virtual-heights';
 
@@ -125,6 +126,11 @@ export abstract class StarTableInteraction<T> {
   protected abstract readonly visibleColumns: Signal<readonly StarColumn<T>[]>;
   protected abstract readonly renderedColumns: Signal<readonly StarColumn<T>[]>;
   protected abstract readonly pageRows: Signal<readonly T[]>;
+  /** Pinned top rows, the page rows and the pinned bottom rows, in display order. */
+  protected abstract readonly shownRows: Signal<readonly T[]>;
+  protected abstract rowPinOf(row: T): StarRowPinSide | null;
+  abstract pinRow(row: T, side: StarRowPinSide): void;
+  abstract unpinRow(row: T): void;
   /** Rows in the DOM now (the virtual window with the focused row). */
   protected abstract readonly renderedRows: Signal<readonly T[]>;
   protected abstract readonly layout: Signal<VirtualLayout<T> | null>;
@@ -186,9 +192,12 @@ export abstract class StarTableInteraction<T> {
    * column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click
    * clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift
    * + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or
-   * removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`.
+   * removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`. `'column'` selects
+   * whole columns (`columnSelection`): each header gets a select button; a click selects that
+   * column, Ctrl / Cmd + click adds or removes it, Shift + click selects the columns from the last
+   * clicked one. Ignite UI `columnSelection`.
    */
-  readonly selectionMode = input<'single' | 'multiple' | 'cell' | 'range' | null>(null);
+  readonly selectionMode = input<'single' | 'multiple' | 'cell' | 'range' | 'column' | null>(null);
 
   /**
    * Selected cells with `selectionMode` `'cell'` or `'range'`: a list of `{ rowKey, field }` (the
@@ -327,7 +336,9 @@ export abstract class StarTableInteraction<T> {
   private extendTarget: StarTableCellRef | null = null;
 
   /** The CDK context menu trigger on the body. It stays disabled until a row prepares a menu. */
-  private readonly menuTrigger = viewChild('body', { read: CdkContextMenuTrigger });
+  private readonly menuTrigger = viewChild('grid', { read: CdkContextMenuTrigger });
+  /** The `<table>` element: the body and the pinned row parts are its `<tbody>` children. */
+  protected readonly grid = viewChild<ElementRef<HTMLElement>>('grid');
   /** The table has context menu items. */
   protected readonly hasContextMenu = computed(
     () => !!this.contextMenu() || this.contextMenuDefaults().length > 0,
@@ -343,7 +354,7 @@ export abstract class StarTableInteraction<T> {
     contextMenuDefaults: () => this.contextMenuDefaults(),
     contextMenuSelection: this.contextMenuSelection,
     contextMenuSelect: this.contextMenuSelect,
-    pageRows: () => this.pageRows(),
+    pageRows: () => this.shownRows(),
     trackKey: (row) => this.trackKey(row),
     columnAt: (node) => this.cellOf(node)?.column ?? null,
     sideOf: (column) => this.sideOf(column),
@@ -353,6 +364,8 @@ export abstract class StarTableInteraction<T> {
     sort: (field, order) => this.sortColumn(field, order),
     hide: (column) => this.setColumnVisible(column, false),
     exportCsv: () => this.exportCsv(),
+    rowPinOf: (row) => this.rowPinOf(row),
+    pinRow: (row, side) => (side ? this.pinRow(row, side) : this.unpinRow(row)),
     destroyed: () => this.interactionDestroyed,
     cellElement: (row, field) => this.cellElement(row, field),
     activeCellElement: () => this.activeElementCell(),
@@ -400,11 +413,11 @@ export abstract class StarTableInteraction<T> {
   }
 
   private syncLeadControls(): void {
-    const body = this.body()?.nativeElement;
+    const body = this.grid()?.nativeElement;
     if (!body) return;
     const on = this.cellMode();
     if (on) {
-      const cells = body.querySelectorAll<HTMLElement>(':scope > tr > td[data-field^="$"]');
+      const cells = body.querySelectorAll<HTMLElement>(':scope > tbody > tr > td[data-field^="$"]');
       for (const cell of Array.from(cells)) {
         for (const control of Array.from(cell.querySelectorAll<HTMLElement>(CELL_CONTROLS))) {
           if (control.getAttribute('tabindex') === '-1') continue;
@@ -444,12 +457,12 @@ export abstract class StarTableInteraction<T> {
 
   /** Rows that the keys move between: the page rows that are not in a closed group. */
   private readonly navRows = computed(() =>
-    this.pageRows().filter((row) => !this.isRowCollapsed(row)),
+    this.shownRows().filter((row) => !this.isRowCollapsed(row)),
   );
 
   /** Row by its key text (`data-row`), for the rows of the page. */
   private readonly rowsByText = computed(
-    () => new Map(this.pageRows().map((row) => [this.rowKeyText(row), row])),
+    () => new Map(this.shownRows().map((row) => [this.rowKeyText(row), row])),
   );
 
   /** Index in the page rows by row key (for `rowSpan`). */
@@ -641,7 +654,7 @@ export abstract class StarTableInteraction<T> {
     const step = Math.sign(next.row - from.row);
     const index = nextColumn
       ? uncoveredRow(next.row, step, rows.length, (r) =>
-          this.rowSpan(this.pageIndex().get(this.trackKey(rows[r])) ?? r, nextColumn),
+          this.rowSpan(this.pageIndex().get(this.trackKey(rows[r])) ?? -1, nextColumn),
         )
       : next.row;
     const goal = { rowKey: this.trackKey(rows[index]), field: nextField };
@@ -809,8 +822,8 @@ export abstract class StarTableInteraction<T> {
 
   private rowElement(row: T): HTMLElement | null {
     return (
-      this.body()?.nativeElement.querySelector<HTMLElement>(
-        `:scope > tr[data-row="${CSS.escape(this.rowKeyText(row))}"], :scope > tr[data-select-key="${CSS.escape(this.rowKeyText(row))}"]`,
+      this.grid()?.nativeElement.querySelector<HTMLElement>(
+        `:scope > tbody > tr[data-row="${CSS.escape(this.rowKeyText(row))}"], :scope > tbody > tr[data-select-key="${CSS.escape(this.rowKeyText(row))}"]`,
       ) ?? this.rowByIndex(row)
     );
   }
@@ -880,7 +893,7 @@ export abstract class StarTableInteraction<T> {
   private activeElementCell(): HTMLElement | null {
     const active = this.active();
     const row =
-      active && this.pageRows().find((item) => Object.is(this.trackKey(item), active.rowKey));
+      active && this.shownRows().find((item) => Object.is(this.trackKey(item), active.rowKey));
     return row !== null && row !== undefined && active ? this.cellElement(row, active.field) : null;
   }
   /** Sorts by one column in one order (the context menu sort items). */
@@ -999,11 +1012,12 @@ export abstract class StarTableInteraction<T> {
 
   /** The body cell (row, column, element) that holds a DOM node, or `null`. */
   protected cellOf(node: EventTarget | null): CellTarget<T> | null {
-    const body = this.body()?.nativeElement;
-    if (!(node instanceof Element) || !body) return null;
+    const grid = this.grid()?.nativeElement;
+    if (!(node instanceof Element) || !grid) return null;
     const cell = node.closest<HTMLElement>('td[data-field]');
     const tr = cell?.parentElement;
-    if (!cell || !tr || tr.parentElement !== body) return null;
+    const section = tr?.parentElement;
+    if (!cell || !tr || section?.tagName !== 'TBODY' || section.parentElement !== grid) return null;
     const row = this.rowsByText().get(tr.dataset['row'] ?? '');
     const field = cell.dataset['field'] ?? '';
     const column = this.columnOf(field) ?? null;
@@ -1013,9 +1027,9 @@ export abstract class StarTableInteraction<T> {
 
   /** The focus target of a cell (by field): its edit button, else the cell itself. */
   protected cellElement(row: T, field: string): HTMLElement | null {
-    const body = this.body()?.nativeElement;
-    const cell = body?.querySelector<HTMLElement>(
-      `:scope > tr[data-row="${CSS.escape(this.rowKeyText(row))}"] > td[data-field="${CSS.escape(field)}"]`,
+    const grid = this.grid()?.nativeElement;
+    const cell = grid?.querySelector<HTMLElement>(
+      `:scope > tbody > tr[data-row="${CSS.escape(this.rowKeyText(row))}"] > td[data-field="${CSS.escape(field)}"]`,
     );
     if (!cell) return null;
     return cell.querySelector<HTMLElement>(':scope > .star-table__edit') ?? cell;

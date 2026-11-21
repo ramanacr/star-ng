@@ -3,8 +3,13 @@ import { StarButton } from '@star-ng/ui/button';
 import {
   StarColumn,
   StarColumnGroupHeaderTemplate,
+  StarFooterRowTemplate,
+  StarGroupFooterTemplate,
   StarRowExpansionTemplate,
+  StarRowPins,
+  StarRowTemplate,
   StarTable,
+  StarTableCell,
 } from '@star-ng/ui/table';
 import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { DOCS, DocsRow } from '../shared/docs';
@@ -75,6 +80,10 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
     DOCS,
     StarTable,
     StarRowExpansionTemplate,
+    StarRowTemplate,
+    StarTableCell,
+    StarFooterRowTemplate,
+    StarGroupFooterTemplate,
     StarColumnGroupHeaderTemplate,
     StarButton,
     StarToggleSwitch,
@@ -165,6 +174,90 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
             ariaLabel="Orders with totals"
           />
         </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Custom rows"
+        source="table-layout/custom-rows"
+        [script]="customRowScript"
+        note="An ng-template with starRow draws the data cells of each row: write one td with starTableCell per column of the columns context. The table keeps the row element, its keys, selection and context menu, so cell navigation still works. starFooterRow draws the cells of the footer row; its context has the columns and the filtered rows."
+      >
+        <docs-fill>
+          <star-table
+            [value]="orders.slice(0, 5)"
+            [columns]="customRowColumns"
+            dataKey="id"
+            ariaLabel="Orders with custom rows"
+            cellNavigation
+          >
+            <ng-template starRow [starRowOf]="orders" let-row let-columns="columns">
+              <td [starTableCell]="columns[0].field" [starTableCellRow]="row">
+                <strong>{{ row.id }}</strong>
+              </td>
+              <td [starTableCell]="columns[1].field" [starTableCellRow]="row">
+                {{ row.customer }} <small>({{ row.region }})</small>
+              </td>
+              <td [starTableCell]="columns[2].field" [starTableCellRow]="row">
+                {{ money(row.total) }}
+              </td>
+            </ng-template>
+            <ng-template starFooterRow [starFooterRowOf]="orders" let-columns let-rows="rows">
+              <td [attr.colspan]="columns.length">{{ rows.length }} orders</td>
+            </ng-template>
+          </star-table>
+        </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Group footer"
+        source="table-layout/group-footer"
+        note="With groupBy, an ng-template with starGroupFooter adds a footer row below each group. Its context has the group label, the rows of the group and the columns."
+      >
+        <docs-fill>
+          <star-table
+            [value]="orders.slice(0, 8)"
+            [columns]="customRowColumns"
+            dataKey="id"
+            ariaLabel="Orders with group footers"
+            groupBy="region"
+          >
+            <ng-template
+              starGroupFooter
+              [starGroupFooterOf]="orders"
+              let-label
+              let-rows="rows"
+              let-columns="columns"
+            >
+              <td [attr.colspan]="columns.length">{{ label }}: {{ rows.length }} orders</td>
+            </ng-template>
+          </star-table>
+        </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Pinned rows"
+        source="table-layout/pinned-rows"
+        [script]="pinnedRowScript"
+        note="pinnedRows keeps rows at the top or the bottom of the body while the rest scrolls and pages. pinRow(row, side) and unpinRow(row) change it from code, and the context menu items pinRowTop, pinRowBottom and unpinRow from the menu (right click, Shift + F10). rowPin reports each change. Pinned rows stay in view with virtual scroll too."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="orders"
+              [columns]="customRowColumns"
+              dataKey="id"
+              ariaLabel="Orders with pinned rows"
+              [(pinnedRows)]="pinnedRows"
+              [contextMenuDefaults]="['pinRowTop', 'pinRowBottom', 'unpinRow']"
+              stickyHeader
+              scrollHeight="16rem"
+            />
+          </docs-fill>
+          <p class="docs-output" role="status">
+            Top: {{ pinnedRows().top?.join(', ') || 'none' }}. Bottom:
+            {{ pinnedRows().bottom?.join(', ') || 'none' }}
+          </p>
+        </div>
       </docs-example>
 
       <docs-example
@@ -442,6 +535,21 @@ export class TableLayoutPage {
   protected readonly grouped = signal(false);
   protected readonly closed = signal<readonly string[]>([]);
 
+  protected readonly customRowColumns: StarColumn<Order>[] = [
+    { field: 'id', header: 'Order' },
+    { field: 'customer', header: 'Customer' },
+    { field: 'total', header: 'Total', align: 'end' },
+  ];
+  protected readonly pinnedRows = signal<StarRowPins>({ top: ['ORD-1003'] });
+  protected money(value: number): string {
+    return formatMoney(value);
+  }
+  protected readonly customRowScript = `readonly customRowColumns: StarColumn<Order>[] = [
+  { field: 'id', header: 'Order' },
+  { field: 'customer', header: 'Customer' },
+  { field: 'total', header: 'Total', align: 'end' },
+];`;
+  protected readonly pinnedRowScript = `readonly pinnedRows = signal<StarRowPins>({ top: ['ORD-1003'] });`;
   protected readonly footerColumns: StarColumn<Order>[] = [
     { field: 'id', header: 'Order', footer: 'Total' },
     { field: 'customer', header: 'Customer' },

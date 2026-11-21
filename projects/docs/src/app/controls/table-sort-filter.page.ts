@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { StarButton } from '@star-ng/ui/button';
 import { StarFilterService } from '@star-ng/ui/core';
 import { StarInput } from '@star-ng/ui/field';
+import type { StarQueryGroup } from '@star-ng/ui/query-builder';
 import {
   StarCellTemplate,
   StarColumn,
@@ -207,6 +208,76 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS, STATUS_SEVERITY } from
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Filter delay"
+        source="table-sort-filter/delay"
+        note="filterDelay waits the given milliseconds after the last key before typed filter text applies: the text fields of the filter row, the filter menu without Apply, and globalFilter. 0 applies at once."
+      >
+        <div class="docs-stack">
+          <input
+            starInput
+            type="search"
+            aria-label="Search orders after a pause"
+            placeholder="Search orders after a pause"
+            [value]="delayQuery()"
+            (input)="delayQuery.set($any($event.target).value)"
+          />
+          <docs-fill>
+            <star-table
+              [value]="orders"
+              [columns]="filterColumns"
+              dataKey="id"
+              ariaLabel="Orders filtered after a pause"
+              [globalFilter]="delayQuery()"
+              [filterDelay]="400"
+              paginator
+              [rows]="4"
+            />
+          </docs-fill>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Excel-style filter"
+        source="table-sort-filter/excel"
+        [script]="excelScript"
+        note="excelFilter on a multiselect column puts a filter button in its header. The menu has a search box that narrows the values, Select all and Clear (for the values in view), and a check list of the values. Apply sets the filter."
+      >
+        <docs-fill>
+          <star-table
+            [value]="orders"
+            [columns]="excelColumns"
+            dataKey="id"
+            ariaLabel="Orders with an Excel-style filter"
+            paginator
+            [rows]="4"
+          />
+        </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Advanced filter"
+        source="table-sort-filter/advanced"
+        [script]="advancedScript"
+        note="advancedFilter adds an Advanced filter button above the table. It opens a dialog with the query builder over all columns; Apply sets advancedQuery, a two-way model. The rules apply after the column filters."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="orders"
+              [columns]="filterColumns"
+              dataKey="id"
+              ariaLabel="Orders with an advanced filter"
+              advancedFilter
+              [(advancedQuery)]="advancedQuery"
+              paginator
+              [rows]="4"
+            />
+          </docs-fill>
+          <p class="docs-output" role="status">Rules: {{ advancedQuery().rules.length }}</p>
+        </div>
+      </docs-example>
+
       <docs-api [of]="['StarTable']" [slots]="slots" [keyboard]="keyboard" />
 
       <h2>Technical notes</h2>
@@ -265,6 +336,8 @@ export class TableSortFilterPage {
 
   protected readonly query = signal('');
   protected readonly combinedQuery = signal('');
+  protected readonly delayQuery = signal('');
+  protected readonly advancedQuery = signal<StarQueryGroup>({ operator: 'and', rules: [] });
 
   protected readonly filters = signal<StarColumnFilters>({});
   protected filterText(): string {
@@ -388,6 +461,20 @@ constructor() {
   );
 }`;
   protected readonly globalScript = `readonly query = signal('');`;
+  protected readonly excelScript = `readonly excelColumns: StarColumn<Order>[] = [
+  { field: 'id', header: 'Order' },
+  { field: 'customer', header: 'Customer' },
+  { field: 'status', header: 'Status', filter: 'multiselect', excelFilter: true },
+  { field: 'region', header: 'Region', filter: 'multiselect', excelFilter: true },
+];`;
+  protected readonly advancedScript = `// Import StarQueryGroup from '@star-ng/ui/query-builder'.
+readonly advancedQuery = signal<StarQueryGroup>({ operator: 'and', rules: [] });`;
+  protected readonly excelColumns: StarColumn<Order>[] = [
+    { field: 'id', header: 'Order' },
+    { field: 'customer', header: 'Customer' },
+    { field: 'status', header: 'Status', filter: 'multiselect', excelFilter: true },
+    { field: 'region', header: 'Region', filter: 'multiselect', excelFilter: true },
+  ];
   protected readonly filterScript = `readonly filters = signal<StarColumnFilters>({});
 readonly filterColumns: StarColumn<Order>[] = [
   { field: 'customer', header: 'Customer', filter: 'text' },
@@ -407,6 +494,11 @@ readonly filterColumns: StarColumn<Order>[] = [
       name: 'column.filterOptions',
       description:
         'Choices of a select or multiselect filter. Default: the distinct display texts of the column, sorted.',
+    },
+    {
+      name: 'column.excelFilter',
+      description:
+        'On a multiselect column: an Excel-style menu with a search box, Select all, Clear and a check list of the values.',
     },
   ];
   protected readonly keyboard: readonly DocsRow[] = [

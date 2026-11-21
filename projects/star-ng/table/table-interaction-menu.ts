@@ -11,6 +11,7 @@ import {
 } from './table-context-menu';
 import { OWN_KEYS } from './table-navigation';
 import type { StarPinSide } from './table-pinning';
+import type { StarRowPinSide } from './table-row-pins';
 
 /** The table parts that the context menu reads and calls. Functions, so the table gives them lazily. */
 export interface StarTableMenuHost<T> {
@@ -34,6 +35,8 @@ export interface StarTableMenuHost<T> {
   readonly sort: (field: string, order: StarSortOrder) => void;
   readonly hide: (column: StarColumn<T>) => void;
   readonly exportCsv: () => void;
+  readonly rowPinOf: (row: T) => StarRowPinSide | null;
+  readonly pinRow: (row: T, side: StarRowPinSide | null) => void;
   readonly destroyed: () => boolean;
   /** Where the focus goes after the menu when the element that had it is gone. */
   readonly cellElement: (row: T, field: string) => HTMLElement | null;
@@ -90,7 +93,7 @@ export class StarTableMenuState<T> {
       row,
       index: host.pageRows().indexOf(row),
       column,
-      focus: host.body()?.contains(active) ? active : null,
+      focus: host.body()?.parentElement?.contains(active) ? active : null,
     };
     host.contextMenuSelection.set(row);
     this.items.set(items);
@@ -151,9 +154,12 @@ export class StarTableMenuState<T> {
   onMenuKey(event: KeyboardEvent): boolean {
     if (!ɵstarIsContextMenuKey(event) || !this.host.hasContextMenu()) return false;
     const target = event.target as Element;
-    const body = this.host.body();
+    const grid = this.host.body()?.parentElement;
     const tr = target.closest?.('tr');
-    if (!body || !tr || tr.parentElement !== body || target.closest(OWN_KEYS)) return false;
+    const section = tr?.parentElement;
+    if (!grid || !tr || section?.tagName !== 'TBODY' || section.parentElement !== grid)
+      return false;
+    if (target.closest(OWN_KEYS)) return false;
     event.preventDefault();
     ɵstarOpenContextMenu(target.closest<HTMLElement>('td[data-field]') ?? (tr as HTMLElement));
     return true;
@@ -173,6 +179,8 @@ export class StarTableMenuState<T> {
       sort: (order) => column && host.sort(column.field, order),
       hide: () => column && host.hide(column),
       exportCsv: () => host.exportCsv(),
+      rowSide: host.rowPinOf(row),
+      pinRow: (side) => host.pinRow(row, side),
     });
     const source = host.contextMenu();
     const own = typeof source === 'function' ? source(row, column) : (source ?? []);
