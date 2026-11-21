@@ -105,7 +105,9 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
   },
   template: `
     @if (headerSlot(); as header) {
-      <ng-container *ngTemplateOutlet="header" />
+      <div data-star-part="headerSlotPanel" class="star-panel__header">
+        <ng-container *ngTemplateOutlet="header" />
+      </div>
     }
     @if (filter() || checkbox()) {
       <div data-star-part="filterPanel" class="star-panel__filter">
@@ -403,7 +405,9 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       </div>
     }
     @if (footerSlot(); as footer) {
-      <ng-container *ngTemplateOutlet="footer" />
+      <div data-star-part="footerSlotPanel" class="star-panel__footer">
+        <ng-container *ngTemplateOutlet="footer" />
+      </div>
     }
   `,
 })

@@ -399,19 +399,13 @@ import { DOCS, DocsRow } from '../shared/docs';
             showButtonBar
             ariaLabel="Payment date"
           >
-            <ng-template starHeader>
-              <p class="docs-output docs-due-note">Invoices due in November 2026</p>
-            </ng-template>
+            <ng-template starHeader> Invoices due in November 2026 </ng-template>
             <ng-template starDate let-date>
               <span class="docs-due" [class.docs-due--marked]="isDue(date)">{{
                 date.getDate()
               }}</span>
             </ng-template>
-            <ng-template starFooter>
-              <p class="docs-output docs-due-note">
-                A dot marks a due date: 5, 12 and 26 November.
-              </p>
-            </ng-template>
+            <ng-template starFooter> A dot marks a due date: 5, 12 and 26 November. </ng-template>
           </star-date-picker>
           <p class="docs-output" role="status">Payment date: {{ iso(payDate()) }}</p>
         </div>
@@ -514,9 +508,6 @@ import { DOCS, DocsRow } from '../shared/docs';
       border-radius: 50%;
       background: currentColor;
       transform: translateX(-50%);
-    }
-    .docs-due-note {
-      margin: var(--star-space-2) 0;
     }
   `,
 })

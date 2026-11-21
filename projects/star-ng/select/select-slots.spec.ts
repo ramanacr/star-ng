@@ -202,6 +202,18 @@ describe('select slots', () => {
     const text = document.querySelector('.star-panel')?.textContent ?? '';
     expect(text).toContain('Head');
     expect(text).toContain('Foot');
+    const panel = document.querySelector('.star-panel')!;
+    const head = panel.querySelector('[data-star-part="headerSlotPanel"]')!;
+    const foot = panel.querySelector('[data-star-part="footerSlotPanel"]')!;
+    expect(head.classList).toContain('star-panel__header');
+    expect(foot.classList).toContain('star-panel__footer');
+    expect(head.textContent).toBe('Head');
+    expect(foot.textContent).toBe('Foot');
+    // Outside the scrolling list: the header stays above it and the footer below it.
+    const list = panel.querySelector('[role="listbox"]')!;
+    expect(list.contains(head) || list.contains(foot)).toBe(false);
+    expect(head.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(list.compareDocumentPosition(foot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('empty slot receives the filter text', async () => {

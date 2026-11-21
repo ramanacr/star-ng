@@ -64,6 +64,15 @@ describe('StarCascadeSelect panel slots and events', () => {
     expect(header).not.toBeNull();
     expect(header.closest('[role=menu]')).toBeNull();
     expect(document.querySelector('.own-footer')!.closest('[role=menu]')).toBeNull();
+    // The shared slot regions of the panels.
+    expect(
+      header.parentElement!.matches('[data-star-part="headerSlotPanel"].star-panel__header'),
+    ).toBe(true);
+    expect(
+      document
+        .querySelector('.own-footer')!
+        .parentElement!.matches('[data-star-part="footerSlotPanel"].star-panel__footer'),
+    ).toBe(true);
     expect(document.querySelectorAll('.own-group').length).toBe(1);
     const germany = document.querySelector<HTMLElement>('[role=menuitem]')!;
     germany.click();

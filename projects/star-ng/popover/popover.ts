@@ -89,7 +89,7 @@ const POSITIONS: ConnectedPosition[] = [
         (keydown.escape)="closeOnEscape() && hide()"
       >
         @if (headerSlot(); as header) {
-          <div data-star-part="headerPanel" class="star-popover__header">
+          <div data-star-part="headerPanel" class="star-popover__header star-panel__header">
             <ng-container *ngTemplateOutlet="header" />
           </div>
         }
