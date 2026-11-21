@@ -190,3 +190,36 @@ describe('StarTreeTable slots (N1)', () => {
     expect(cells[1].getAttribute('tabindex')).toBe('-1');
   });
 });
+
+@Component({
+  imports: [StarTreeTable, StarFooterRowTemplate],
+  template: `
+    <star-tree-table
+      [nodes]="nodes"
+      [columns]="columns"
+      ariaLabel="Windowed"
+      virtualScroll
+      scrollHeight="200px"
+    >
+      <ng-template starFooterRow let-columns
+        ><td [attr.colspan]="columns.length">Total</td></ng-template
+      >
+    </star-tree-table>
+  `,
+})
+class WindowedFooterHost {
+  readonly nodes = NODES;
+  readonly columns = COLUMNS;
+}
+
+describe('StarTreeTable footer row with windowed rows (review minor 19)', () => {
+  it('the footer row has the last aria-rowindex and aria-rowcount counts it', async () => {
+    const fixture = TestBed.createComponent(WindowedFooterHost);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const count = root.querySelector('table')!.getAttribute('aria-rowcount');
+    // Header row, two top-level rows, footer row.
+    expect(count).toBe('4');
+    expect(root.querySelector('tfoot tr')!.getAttribute('aria-rowindex')).toBe('4');
+  });
+});

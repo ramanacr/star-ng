@@ -436,7 +436,11 @@ const LOADING_KEY = '\u0000loading';
         }
         @if (footerRowSlot(); as custom) {
           <tfoot data-star-part="foot">
-            <tr data-star-part="footer" class="star-table__footer">
+            <tr
+              data-star-part="footer"
+              class="star-table__footer"
+              [attr.aria-rowindex]="windowed() ? ariaRowCountValue() : null"
+            >
               <ng-container *ngTemplateOutlet="custom; context: footerRowContext()" />
             </tr>
           </tfoot>
@@ -1014,7 +1018,10 @@ export class StarTreeTable implements ɵStarTableCellHost {
     () => this.display().length === 0 && (!!this.emptySlot() || this.filterActive()),
   );
   protected readonly ariaRowCountValue = computed(() =>
-    ariaRowCount(this.display().length + (this.showEmpty() ? 1 : 0), this.headerRows()),
+    ariaRowCount(
+      this.display().length + (this.showEmpty() ? 1 : 0) + (this.footerRowSlot() ? 1 : 0),
+      this.headerRows(),
+    ),
   );
 
   // ---- selection ----
@@ -1162,6 +1169,11 @@ export class StarTreeTable implements ɵStarTableCellHost {
     return !!node.children?.length || (this.lazy() && node.leaf === false);
   }
 
+  /** Position of each displayed row, for the slot contexts (one pass, not one per cell). */
+  private readonly rowPosition = computed(
+    () => new Map(this.display().map((item, index) => [item.row, index])),
+  );
+
   /** Context of the `sort` icon slot: `true` ascending, `false` descending, else `undefined`. */
   protected sortState(column: StarTreeTableColumn): StarIconContext {
     const sort = this.sorts().find((item) => item.field === column.field);
@@ -1192,7 +1204,7 @@ export class StarTreeTable implements ɵStarTableCellHost {
     return {
       $implicit: row.node,
       value,
-      index: this.display().findIndex((item) => item.row === row),
+      index: this.rowPosition().get(row) ?? -1,
       highlight: (text: unknown) => [{ text: String(text ?? ''), match: false, active: false }],
     };
   }
@@ -1202,7 +1214,7 @@ export class StarTreeTable implements ɵStarTableCellHost {
     return {
       $implicit: row.node,
       row: row.node,
-      index: this.display().findIndex((item) => item.row === row),
+      index: this.rowPosition().get(row) ?? -1,
       columns: this.visibleColumns().slice(
         1,
       ) as unknown as StarRowSlotContext<TreeTableNode>['columns'],

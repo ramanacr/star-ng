@@ -93,7 +93,8 @@ export class StarTableMenuState<T> {
       row,
       index: host.pageRows().indexOf(row),
       column,
-      focus: host.body()?.parentElement?.contains(active) ? active : null,
+      // Only an element in a body part (body or pinned rows) is the focus to return to.
+      focus: active?.closest('tbody')?.parentElement === host.body()?.parentElement ? active : null,
     };
     host.contextMenuSelection.set(row);
     this.items.set(items);

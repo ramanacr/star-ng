@@ -1132,7 +1132,8 @@
     }
   </tr>
   @if (expansionTemplate(); as detail) {
-    @if (isExpanded(row) && !isRowCollapsed(row)) {
+    <!-- With virtual scroll a pinned row has no detail row: the ARIA row numbers have no room. -->
+    @if (isExpanded(row) && !isRowCollapsed(row) && !(i < 0 && virtualScroll())) {
       <tr
         data-star-part="expansionRow"
         class="star-table__expansion"

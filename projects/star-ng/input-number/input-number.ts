@@ -306,8 +306,9 @@ export class StarInputNumber implements FormValueControl<number | null> {
   protected onFocus(input: HTMLInputElement): void {
     this.focused.set(true);
     if (this.highlightOnFocus()) {
-      // After the field shows its plain digits.
-      queueMicrotask(() => input.select());
+      // Write the plain digits now, so that a later render does not reset the selection.
+      input.value = this.plain(this.value());
+      input.select();
     }
   }
 

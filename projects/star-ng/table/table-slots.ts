@@ -87,7 +87,7 @@ export interface StarRowSlotContext<T = unknown> {
   readonly $implicit: T;
   /** The row. */
   readonly row: T;
-  /** Index of the row in the rows of the page (`-1` for a pinned row). */
+  /** Index of the row in the rows of the page; a negative number for a pinned row. */
   readonly index: number;
   /** The rendered data columns, in display order. Write one `<td starTableCell>` per column. */
   readonly columns: readonly StarColumn<T>[];

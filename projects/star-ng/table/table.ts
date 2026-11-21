@@ -848,14 +848,15 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
 
   /**
    * Shows an "Advanced filter" button above the table. It opens a dialog with `star-query-builder`
-   * over the columns that have a `filter`; Apply sets `advancedQuery`. Ignite UI advanced
+   * over all columns; Apply sets `advancedQuery`. Ignite UI advanced
    * filtering dialog.
    */
   readonly advancedFilter = input(false, { transform: booleanAttribute });
   /**
    * Rules of the advanced filter (`StarQueryGroup`), applied with `starQueryToPredicate` after
-   * the column filters. Two-way; it works also without the `advancedFilter` button. Not in lazy
-   * mode: the owner filters on the server.
+   * the column filters. Two-way; it works also without the `advancedFilter` button. In lazy mode
+   * the table does not filter and `lazyLoad` does not carry it: the owner reads this model and
+   * filters on the server.
    */
   readonly advancedQuery = model<StarQueryGroup>({ operator: 'and', rules: [] });
 
@@ -1274,7 +1275,11 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     const split = splitPinnedRows(this.withAdded(), pins, (row) => this.trackKey(row));
     if (!this.lazy()) return split;
     // Lazy mode: a pinned row stays when its page is not loaded (the last object seen for it).
+    // A plain cache, not a signal: it only remembers row objects. Keys that are no longer pinned
+    // are dropped, so a later pin of the same key does not show an old object.
     const seen = this.pinnedObjects;
+    const pinned = new Set([...(pins.top ?? []), ...(pins.bottom ?? [])]);
+    for (const key of [...seen.keys()]) if (!pinned.has(key)) seen.delete(key);
     for (const row of [...split.top, ...split.bottom]) seen.set(this.trackKey(row), row);
     const keep = (keys: readonly unknown[] | undefined) =>
       (keys ?? []).flatMap((key) => (seen.has(key) ? [seen.get(key) as T] : []));
