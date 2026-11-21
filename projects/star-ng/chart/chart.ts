@@ -12,6 +12,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   linkedSignal,
   model,
   output,
@@ -1123,6 +1124,8 @@ export class StarChart {
   readonly plugins = input<readonly StarChartPlugin[]>([]);
   /** Bumped by `refresh()`: the plugins draw again. */
   private readonly revision = signal(0);
+  /** Ids of the plugins whose error was logged. */
+  private readonly failedPlugins = new Set<string>();
 
   /**
    * Draws the chart again: measures the plot width and runs the plugins. The chart follows its
@@ -1835,7 +1838,11 @@ export class StarChart {
           try {
             untracked(hook);
           } catch (error) {
-            console.error(`StarNG chart: plugin "${plugin.id}" failed.`, error);
+            // Development mode only, once per plugin id.
+            if (isDevMode() && !this.failedPlugins.has(plugin.id)) {
+              this.failedPlugins.add(plugin.id);
+              console.error(`StarNG chart: plugin "${plugin.id}" failed.`, error);
+            }
           }
         };
         // `beforeDraw` layers go first in reverse order, so the first plugin is the lowest.

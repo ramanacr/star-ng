@@ -222,7 +222,12 @@ describe('Chart plugin isolation', () => {
       fixture.componentInstance.outside.set(1);
       await fixture.whenStable();
       expect(fixture.componentInstance.runs).toEqual(['read 0']);
-      expect(error).toHaveBeenCalled();
+      expect(error).toHaveBeenCalledTimes(1);
+      // The same plugin fails again on refresh: it is logged once per plugin id.
+      fixture.debugElement.query((d) => d.name === 'star-chart').componentInstance.refresh();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.runs).toEqual(['read 0', 'read 1']);
+      expect(error).toHaveBeenCalledTimes(1);
     } finally {
       error.mockRestore();
     }

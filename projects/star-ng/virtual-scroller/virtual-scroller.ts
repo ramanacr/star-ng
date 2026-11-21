@@ -394,7 +394,6 @@ export class StarVirtualScroller<T = unknown> {
   protected readonly colSize = computed(() => Math.max(1, this.columnSize() ?? this.itemSize()));
   private readonly offsetX = signal(0);
   private readonly widthX = signal(0);
-  /** With `orientation="both"`: the columns to render (in view and two on each side). */
   /** With `orientation="both"`: the number of columns (the longest row), once per `items`. */
   private readonly columnCount = computed(() => {
     let total = 0;
@@ -404,6 +403,7 @@ export class StarVirtualScroller<T = unknown> {
     }
     return total;
   });
+  /** With `orientation="both"`: the columns to render (in view and two on each side). */
   protected readonly columns = computed(() => {
     const size = this.colSize();
     const total = this.columnCount();
