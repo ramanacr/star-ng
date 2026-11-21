@@ -23,13 +23,20 @@ import {
   STAR_UI_TEXT,
   StarEmptyContext,
   starFormatFileSize,
+  StarIconContext,
   StarSlot,
   starSlot,
+  starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
-import type { StarFileContext } from './file-upload-slots';
+import type { StarFileContext, StarFileUploadContext } from './file-upload-slots';
+
+/** Payload of `uploadHandler`: the files to upload. PrimeNG `FileUploadHandlerEvent`. */
+export interface StarFileUploadHandlerEvent {
+  readonly files: readonly File[];
+}
 
 export interface StarRejectedFile {
   readonly file: File;
@@ -98,7 +105,18 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
  *
  * Slots: `ng-template[starFile]` replaces one row of the file list (`StarFileTemplate`).
  * `ng-template[starEmpty]` shows content in place of the list while no file is chosen. The context
- * of `starEmpty` is `''`, because this control has no filter.
+ * of `starEmpty` is `''`, because this control has no filter. `starHeader` adds content above the
+ * control; `starFileUploadTemplate` with `toolbar`, `content` or `fileLabel` replaces that part;
+ * `starIcon` with `choose`, `upload` or `cancel` replaces the icon of a button.
+ *
+ * Uploads stay with the owner (no built-in HTTP): `uploadHandler` emits the files when the user
+ * presses Upload (`showUploadButton`) or right after they are chosen (`auto`); report the progress
+ * with `fileStatus`. PrimeNG names that star-ng covers in another way: `customUpload` = always on;
+ * `onSelect` = `selected`; `onBeforeUpload` = `uploadHandler`; the `invalidFile*Message*` inputs =
+ * `STAR_UI_TEXT.fileTypeNotAllowed`, `fileTooLarge` and `fileLimitReached`; `style`, `styleClass`,
+ * the `*StyleClass` and `*ButtonProps` inputs = `pt`. Not applicable (the owner does the HTTP
+ * request): `url`, `method`, `headers`, `withCredentials`, `onSend`, `onUpload`, `onProgress`,
+ * `onError` and `onRemoveUploadedFile`.
  */
 @Component({
   selector: 'star-file-upload',
@@ -115,32 +133,114 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
     '(paste)': 'onPaste($event)',
   },
   template: `
-    <div
-      data-star-part="zonePanel"
-      class="star-upload__zone"
-      (dragenter)="onDrag($event, true)"
-      (dragover)="onDrag($event, true)"
-      (dragleave)="onDrag($event, false)"
-      (drop)="onDrop($event)"
-    >
-      <i
-        data-star-part="icon"
-        class="ph-bold ph-cloud-arrow-up star-upload__icon"
-        aria-hidden="true"
-      ></i>
-      <p data-star-part="leadText" class="star-upload__lead">{{ text.dropFiles }}</p>
+    @if (headerSlot(); as header) {
+      <div data-star-part="header" class="star-upload__header">
+        <ng-container *ngTemplateOutlet="header" />
+      </div>
+    }
+    <ng-template #buttonIcon let-name="name" let-icon="icon">
+      @if (icons().get(name); as custom) {
+        <span data-star-part="buttonIcon" class="star-upload__button-icon" aria-hidden="true">
+          <ng-container *ngTemplateOutlet="custom; context: iconContext" />
+        </span>
+      } @else if (icon) {
+        <i data-star-part="buttonIcon" [class]="icon" aria-hidden="true"></i>
+      }
+    </ng-template>
+    @if (
+      mode() === 'advanced' &&
+      (showUploadButton() || showCancelButton() || templates().get('toolbar'))
+    ) {
+      <div data-star-part="toolbarPanel" class="star-upload__toolbar">
+        @if (templates().get('toolbar'); as custom) {
+          <ng-container *ngTemplateOutlet="custom; context: actions()" />
+        } @else {
+          @if (showUploadButton()) {
+            <button
+              data-star-part="uploadButton"
+              type="button"
+              class="star-btn star-btn--primary star-btn--sm"
+              [disabled]="!interactive() || !value().length"
+              (click)="upload()"
+            >
+              <ng-container
+                *ngTemplateOutlet="buttonIcon; context: { name: 'upload', icon: uploadIcon() }"
+              />
+              {{ uploadLabel() ?? text.upload }}
+            </button>
+          }
+          @if (showCancelButton()) {
+            <button
+              data-star-part="cancelButton"
+              type="button"
+              class="star-btn star-btn--secondary star-btn--sm"
+              [disabled]="!interactive() || !value().length"
+              (click)="clear()"
+            >
+              <ng-container
+                *ngTemplateOutlet="buttonIcon; context: { name: 'cancel', icon: cancelIcon() }"
+              />
+              {{ cancelLabel() ?? text.cancel }}
+            </button>
+          }
+        }
+      </div>
+    }
+    @if (mode() === 'basic') {
       <label
         data-star-part="chooseButton"
         class="star-btn star-btn--secondary star-btn--sm star-upload__choose"
+        [class.star-upload__choose--disabled]="!interactive()"
         [for]="inputId"
       >
-        {{ text.chooseFiles }}
+        <ng-container
+          *ngTemplateOutlet="buttonIcon; context: { name: 'choose', icon: chooseIcon() }"
+        />
+        @if (templates().get('fileLabel'); as custom) {
+          <ng-container *ngTemplateOutlet="custom; context: actions()" />
+        } @else {
+          {{ basicLabel() }}
+        }
       </label>
+      <ng-container *ngTemplateOutlet="fileInput" />
+    } @else {
+      <div
+        data-star-part="zonePanel"
+        class="star-upload__zone"
+        (dragenter)="onDrag($event, true)"
+        (dragover)="onDrag($event, true)"
+        (dragleave)="onDrag($event, false)"
+        (drop)="onDrop($event)"
+      >
+        <i
+          data-star-part="icon"
+          class="ph-bold ph-cloud-arrow-up star-upload__icon"
+          aria-hidden="true"
+        ></i>
+        <p data-star-part="leadText" class="star-upload__lead">{{ text.dropFiles }}</p>
+        <label
+          data-star-part="chooseButton"
+          class="star-btn star-btn--secondary star-btn--sm star-upload__choose"
+          [for]="inputId"
+        >
+          <ng-container
+            *ngTemplateOutlet="buttonIcon; context: { name: 'choose', icon: chooseIcon() }"
+          />
+          {{ chooseLabel() ?? text.chooseFiles }}
+        </label>
+        <ng-container *ngTemplateOutlet="fileInput" />
+        @if (hint()) {
+          <p data-star-part="hintText" class="star-upload__hint" [id]="hintId">{{ hint() }}</p>
+        }
+      </div>
+    }
+    <ng-template #fileInput>
       <input
         #input
         type="file"
         class="star-sr-only"
         [id]="inputId"
+        [attr.name]="name() || null"
         [attr.accept]="accept() || null"
         [multiple]="multiple()"
         [disabled]="disabled() || readonly()"
@@ -148,12 +248,13 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
         (change)="onPicked(input)"
         (blur)="touch.emit()"
       />
-      @if (hint()) {
-        <p data-star-part="hintText" class="star-upload__hint" [id]="hintId">{{ hint() }}</p>
-      }
-    </div>
+    </ng-template>
 
-    @if (value().length) {
+    @if (mode() === 'basic') {
+      <!-- Basic mode: the button shows the chosen files; no list. -->
+    } @else if (templates().get('content'); as custom) {
+      <ng-container *ngTemplateOutlet="custom; context: actions()" />
+    } @else if (value().length) {
       <ul data-star-part="list" class="star-upload__list" [attr.aria-label]="text.chooseFiles">
         @for (file of value(); track file; let i = $index; let first = $first; let last = $last) {
           @let status = statusOf(file);
@@ -189,6 +290,9 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                   class="star-upload__thumb"
                   alt=""
                   [src]="thumbnail"
+                  [style.width.px]="previewWidth()"
+                  [style.height.px]="previewWidth()"
+                  (error)="imageError.emit($event)"
                 />
               } @else {
                 <i
@@ -258,7 +362,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                   type="button"
                   class="star-select__icon-btn"
                   [attr.aria-label]="text.removeItem(file.name)"
-                  (click)="remove(file)"
+                  (click)="removeByUser(file)"
                 >
                   <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
@@ -324,10 +428,72 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
   readonly selected = output<readonly File[]>();
   /** Emits the files that failed a check, with the reason (`type`, `size` or `limit`). */
   readonly rejectedChange = output<readonly StarRejectedFile[]>();
+  /**
+   * `'advanced'` (default): a drop zone and a file list. `'basic'`: one button that chooses the
+   * files and shows their names. PrimeNG `mode`.
+   */
+  readonly mode = input<'advanced' | 'basic'>('advanced');
+  /** `name` of the file input, for a native form post (a Signal Forms field sets it too). */
+  readonly name = input('');
+  /** Emits `uploadHandler` right after files are chosen. PrimeNG `auto`. */
+  readonly auto = input(false, { transform: booleanAttribute });
+  /** Shows an Upload button above the list that emits `uploadHandler`. */
+  readonly showUploadButton = input(false, { transform: booleanAttribute });
+  /** Shows a Cancel button above the list that removes every file (`clear`). */
+  readonly showCancelButton = input(false, { transform: booleanAttribute });
+  /** Text of the choose button (default `STAR_UI_TEXT.chooseFiles`). */
+  readonly chooseLabel = input<string | null>(null);
+  /** Text of the upload button (default `STAR_UI_TEXT.upload`). */
+  readonly uploadLabel = input<string | null>(null);
+  /** Text of the cancel button (default `STAR_UI_TEXT.cancel`). */
+  readonly cancelLabel = input<string | null>(null);
+  /** Icon classes of the choose button (default: none). */
+  readonly chooseIcon = input<string | null>(null);
+  /** Icon classes of the upload button (default an upload arrow). */
+  readonly uploadIcon = input<string | null>('ph-bold ph-upload-simple');
+  /** Icon classes of the cancel button (default a cross). */
+  readonly cancelIcon = input<string | null>('ph-bold ph-x');
+  /** Width and height of the image thumbnails in pixels (with `thumbnails`). */
+  readonly previewWidth = input<number | null>(null);
+  /**
+   * Emits the files to upload when the user presses Upload, or after the choice with `auto`.
+   * Upload them in your own service and report the state with `fileStatus`. PrimeNG
+   * `uploadHandler` (with `customUpload`).
+   */
+  readonly uploadHandler = output<StarFileUploadHandlerEvent>();
+  /** Emits after Cancel or `clear()` removed every file. PrimeNG `onClear`. */
+  readonly cleared = output<void>();
+  /** Emits a file that the user removed from the list. PrimeNG `onRemove`. */
+  readonly fileRemove = output<File>();
+  /** Emits the `error` event of a thumbnail that cannot load. PrimeNG `onImageError`. */
+  readonly imageError = output<Event>();
 
   protected readonly slots = contentChildren(StarSlot, { descendants: true });
   protected readonly fileSlot = starSlot<StarFileContext>(this.slots, this, 'file');
   protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly templates = starSlotMap<StarFileUploadContext>(this.slots, this, 'fileUpload');
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly iconContext: StarIconContext = {};
+  /** The context of the toolbar, content and file label slots. */
+  protected readonly actions = computed<StarFileUploadContext>(() => ({
+    $implicit: this.value(),
+    choose: () => this.choose(),
+    upload: () => this.upload(),
+    clear: () => this.clear(),
+    remove: (file: File) => {
+      if (this.interactive()) this.removeByUser(file);
+    },
+    interactive: this.interactive(),
+  }));
+  /** Text of the basic mode button: the chosen file names, else the choose label. */
+  protected readonly basicLabel = computed(() =>
+    this.value().length
+      ? this.value()
+          .map((file) => file.name)
+          .join(', ')
+      : (this.chooseLabel() ?? this.text.chooseFiles),
+  );
   /** The control has no filter, so the empty slot always gets `''`. */
   protected readonly emptyContext: StarEmptyContext = { $implicit: '' };
 
@@ -343,7 +509,7 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
   protected readonly rejected = signal<readonly StarRejectedFile[]>([]);
   protected readonly dropIndex = signal<number | null>(null);
   private dragIndex: number | null = null;
-  private readonly interactive = computed(() => !this.disabled() && !this.readonly());
+  protected readonly interactive = computed(() => !this.disabled() && !this.readonly());
   protected readonly canReorder = computed(
     () => this.reorderable() && !this.disabled() && !this.readonly() && this.value().length > 1,
   );
@@ -365,7 +531,7 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
       index,
       interactive: this.interactive(),
       remove: () => {
-        if (this.interactive()) this.remove(file);
+        if (this.interactive()) this.removeByUser(file);
       },
     };
   }
@@ -467,8 +633,34 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
     if (accepted.length) {
       this.value.set([...current, ...accepted]);
       this.selected.emit(accepted);
+      if (this.auto()) this.uploadHandler.emit({ files: accepted });
     }
     this.touch.emit();
+  }
+
+  /** Opens the file dialog of the browser. */
+  choose(): void {
+    if (this.interactive()) this.input().nativeElement.click();
+  }
+
+  /** Emits `uploadHandler` with the chosen files. */
+  upload(): void {
+    if (!this.interactive() || !this.value().length) return;
+    this.uploadHandler.emit({ files: this.value() });
+  }
+
+  /** Removes every file and emits `cleared`. */
+  clear(): void {
+    for (const file of this.value()) this.releaseThumbnail(file);
+    this.value.set([]);
+    this.rejected.set([]);
+    this.cleared.emit();
+  }
+
+  /** A remove by the user: the file goes and `fileRemove` emits. */
+  protected removeByUser(file: File): void {
+    this.remove(file);
+    this.fileRemove.emit(file);
   }
 
   remove(file: File): void {

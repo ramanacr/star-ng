@@ -1615,6 +1615,42 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'pick list after a keyboard move, with filters and reorder buttons',
+    path: 'controls/pick-list',
+    open: async (page) => {
+      const live = example(page, 'Filter, drag and drop and reorder');
+      await live.getByRole('option', { name: 'Oslo' }).focus();
+      await page.keyboard.press('Enter');
+      await expect(live.getByRole('listbox', { name: /Route/ }).getByRole('option')).toHaveCount(2);
+    },
+  },
+  {
+    name: 'data view with paginators at both ends, on page 2',
+    path: 'controls/data-view',
+    open: async (page) => {
+      const live = example(page, 'Sort field, filter, paginator options and loading');
+      await live
+        .getByRole('navigation', { name: 'Catalog pages, bottom' })
+        .getByRole('button', { name: 'Next page' })
+        .click();
+      await expect(
+        live.getByRole('navigation', { name: 'Catalog pages, top' }).getByRole('button', {
+          name: 'Page 2',
+        }),
+      ).toHaveAttribute('aria-current', 'page');
+    },
+  },
+  {
+    name: 'galleria full screen',
+    path: 'controls/galleria',
+    open: async (page) => {
+      await example(page, 'Full screen')
+        .getByRole('button', { name: 'Open Loading dock 2' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Dock photos' })).toBeVisible();
+    },
+  },
+  {
     name: 'image preview',
     path: 'controls/image',
     open: async (page) => {
@@ -1629,6 +1665,15 @@ const STATES: readonly State[] = [
       const live = example(page, 'Actions');
       await live.getByRole('button', { name: 'Quick actions' }).click();
       await expect(live.locator('.star-speed-dial__action')).toHaveCount(3);
+    },
+  },
+  {
+    name: 'speed dial on a quarter circle with a mask',
+    path: 'controls/speed-dial',
+    open: async (page) => {
+      const live = example(page, 'Circle layouts, mask and events');
+      await live.getByRole('button', { name: 'Actions on a quarter circle' }).click();
+      await expect(live.locator('.star-speed-dial__mask')).toBeVisible();
     },
   },
   {

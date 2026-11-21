@@ -172,6 +172,14 @@ Contributions are welcome and appreciated.
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before you start.
 - To support the project, use the Sponsor button on the repository page when it is shown.
 
+## Trademarks
+
+PrimeNG, Angular Material, Ignite UI, Kendo UI, Syncfusion, DevExtreme and AG Grid are trademarks of their respective owners. StarNG has no affiliation with these owners, and they do not endorse it. This README, the docs and the API comments name these products only to show which StarNG API does the same job.
+
+## Third-party notices
+
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) lists the code that StarNG adapted from other projects and the licences of the third-party assets that the docs site bundles. The package contains this file.
+
 ## Links
 
 - [Documentation site](https://ramanacr.github.io/star-ng/)

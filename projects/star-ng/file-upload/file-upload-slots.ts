@@ -1,4 +1,4 @@
-import { Directive } from '@angular/core';
+import { Directive, input } from '@angular/core';
 import { StarSlot } from '@star-ng/ui/core';
 import type { StarFileStatus } from './file-upload';
 
@@ -47,6 +47,48 @@ export class StarFileTemplate extends StarSlot<StarFileContext> {
   readonly name = 'file';
 
   static ngTemplateContextGuard(_dir: StarFileTemplate, _ctx: unknown): _ctx is StarFileContext {
+    return true;
+  }
+}
+
+/** Context of the `starFileUploadTemplate` slots. */
+export interface StarFileUploadContext {
+  /** The chosen files. */
+  readonly $implicit: readonly File[];
+  /** Opens the file dialog of the browser. */
+  readonly choose: () => void;
+  /** Emits `uploadHandler` with the chosen files. */
+  readonly upload: () => void;
+  /** Removes every file (the `clear` output). */
+  readonly clear: () => void;
+  /** Removes one file. */
+  readonly remove: (file: File) => void;
+  /** `true` when the control is neither disabled nor read-only. */
+  readonly interactive: boolean;
+}
+
+/**
+ * Replaces a part of `star-file-upload`: `toolbar` (the row of choose, upload and cancel buttons),
+ * `content` (the file list and the empty content) or `fileLabel` (the text of the button in
+ * `mode="basic"`). PrimeNG `#toolbar`, `#content` and `#filelabel` templates. The context has the
+ * files and the actions `choose()`, `upload()`, `clear()` and `remove(file)`.
+ */
+@Directive({
+  selector: 'ng-template[starFileUploadTemplate]',
+  providers: [{ provide: StarSlot, useExisting: StarFileUploadTemplate }],
+})
+export class StarFileUploadTemplate extends StarSlot<StarFileUploadContext> {
+  readonly name = 'fileUpload';
+  readonly starFileUploadTemplate = input.required<'toolbar' | 'content' | 'fileLabel'>();
+
+  override slotKey(): string {
+    return this.starFileUploadTemplate();
+  }
+
+  static ngTemplateContextGuard(
+    _dir: StarFileUploadTemplate,
+    _ctx: unknown,
+  ): _ctx is StarFileUploadContext {
     return true;
   }
 }

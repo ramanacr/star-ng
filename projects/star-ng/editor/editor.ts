@@ -1,3 +1,6 @@
+// Ported from Aurora RTE `packages/angular/src/editor.component.ts`,
+// `packages/editor/src/create-editor.ts` and `packages/editor/src/events.ts`, MIT
+// (https://github.com/ramanacr/aurora-rte, see THIRD_PARTY_NOTICES.md).
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkContextMenuTrigger } from '@angular/cdk/menu';
 import { NgTemplateOutlet } from '@angular/common';
@@ -170,6 +173,26 @@ const TYPING_MERGE_MS = 1000;
 type Panel = 'textColor' | 'highlight';
 
 /**
+ * The payload of `textChange`: the value after a change by the user. `html` is the sanitized HTML
+ * of the area (also with `format="text"`), `text` the plain text, one line per paragraph.
+ */
+export interface StarEditorTextChange {
+  readonly html: string;
+  readonly text: string;
+}
+
+/**
+ * The payload of `selectionChange`: the selection in the text of the area. `index` is the
+ * character offset of its start in the text content (line breaks between blocks do not count),
+ * `length` the number of selected characters (0 for a caret), `text` the selected text.
+ */
+export interface StarEditorSelectionChange {
+  readonly index: number;
+  readonly length: number;
+  readonly text: string;
+}
+
+/**
  * Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a
  * formatting toolbar. Value is HTML, sanitized with the allow-list of the editor both when it is
  * shown and when it is stored.
@@ -283,6 +306,20 @@ export class StarEditor implements FormValueControl<string> {
    */
   readonly upload = input<StarEditorUpload | null>(null);
   readonly touch = output<void>();
+  /**
+   * Emits after the user changed the content (typing, a toolbar command, a paste, undo …) with the
+   * HTML and the plain text. A value that the owner writes does not emit. PrimeNG `onTextChange`
+   * (its `htmlValue` and `textValue`; the Quill `delta` and `source` have no equivalent).
+   */
+  readonly textChange = output<StarEditorTextChange>();
+  /**
+   * Emits when the selection in the area changes: its text offset, length and text, or `null`
+   * when the selection leaves the area. A caret move is a change too (also while the user
+   * types), and the offset is counted from the start of the area each time: keep the handler
+   * light. PrimeNG `onSelectionChange` (its `range`; `oldRange` is the
+   * previous event).
+   */
+  readonly selectionChange = output<StarEditorSelectionChange | null>();
 
   /** The `starEditorToolbar` template that replaces the toolbar. */
   protected readonly customToolbar = contentChild(StarEditorToolbarTemplate);
@@ -517,6 +554,11 @@ export class StarEditor implements FormValueControl<string> {
       };
       area.addEventListener('load', replace, true);
       area.addEventListener('error', replace, true);
+      const onSelection = () => this.emitSelection();
+      area.ownerDocument.addEventListener('selectionchange', onSelection);
+      this.destroyRef.onDestroy(() =>
+        area.ownerDocument.removeEventListener('selectionchange', onSelection),
+      );
       const view = area.ownerDocument.defaultView;
       if (view && typeof view.ResizeObserver === 'function') {
         const areaObserver = new view.ResizeObserver(replace);
@@ -533,6 +575,30 @@ export class StarEditor implements FormValueControl<string> {
   }
 
   private readonly destroyRef = inject(DestroyRef);
+
+  /** The last `selectionChange` payload, as a key (`undefined`: nothing emitted yet). */
+  private lastSelection: string | null | undefined;
+
+  /** Emits `selectionChange` when the selection in the area moved, or left it. */
+  private emitSelection(): void {
+    const area = this.area().nativeElement;
+    const range = starEditorRange(area);
+    if (!range) {
+      if (this.lastSelection === null || this.lastSelection === undefined) return;
+      this.lastSelection = null;
+      this.selectionChange.emit(null);
+      return;
+    }
+    const before = area.ownerDocument.createRange();
+    before.selectNodeContents(area);
+    before.setEnd(range.startContainer, range.startOffset);
+    const text = range.toString();
+    const change = { index: before.toString().length, length: text.length, text };
+    const key = `${change.index}:${change.length}`;
+    if (key === this.lastSelection) return;
+    this.lastSelection = key;
+    this.selectionChange.emit(change);
+  }
 
   /** The allow-list sanitizer, with the link target rules. */
   private clean(html: string): string {
@@ -614,7 +680,16 @@ export class StarEditor implements FormValueControl<string> {
       value = this.format() === 'text' ? starEditorText(element) : this.clean(element.innerHTML);
     }
     this.lastWritten = value;
+    const changed = value !== this.value();
     this.value.set(value);
+    if (changed) {
+      // Reuse the value: it is already the sanitized HTML, or the text with `format="text"`.
+      const text = this.format() === 'text';
+      this.textChange.emit({
+        html: text ? this.clean(element.innerHTML) : value,
+        text: text ? value : starEditorText(element),
+      });
+    }
     this.length.set(length);
     if (this.showCount()) this.counts.set(starEditorCounts(element));
     if (record) {

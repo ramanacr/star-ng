@@ -1,6 +1,21 @@
 import { expect, Page, test } from '@playwright/test';
 import { collectErrors, example, openPage } from './support';
 
+/**
+ * Opens a docs page and waits until its controls are hydrated. The page is prerendered, so it is
+ * visible before the application runs, and a key or a click before hydration is lost. A hydrated
+ * component loses its `ngh` attribute (the pattern of controls-date.spec.ts).
+ */
+async function openHydrated(page: Page, control: string, heading: string): Promise<void> {
+  await openPage(page, `/controls/${control}`, heading);
+  await expect(page.locator(`star-${control}[ngh], docs-${control}-page[ngh]`)).toHaveCount(0, {
+    timeout: 15_000,
+  });
+}
+
+/** Opens the tree page after hydration: its tests press a key right after the page opens. */
+const openTree = (page: Page) => openHydrated(page, 'tree', 'Tree');
+
 // Panels of select, multi-select, autocomplete and tree select are popovers placed by the CDK
 // overlay, so they are found from the page and not from the example area.
 const listbox = (page: Page, name: string) => page.getByRole('listbox', { name, exact: true });
@@ -11,7 +26,7 @@ test.describe('select', () => {
   test('opens with Enter, jumps by typing, chooses with Enter and returns the focus', async ({
     page,
   }) => {
-    await openPage(page, '/controls/select', 'Select');
+    await openHydrated(page, 'select', 'Select');
     const live = example(page, 'Objects as options');
     const select = live.getByRole('combobox', { name: 'Country' });
     await expect(select).toHaveAttribute('aria-expanded', 'false');
@@ -42,7 +57,7 @@ test.describe('select', () => {
   test('closes with Escape without a change and keeps the focus on the select', async ({
     page,
   }) => {
-    await openPage(page, '/controls/select', 'Select');
+    await openHydrated(page, 'select', 'Select');
     const live = example(page, 'Objects as options');
     const select = live.getByRole('combobox', { name: 'Country' });
 
@@ -58,7 +73,7 @@ test.describe('select', () => {
   });
 
   test('chooses an option with a click', async ({ page }) => {
-    await openPage(page, '/controls/select', 'Select');
+    await openHydrated(page, 'select', 'Select');
     const live = example(page, 'Objects as options');
     await live.getByRole('combobox', { name: 'Country' }).click();
     await listbox(page, 'Country').getByRole('option', { name: 'India' }).click();
@@ -68,7 +83,7 @@ test.describe('select', () => {
   test('filters while typing, chooses with Enter and clears with the clear button', async ({
     page,
   }) => {
-    await openPage(page, '/controls/select', 'Select');
+    await openHydrated(page, 'select', 'Select');
     const live = example(page, 'Filter and clear button');
     const select = live.getByRole('combobox', { name: 'Country with filter' });
 
@@ -97,7 +112,7 @@ test.describe('select', () => {
   });
 
   test('shows group headings and skips disabled options with the arrow keys', async ({ page }) => {
-    await openPage(page, '/controls/select', 'Select');
+    await openHydrated(page, 'select', 'Select');
     await example(page, 'Groups').getByRole('combobox').click();
     await expect(listbox(page, 'Country by region').locator('.star-listbox__group')).toHaveText([
       'Europe',
@@ -127,7 +142,7 @@ test.describe('select', () => {
   });
 
   test('draws options with a template', async ({ page }) => {
-    await openPage(page, '/controls/select', 'Select');
+    await openHydrated(page, 'select', 'Select');
     await example(page, 'Option template').getByRole('combobox').click();
     await expect(
       listbox(page, 'Country with template').getByRole('option', { name: /Germany\s+Europe/ }),
@@ -135,7 +150,7 @@ test.describe('select', () => {
   });
 
   test('renders a window of 5,000 options and reaches the last one with End', async ({ page }) => {
-    await openPage(page, '/controls/select', 'Select');
+    await openHydrated(page, 'select', 'Select');
     const select = example(page, 'Virtual scroll').getByRole('combobox', { name: 'Order' });
     await select.click();
     const options = listbox(page, 'Order').getByRole('option');
@@ -150,7 +165,7 @@ test.describe('select', () => {
   });
 
   test('disabled and read-only selects do not open', async ({ page }) => {
-    await openPage(page, '/controls/select', 'Select');
+    await openHydrated(page, 'select', 'Select');
     const live = example(page, 'Sizes and states');
     await live.getByRole('combobox', { name: 'Disabled' }).click({ force: true });
     await live.getByRole('combobox', { name: 'Read-only' }).click();
@@ -161,7 +176,7 @@ test.describe('select', () => {
   test('shows the Signal Forms error after the user leaves the select and clears it', async ({
     page,
   }) => {
-    await openPage(page, '/controls/select', 'Select');
+    await openHydrated(page, 'select', 'Select');
     const live = example(page, 'Signal Forms');
     const select = live.getByRole('combobox', { name: 'Office country' });
 
@@ -185,7 +200,7 @@ test.describe('multi-select', () => {
   test('toggles options with Space, keeps the panel open and closes with Escape', async ({
     page,
   }) => {
-    await openPage(page, '/controls/multi-select', 'Multi-select');
+    await openHydrated(page, 'multi-select', 'Multi-select');
     const live = example(page, 'Basic');
     const select = live.getByRole('combobox', { name: 'Departments' });
 
@@ -215,7 +230,7 @@ test.describe('multi-select', () => {
   });
 
   test('select all chooses every option and the trigger shows a count', async ({ page }) => {
-    await openPage(page, '/controls/multi-select', 'Multi-select');
+    await openHydrated(page, 'multi-select', 'Multi-select');
     const live = example(page, 'Basic');
     const select = live.getByRole('combobox', { name: 'Departments' });
     await select.click();
@@ -230,7 +245,7 @@ test.describe('multi-select', () => {
   });
 
   test('filters, toggles with Enter, shows chips and removes one', async ({ page }) => {
-    await openPage(page, '/controls/multi-select', 'Multi-select');
+    await openHydrated(page, 'multi-select', 'Multi-select');
     const live = example(page, 'Chips, filter and clear button');
     const select = live.getByRole('combobox', { name: 'Departments as chips' });
     await expect(select.locator('.star-chip')).toHaveText(['Engineering', 'Operations']);
@@ -254,7 +269,7 @@ test.describe('multi-select', () => {
   test('shows groups, skips disabled options and stops at the selection limit', async ({
     page,
   }) => {
-    await openPage(page, '/controls/multi-select', 'Multi-select');
+    await openHydrated(page, 'multi-select', 'Multi-select');
     await example(page, 'Groups and disabled options')
       .getByRole('combobox', { name: 'Departments by site' })
       .click();
@@ -283,7 +298,7 @@ test.describe('multi-select', () => {
   });
 
   test('shows the Signal Forms error until two options are chosen', async ({ page }) => {
-    await openPage(page, '/controls/multi-select', 'Multi-select');
+    await openHydrated(page, 'multi-select', 'Multi-select');
     const live = example(page, 'Signal Forms');
     const select = live.getByRole('combobox', { name: 'Teams' });
 
@@ -305,7 +320,7 @@ test.describe('cascade select', () => {
   test('chooses a city with the keyboard, shows the value and returns the focus', async ({
     page,
   }) => {
-    await openPage(page, '/controls/cascade-select', 'Cascade select');
+    await openHydrated(page, 'cascade-select', 'Cascade select');
     const live = example(page, 'Country, state and city');
     const city = live.getByRole('button', { name: 'City' });
     await city.focus();
@@ -324,7 +339,7 @@ test.describe('cascade select', () => {
   });
 
   test('closes a submenu with Arrow left and the menu with Escape', async ({ page }) => {
-    await openPage(page, '/controls/cascade-select', 'Cascade select');
+    await openHydrated(page, 'cascade-select', 'Cascade select');
     const live = example(page, 'Country, state and city');
     const city = live.getByRole('button', { name: 'City' });
     await city.focus();
@@ -340,7 +355,7 @@ test.describe('cascade select', () => {
   });
 
   test('shows the whole path and clears with the clear button', async ({ page }) => {
-    await openPage(page, '/controls/cascade-select', 'Cascade select');
+    await openHydrated(page, 'cascade-select', 'Cascade select');
     const live = example(page, 'Whole path and clear button');
     const city = live.getByRole('button', { name: 'City with path' });
     await city.focus();
@@ -354,7 +369,7 @@ test.describe('cascade select', () => {
   });
 
   test('chooses a city with the mouse and shows a Signal Forms error before', async ({ page }) => {
-    await openPage(page, '/controls/cascade-select', 'Cascade select');
+    await openHydrated(page, 'cascade-select', 'Cascade select');
     const live = example(page, 'Signal Forms');
     const city = live.getByRole('button', { name: 'Office city' });
     await city.focus();
@@ -372,7 +387,7 @@ test.describe('cascade select', () => {
 
 test.describe('listbox', () => {
   test('chooses with the arrow keys and typeahead, and keeps one tab stop', async ({ page }) => {
-    await openPage(page, '/controls/listbox', 'Listbox');
+    await openHydrated(page, 'listbox', 'Listbox');
     const live = example(page, 'Single choice');
     const list = live.getByRole('listbox', { name: 'Queue' });
     await expect(list).toHaveAttribute('tabindex', '0');
@@ -395,14 +410,14 @@ test.describe('listbox', () => {
   });
 
   test('chooses with a click', async ({ page }) => {
-    await openPage(page, '/controls/listbox', 'Listbox');
+    await openHydrated(page, 'listbox', 'Listbox');
     const live = example(page, 'Single choice');
     await live.getByRole('option', { name: 'Support' }).click();
     await expect(live.getByRole('status')).toHaveText('Queue: support');
   });
 
   test('multiple: filters, toggles with Enter and Space', async ({ page }) => {
-    await openPage(page, '/controls/listbox', 'Listbox');
+    await openHydrated(page, 'listbox', 'Listbox');
     const live = example(page, 'Multiple with filter');
     await expect(live.getByRole('status')).toHaveText('Queues: billing');
     const list = live.getByRole('listbox', { name: 'Queues' });
@@ -423,7 +438,7 @@ test.describe('listbox', () => {
   });
 
   test('shows groups and does not choose a disabled option', async ({ page }) => {
-    await openPage(page, '/controls/listbox', 'Listbox');
+    await openHydrated(page, 'listbox', 'Listbox');
     const list = example(page, 'Groups and disabled options').getByRole('listbox', {
       name: 'Queue by site',
     });
@@ -435,7 +450,7 @@ test.describe('listbox', () => {
   });
 
   test('a disabled listbox is out of the tab order', async ({ page }) => {
-    await openPage(page, '/controls/listbox', 'Listbox');
+    await openHydrated(page, 'listbox', 'Listbox');
     const list = example(page, 'Disabled').getByRole('listbox', { name: 'Disabled queue' });
     await expect(list).toHaveAttribute('tabindex', '-1');
     await expect(list).toHaveAttribute('aria-disabled', 'true');
@@ -444,7 +459,7 @@ test.describe('listbox', () => {
   test('Signal Forms: shows the error after leaving the list, clears when one is chosen', async ({
     page,
   }) => {
-    await openPage(page, '/controls/listbox', 'Listbox');
+    await openHydrated(page, 'listbox', 'Listbox');
     const live = example(page, 'Signal Forms');
     const list = live.getByRole('listbox', { name: 'Notify queues' });
     await list.focus();
@@ -461,7 +476,7 @@ test.describe('autocomplete', () => {
   test('filters while typing, marks the match, chooses with Enter and keeps the focus', async ({
     page,
   }) => {
-    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    await openHydrated(page, 'autocomplete', 'Autocomplete');
     const live = example(page, 'Local options');
     const input = live.getByRole('combobox', { name: 'City' });
     await expect(input).toHaveAttribute('aria-expanded', 'false');
@@ -488,7 +503,7 @@ test.describe('autocomplete', () => {
   test('closes with Escape and resets unmatched text when the field loses focus', async ({
     page,
   }) => {
-    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    await openHydrated(page, 'autocomplete', 'Autocomplete');
     const live = example(page, 'Local options');
     const input = live.getByRole('combobox', { name: 'City' });
     await input.focus();
@@ -505,7 +520,7 @@ test.describe('autocomplete', () => {
   });
 
   test('takes an exact label when the field loses focus', async ({ page }) => {
-    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    await openHydrated(page, 'autocomplete', 'Autocomplete');
     const live = example(page, 'Local options');
     const input = live.getByRole('combobox', { name: 'City' });
     await input.focus();
@@ -519,7 +534,7 @@ test.describe('autocomplete', () => {
   test('autoHighlight picks the first result with Enter, and the dropdown lists all', async ({
     page,
   }) => {
-    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    await openHydrated(page, 'autocomplete', 'Autocomplete');
     const live = example(page, 'Dropdown button and first result');
     const input = live.getByRole('combobox', { name: 'City with dropdown' });
     await input.focus();
@@ -537,7 +552,7 @@ test.describe('autocomplete', () => {
   });
 
   test('shows groups and an option template', async ({ page }) => {
-    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    await openHydrated(page, 'autocomplete', 'Autocomplete');
     const input = example(page, 'Objects, groups and template').getByRole('combobox', {
       name: 'Person',
     });
@@ -551,7 +566,7 @@ test.describe('autocomplete', () => {
   test('async suggestions: waits for the server, then chooses with the keyboard', async ({
     page,
   }) => {
-    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    await openHydrated(page, 'autocomplete', 'Autocomplete');
     const live = example(page, 'Async suggestions');
     const input = live.getByRole('combobox', { name: 'Colleague' });
     await input.focus();
@@ -575,7 +590,7 @@ test.describe('autocomplete', () => {
   });
 
   test('multiple: Enter adds a chip, Backspace removes the last chip', async ({ page }) => {
-    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    await openHydrated(page, 'autocomplete', 'Autocomplete');
     const live = example(page, 'Multiple');
     const input = live.getByRole('combobox', { name: 'Keywords' });
     await input.focus();
@@ -597,7 +612,7 @@ test.describe('autocomplete', () => {
   test('Signal Forms: shows the error after leaving the field, then accepts a choice', async ({
     page,
   }) => {
-    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    await openHydrated(page, 'autocomplete', 'Autocomplete');
     const live = example(page, 'Signal Forms');
     const input = live.getByRole('combobox', { name: 'Assignee' });
     await input.focus();
@@ -619,7 +634,7 @@ test.describe('tree', () => {
   test('moves with the arrow keys, opens and closes branches, jumps with Home and End', async ({
     page,
   }) => {
-    await openPage(page, '/controls/tree', 'Tree');
+    await openTree(page);
     const tree = example(page, 'Expand and collapse').getByRole('tree', { name: 'Folders' });
     const row = (key: string) => tree.locator(`[data-key="${key}"]`);
     const keys = async () =>
@@ -658,7 +673,7 @@ test.describe('tree', () => {
   });
 
   test('a click on a branch without a selection mode opens and closes it', async ({ page }) => {
-    await openPage(page, '/controls/tree', 'Tree');
+    await openTree(page);
     const tree = example(page, 'Expand and collapse').getByRole('tree', { name: 'Folders' });
     const media = tree.locator('[data-key="media"]');
     await expect(media).toHaveAttribute('aria-expanded', 'false');
@@ -669,7 +684,7 @@ test.describe('tree', () => {
   });
 
   test('single selection: Enter selects, a disabled node does not', async ({ page }) => {
-    await openPage(page, '/controls/tree', 'Tree');
+    await openTree(page);
     const live = example(page, 'Single selection');
     const tree = live.getByRole('tree', { name: 'Folder' });
     const row = (key: string) => tree.locator(`[data-key="${key}"]`);
@@ -690,7 +705,7 @@ test.describe('tree', () => {
   });
 
   test('multiple selection toggles each node', async ({ page }) => {
-    await openPage(page, '/controls/tree', 'Tree');
+    await openTree(page);
     const tree = example(page, 'Multiple selection').getByRole('tree', {
       name: 'Folders to back up',
     });
@@ -702,7 +717,7 @@ test.describe('tree', () => {
   });
 
   test('checkbox selection: leaves, mixed parents and filter', async ({ page }) => {
-    await openPage(page, '/controls/tree', 'Tree');
+    await openTree(page);
     const live = example(page, 'Checkbox selection and filter');
     const tree = live.getByRole('tree', { name: 'Folders to sync' });
     const row = (key: string) => tree.locator(`[data-key="${key}"]`);
@@ -730,7 +745,7 @@ test.describe('tree', () => {
   });
 
   test('Signal Forms: shows the error until a folder is checked', async ({ page }) => {
-    await openPage(page, '/controls/tree', 'Tree');
+    await openTree(page);
     const live = example(page, 'Signal Forms');
     const tree = live.getByRole('tree', { name: 'Folders to share' });
     await expect(live.getByRole('status')).toHaveText('Valid: false');
@@ -743,7 +758,7 @@ test.describe('tree select', () => {
   test('opens with Enter into the tree, chooses with Enter and returns the focus', async ({
     page,
   }) => {
-    await openPage(page, '/controls/tree-select', 'Tree select');
+    await openHydrated(page, 'tree-select', 'Tree select');
     const live = example(page, 'Single node');
     const field = live.getByRole('button', { name: 'Department' });
     await expect(field).toHaveAttribute('aria-expanded', 'false');
@@ -766,7 +781,7 @@ test.describe('tree select', () => {
   });
 
   test('closes with Escape without a change and returns the focus', async ({ page }) => {
-    await openPage(page, '/controls/tree-select', 'Tree select');
+    await openHydrated(page, 'tree-select', 'Tree select');
     const live = example(page, 'Single node');
     const field = live.getByRole('button', { name: 'Department' });
     await field.focus();
@@ -781,7 +796,7 @@ test.describe('tree select', () => {
   });
 
   test('clears with the clear button', async ({ page }) => {
-    await openPage(page, '/controls/tree-select', 'Tree select');
+    await openHydrated(page, 'tree-select', 'Tree select');
     const live = example(page, 'Single node');
     await live.getByRole('button', { name: 'Department' }).click();
     await page.getByRole('tree', { name: 'Department' }).locator('[data-key="fin"]').click();
@@ -793,7 +808,7 @@ test.describe('tree select', () => {
   test('checkbox mode: filters, keeps the panel open and summarises the choice', async ({
     page,
   }) => {
-    await openPage(page, '/controls/tree-select', 'Tree select');
+    await openHydrated(page, 'tree-select', 'Tree select');
     const live = example(page, 'Checkbox selection and filter');
     const field = live.getByRole('button', { name: 'Teams' });
     await field.click();
@@ -819,7 +834,7 @@ test.describe('tree select', () => {
   test('multiple mode keeps the panel open and a disabled field does not open', async ({
     page,
   }) => {
-    await openPage(page, '/controls/tree-select', 'Tree select');
+    await openHydrated(page, 'tree-select', 'Tree select');
     const live = example(page, 'Multiple and disabled');
     await live.getByRole('button', { name: 'Nodes' }).click();
     const tree = page.getByRole('tree', { name: 'Nodes' });
@@ -837,7 +852,7 @@ test.describe('tree select', () => {
   test('Signal Forms: shows the error after leaving the field, then accepts a node', async ({
     page,
   }) => {
-    await openPage(page, '/controls/tree-select', 'Tree select');
+    await openHydrated(page, 'tree-select', 'Tree select');
     const live = example(page, 'Signal Forms');
     const field = live.getByRole('button', { name: 'Hire department' });
     await field.focus();

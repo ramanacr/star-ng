@@ -200,6 +200,10 @@
   border-start-start-radius: 0;
   border-end-start-radius: 0;
 }
+// An outlined split button: the two borders meet without a gap.
+.star-split__toggle.star-btn--outlined {
+  margin-inline-start: -1px;
+}
 
 // Menubar
 .star-menubar {

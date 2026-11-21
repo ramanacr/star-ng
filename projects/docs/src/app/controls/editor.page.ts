@@ -4,6 +4,7 @@ import {
   STAR_EDITOR_SANITIZE_DEFAULTS,
   StarEditor,
   StarEditorSanitizeConfig,
+  StarEditorSelectionChange,
   StarEditorToolbarItem,
   StarEditorToolbarTemplate,
   StarEditorUpload,
@@ -33,6 +34,30 @@ import { DOCS, DocsRow } from '../shared/docs';
             placeholder="Write the delivery note"
           />
           <pre class="docs-output" role="group" aria-label="Value of the editor">{{ note() }}</pre>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Change and selection events"
+        source="editor/events"
+        [script]="eventsScript"
+        note="textChange emits after the user changed the content, with the sanitized HTML and the plain text; a value that you write does not emit. selectionChange emits the text offset, the length and the text of the selection when it moves in the area, and null when it leaves the area. PrimeNG onTextChange and onSelectionChange."
+      >
+        <div class="docs-stack">
+          <star-editor
+            [(value)]="eventsNote"
+            ariaLabel="Order note"
+            (textChange)="lastText.set($event.text)"
+            (selectionChange)="selection.set($event)"
+          />
+          <p class="docs-output" role="status">
+            Text: {{ lastText() || '(no change yet)' }}. Selection:
+            {{
+              selection()
+                ? 'from ' + selection()!.index + ', ' + selection()!.length + ' characters'
+                : 'outside the editor'
+            }}.
+          </p>
         </div>
       </docs-example>
 
@@ -486,6 +511,12 @@ readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
   protected readonly summary = signal('Two boxes for Orchard Supply.\nDeliver before noon.');
   protected readonly limitScript = `readonly summary = signal('Two boxes for Orchard Supply.\\nDeliver before noon.');`;
   protected readonly basicScript = `readonly note = signal('');`;
+  protected readonly eventsNote = signal('<p>Pack the order for the north warehouse.</p>');
+  protected readonly lastText = signal('');
+  protected readonly selection = signal<StarEditorSelectionChange | null>(null);
+  protected readonly eventsScript = `readonly eventsNote = signal('<p>Pack the order for the north warehouse.</p>');
+readonly lastText = signal('');
+readonly selection = signal<StarEditorSelectionChange | null>(null);`;
   protected readonly sizeScript = `readonly comment = signal('');`;
   protected readonly statesScript = `readonly saved = signal('<p>Leave the parcel at the <b>loading dock</b>.</p>');`;
   protected readonly sanitizeScript = `readonly unsafe = signal(

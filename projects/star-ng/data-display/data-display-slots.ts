@@ -44,3 +44,81 @@ export class StarItemTemplate<T = unknown> extends StarSlot<StarItemContext<T>> 
     return true;
   }
 }
+
+/** The two lists of `star-pick-list`. */
+export type StarPickListSide = 'source' | 'target';
+
+/** Payload of the move, reorder and select outputs of `star-order-list` and `star-pick-list`. */
+export interface StarListItemsEvent<T = unknown> {
+  /** The items that moved, or the selected items. */
+  readonly items: readonly T[];
+}
+
+/** Payload of the filter outputs of `star-order-list` and `star-pick-list`. */
+export interface StarListFilterEvent<T = unknown> {
+  /** The filter text. */
+  readonly query: string;
+  /** The items that match it. */
+  readonly value: readonly T[];
+}
+
+/** Context of the `starListFilter` slot. */
+export interface StarListFilterContext {
+  /** The filter text. */
+  readonly $implicit: string;
+  /** Only in `star-pick-list`: the list of the filter. */
+  readonly list?: StarPickListSide;
+  /** Sets the filter text. */
+  readonly filter: (query: string) => void;
+  /** Clears the filter text. */
+  readonly reset: () => void;
+}
+
+/**
+ * Replaces the filter field of `star-order-list` and `star-pick-list` (shown with `filter`):
+ * `<ng-template starListFilter let-query let-filter="filter">…</ng-template>`. Call `filter(text)`
+ * from your own field. PrimeNG `#filter`, `#sourcefilter` and `#targetfilter` templates (use
+ * `list` to tell the two lists apart).
+ */
+@Directive({
+  selector: 'ng-template[starListFilter]',
+  providers: [{ provide: StarSlot, useExisting: StarListFilterTemplate }],
+})
+export class StarListFilterTemplate extends StarSlot<StarListFilterContext> {
+  readonly name = 'listFilter';
+
+  static ngTemplateContextGuard(
+    _dir: StarListFilterTemplate,
+    _ctx: unknown,
+  ): _ctx is StarListFilterContext {
+    return true;
+  }
+}
+
+/** Context of the `starPickListHeader` slot. */
+export interface StarPickListHeaderContext {
+  /** The list of the header. */
+  readonly $implicit: StarPickListSide;
+  /** The number of items in the list. */
+  readonly count: number;
+}
+
+/**
+ * Replaces the header text of each list of `star-pick-list`:
+ * `<ng-template starPickListHeader let-list let-count="count">…</ng-template>`. The header stays
+ * the name of its list. PrimeNG `#sourceheader` and `#targetheader` templates.
+ */
+@Directive({
+  selector: 'ng-template[starPickListHeader]',
+  providers: [{ provide: StarSlot, useExisting: StarPickListHeaderTemplate }],
+})
+export class StarPickListHeaderTemplate extends StarSlot<StarPickListHeaderContext> {
+  readonly name = 'pickListHeader';
+
+  static ngTemplateContextGuard(
+    _dir: StarPickListHeaderTemplate,
+    _ctx: unknown,
+  ): _ctx is StarPickListHeaderContext {
+    return true;
+  }
+}

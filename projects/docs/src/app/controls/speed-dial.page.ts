@@ -73,6 +73,48 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Circle layouts, mask and events"
+        source="speed-dial/circle"
+        [script]="circleScript"
+        note="type circle puts the actions on a full circle, semi-circle on half a circle toward direction (up, down, left, right) and quarter-circle on a quarter toward up-left, up-right, down-left or down-right; radius is the distance in pixels (default 80). mask puts a scrim behind the open actions. A click outside closes them (hideOnClickOutside, on by default). visible is a two-way model, and show and hide report the changes. hideIcon is the icon while open; transitionDelay is the time between two actions when they appear (no motion with reduced motion)."
+      >
+        <div class="docs-stack">
+          <div class="docs-row docs-dial-area docs-dial-area--center">
+            <star-speed-dial
+              [items]="actions"
+              type="semi-circle"
+              direction="up"
+              [radius]="72"
+              ariaLabel="Actions on a half circle"
+              hideIcon="ph-bold ph-x"
+              (show)="dialLog.set('open')"
+              (hide)="dialLog.set('closed')"
+            />
+            <star-speed-dial
+              [items]="actions"
+              type="quarter-circle"
+              direction="up-right"
+              [radius]="72"
+              mask
+              ariaLabel="Actions on a quarter circle"
+            />
+          </div>
+          <p class="docs-output" role="status">Half circle: {{ dialLog() }}</p>
+        </div>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The PrimeNG p-speeddial names that StarNG gives in another way: model is items;
+        onVisibleChange is visibleChange of the visible model; onClick is pressed; showIcon is icon;
+        id is the id attribute of the host; style, className, buttonStyle, buttonClassName,
+        maskStyle, maskClassName and buttonProps are the pass-through pt (parts triggerButton,
+        maskPanel) and the class and style of the host; tooltipOptions: each action shows its label
+        as a native tooltip. The button and item templates are starSpeedDialTemplate, and the icon
+        template is starIcon with icon.
+      </p>
+
       <h2>Right-to-left</h2>
       <p>
         <code>left</code> and <code>right</code> are the physical sides of the screen, as in CSS.
@@ -81,7 +123,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         See the Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarSpeedDial']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarSpeedDial', 'StarSpeedDialTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
     </docs-page>
   `,
   styles: `
@@ -102,6 +149,9 @@ import { DOCS, DocsRow } from '../shared/docs';
 export class SpeedDialPage {
   protected readonly last = signal('none');
   protected readonly sortIndex = signal(0);
+  protected readonly dialLog = signal('closed');
+  protected readonly circleScript = `readonly dialLog = signal('closed');
+// actions as in the first example`;
 
   protected readonly actions: readonly StarMenuItem[] = [
     { label: 'New order', icon: 'ph-bold ph-plus-circle' },
@@ -114,6 +164,18 @@ export class SpeedDialPage {
     { label: 'Customer', icon: 'ph-bold ph-user', command: () => this.sortIndex.set(2) },
   ];
 
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starSpeedDialTemplate]',
+      description:
+        'Content child. "button" replaces the content of the main button, "item" the content of each action (context: $implicit the item, index, visible). The buttons keep their names: no focusable content. PrimeNG button and item templates.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. "icon" replaces the icon of the main button. PrimeNG icon template.',
+    },
+  ];
   protected readonly basicScript = `readonly last = signal('none');
 
 readonly actions: readonly StarMenuItem[] = [

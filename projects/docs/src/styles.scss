@@ -288,6 +288,20 @@ code {
   outline: none;
 }
 
+// The trademark note under the page, outside `main` (the visual tests capture `main` only).
+.docs-footer {
+  grid-column: 2;
+  padding: var(--star-space-4) var(--star-space-8) var(--star-space-8);
+  border-top: 1px solid var(--star-border);
+  font: var(--star-type-body-sm);
+  color: var(--docs-text-muted);
+
+  p {
+    max-width: 60rem;
+    margin: 0;
+  }
+}
+
 @media (max-width: 800px) {
   .docs-header__menu {
     display: inline-grid;
@@ -309,6 +323,10 @@ code {
   }
   .docs-main {
     padding: var(--star-space-5) var(--star-space-4) var(--star-space-10);
+  }
+  .docs-footer {
+    grid-column: 1;
+    padding-inline: var(--star-space-4);
   }
 }
 

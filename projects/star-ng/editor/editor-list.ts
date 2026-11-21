@@ -1,6 +1,9 @@
 /**
  * Lists of `star-editor`: bulleted, numbered and checklist, with nesting. A checklist is
  * `<ul class="star-checklist">` with `data-checked="true|false"` on each item.
+ *
+ * Ported from Aurora RTE `packages/editor/src/commands.ts` and `packages/ui/src/toolbar.ts`, MIT
+ * (https://github.com/ramanacr/aurora-rte, see THIRD_PARTY_NOTICES.md).
  */
 import { starEditorBlocks, starEditorClosest, starEditorRestore } from './editor-dom';
 import { starEditorIsolate } from './editor-format';

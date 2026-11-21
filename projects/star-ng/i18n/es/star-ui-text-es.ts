@@ -62,6 +62,9 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   lastPage: 'Última página',
   page: (page) => `Página ${page}`,
   rowsPerPage: 'Filas por página',
+  goToPage: 'Ir a la página',
+  paginationTop: (label) => `${label}, arriba`,
+  paginationBottom: (label) => `${label}, abajo`,
   pageReport: (first, last, total) => `${first}–${last} de ${total}`,
   noData: 'No se encontraron registros',
   missingData: 'Sin datos',
@@ -181,6 +184,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   moveAllToSource: 'Mover todo al origen',
   pickListSource: 'Disponibles',
   pickListTarget: 'Seleccionados',
+  itemsMoved: (count, list) =>
+    `${count} ${count === 1 ? 'elemento movido' : 'elementos movidos'} a ${list}`,
 
   chooseDate: 'Elegir fecha',
   chooseMonth: 'Elegir mes',
