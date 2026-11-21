@@ -46,12 +46,24 @@ export const appConfig: ApplicationConfig = {
       // it). Not on the first page, not when the visitor asks for reduced motion, and not when
       // only the query or the fragment changes (the same page stays, for example a tab link or
       // an anchor link).
+      //
+      // The scroll (to the top, or to the anchor) happens in the update callback of the
+      // transition, so the new page is shown with its final scroll position and layout
+      // (`e2e/docs-navigation.spec.ts` checks it). While the fade runs, the browser sends every
+      // pointer event to the document element, not to the page: a press during the fade does
+      // nothing. So the first press ends the fade at once, and the next one reaches the page.
       withViewTransitions({
         skipInitialTransition: true,
         onViewTransitionCreated: ({ transition, from, to }) => {
-          if (starPrefersReducedMotion(inject(DOCUMENT)) || pageOf(from) === pageOf(to)) {
+          const doc = inject(DOCUMENT);
+          if (starPrefersReducedMotion(doc) || pageOf(from) === pageOf(to)) {
             transition.skipTransition();
+            return;
           }
+          const skip = () => transition.skipTransition();
+          const stop = () => doc.removeEventListener('pointerdown', skip, true);
+          doc.addEventListener('pointerdown', skip, true);
+          transition.finished.then(stop, stop);
         },
       }),
     ),

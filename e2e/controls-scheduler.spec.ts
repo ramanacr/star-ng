@@ -1,5 +1,5 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { collectErrors, example, openPage } from './support';
+import { collectErrors, example, openPage, pageTransitionDone } from './support';
 
 /** Drags with the mouse from the centre of `from` by small steps to a point. */
 async function dragTo(page: Page, from: Locator, x: number, y: number): Promise<void> {
@@ -197,12 +197,12 @@ test.describe('scheduler', () => {
     page.on('console', (message) => {
       if (message.text().includes('NG0953')) errors.push(message.text());
     });
-    // The page change cross-fades (view transition) and scrolls after it: a held click at a
-    // measured position needs the page to stay still, so this test asks for reduced motion.
-    await page.emulateMedia({ reducedMotion: 'reduce' });
     await openPage(page, '/controls/button', 'Button');
     await page.locator('#docs-nav').getByRole('link', { name: 'Scheduler', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Scheduler' })).toBeVisible();
+    // A held press with `page.mouse` reaches the page only after the cross-fade of the page
+    // change (the scroll and the layout are final before the new page shows).
+    await pageTransitionDone(page);
     const rooms = example(page, 'Rooms on a timeline, with the editor');
     const editor = page.getByRole('dialog', { name: 'Edit event' });
     /** A held click on a booking opens the edit editor. */

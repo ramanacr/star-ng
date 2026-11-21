@@ -37,6 +37,18 @@ export async function openPage(page: Page, path: string, heading: string | RegEx
   await expect(page.locator('docs-root[ngh], #main [ngh]')).toHaveCount(0, { timeout: 15_000 });
 }
 
+/**
+ * Waits until the cross-fade of a page change (a view transition of the router) has ended.
+ * While it runs, the browser sends every pointer event to the document element, not to the
+ * page, so a `page.mouse` press on the new page does nothing. A `click()` does not need this:
+ * it waits until the element receives the pointer events.
+ */
+export async function pageTransitionDone(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => !(document as Document & { activeViewTransition?: unknown }).activeViewTransition,
+  );
+}
+
 /** The live area of one example of the open page, found by the example heading. */
 export function example(page: Page, heading: string): Locator {
   return page
