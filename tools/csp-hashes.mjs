@@ -13,8 +13,10 @@
 // server that answers each request. So this step runs after `ng build docs` (`build`,
 // `build:docs`, `build:pages`): for each HTML file it reads the inline scripts, computes their
 // SHA-256 hashes and adds them to the `script-src` directive of the `<meta>` policy of that file.
-// `'unsafe-inline'` is never added; any other inline script stays blocked. A file without an
-// inline script (the client shell `index.csr.html`) does not change.
+// Only Angular's own two scripts get a hash. Any other inline script that the browser would run
+// makes the step fail, so a new inline script cannot slip into the policy unseen.
+// `'unsafe-inline'` is never added. A file without an inline script (the client shell
+// `index.csr.html`) does not change.
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -35,13 +37,24 @@ export function scriptHash(text) {
 }
 
 /**
- * The texts of the inline scripts (no `src`) of an HTML document that the browser runs, in
- * document order. A data block (`type="application/json"`) is skipped.
+ * The inline scripts (no `src`) of an HTML document that the browser runs, in document order:
+ * `{ attributes, text }`. A data block (`type="application/json"`) is skipped.
  */
 export function inlineScripts(html) {
   return [...html.matchAll(INLINE_SCRIPT)]
     .filter((match) => RUNS.test(/\stype="([^"]*)"/i.exec(match[1])?.[1]?.trim() ?? ''))
-    .map((match) => match[2]);
+    .map((match) => ({ attributes: match[1], text: match[2] }));
+}
+
+/**
+ * True for the two inline scripts of Angular event replay: the event contract
+ * (`id="ng-event-dispatch-contract"`) and the call `window.__jsaction_bootstrap(...)`.
+ */
+export function isEventReplayScript({ attributes, text }) {
+  return (
+    /\sid="ng-event-dispatch-contract"/.test(attributes) ||
+    text.trimStart().startsWith('window.__jsaction_bootstrap(')
+  );
 }
 
 /**
@@ -59,9 +72,19 @@ export function addToScriptSrc(policy, hashes) {
   return directives.join(';');
 }
 
-/** The HTML with the hashes of its inline scripts in its policy. Unchanged without a script. */
+/**
+ * The HTML with the hashes of its event replay scripts in its policy. Unchanged without a
+ * script. Throws on any other inline script that the browser would run.
+ */
 export function hashPage(html) {
-  const hashes = [...new Set(inlineScripts(html).map(scriptHash))];
+  const scripts = inlineScripts(html);
+  const unknown = scripts.find((script) => !isEventReplayScript(script));
+  if (unknown) {
+    throw new Error(
+      `csp-hashes: an inline script that is not Angular event replay: ${unknown.text.slice(0, 80)}`,
+    );
+  }
+  const hashes = [...new Set(scripts.map((script) => scriptHash(script.text)))];
   if (hashes.length === 0) return html;
   const meta = META.exec(html);
   if (!meta) throw new Error('csp-hashes: an HTML file with an inline script has no CSP <meta>');
@@ -82,7 +105,12 @@ export function addScriptHashes(folder) {
   let changed = 0;
   for (const file of htmlFiles(folder)) {
     const html = readFileSync(file, 'utf8');
-    const next = hashPage(html);
+    let next;
+    try {
+      next = hashPage(html);
+    } catch (error) {
+      throw new Error(`${error.message} (in ${file})`);
+    }
     if (next !== html) {
       writeFileSync(file, next);
       changed++;

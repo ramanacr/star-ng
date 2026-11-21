@@ -9,6 +9,7 @@ import {
   addToScriptSrc,
   hashPage,
   inlineScripts,
+  isEventReplayScript,
   scriptHash,
 } from './csp-hashes.mjs';
 
@@ -17,6 +18,9 @@ const POLICY =
 const page = (body) =>
   `<html><head><meta http-equiv="Content-Security-Policy" content="${POLICY}" />` +
   `<script src="first-paint.js"></script></head><body>${body}</body></html>`;
+const CONTRACT =
+  '<script type="text/javascript" id="ng-event-dispatch-contract">contract()</script>';
+const REPLAY = '<script>window.__jsaction_bootstrap(document.body,"ng",["click"],[]);</script>';
 
 test('scriptHash is the base64 SHA-256 of the text with LF line ends', () => {
   const expected = createHash('sha256').update('a\nb', 'utf8').digest('base64');
@@ -29,7 +33,17 @@ test('inlineScripts skips scripts with src and data blocks', () => {
     '<script type="text/javascript" id="c">one()</script><script>two()</script>' +
       '<script id="ng-state" type="application/json">{}</script>',
   );
-  assert.deepEqual(inlineScripts(html), ['one()', 'two()']);
+  assert.deepEqual(
+    inlineScripts(html).map((script) => script.text),
+    ['one()', 'two()'],
+  );
+});
+
+test('isEventReplayScript knows the contract and the bootstrap call only', () => {
+  const [contract, replay, other] = inlineScripts(CONTRACT + REPLAY + '<script>x()</script>');
+  assert.equal(isEventReplayScript(contract), true);
+  assert.equal(isEventReplayScript(replay), true);
+  assert.equal(isEventReplayScript(other), false);
 });
 
 test('addToScriptSrc changes script-src only and adds each hash once', () => {
@@ -40,16 +54,22 @@ test('addToScriptSrc changes script-src only and adds each hash once', () => {
   assert.throws(() => addToScriptSrc("default-src 'self'", ["'sha256-a='"]), /no script-src/);
 });
 
-test('hashPage adds the hashes of the inline scripts, never unsafe-inline', () => {
-  const html = page(
-    '<script id="c">contract()</script><script>window.__jsaction_bootstrap()</script>',
-  );
-  const next = hashPage(html);
+test('hashPage adds the hashes of the event replay scripts, never unsafe-inline', () => {
+  const next = hashPage(page(CONTRACT + REPLAY));
   assert.ok(next.includes(scriptHash('contract()')));
-  assert.ok(next.includes(scriptHash('window.__jsaction_bootstrap()')));
+  assert.ok(
+    next.includes(scriptHash('window.__jsaction_bootstrap(document.body,"ng",["click"],[]);')),
+  );
   assert.ok(!next.includes('unsafe-inline'));
   assert.equal(hashPage(page('<p>no script</p>')), page('<p>no script</p>'));
-  assert.throws(() => hashPage('<body><script>x()</script></body>'), /no CSP <meta>/);
+  assert.throws(() => hashPage(`<body>${REPLAY}</body>`), /no CSP <meta>/);
+});
+
+test('hashPage fails on an inline script that is not event replay', () => {
+  assert.throws(
+    () => hashPage(page(CONTRACT + REPLAY + '<script>alert(1)</script>')),
+    /not Angular event replay: alert\(1\)/,
+  );
 });
 
 test('addScriptHashes writes every HTML file of the folder, including nested ones', () => {
@@ -57,14 +77,13 @@ test('addScriptHashes writes every HTML file of the folder, including nested one
   try {
     mkdirSync(join(folder, 'controls', 'table'), { recursive: true });
     writeFileSync(join(folder, 'index.csr.html'), page(''));
-    writeFileSync(join(folder, 'controls', 'table', 'index.html'), page('<script>t()</script>'));
+    const table = join(folder, 'controls', 'table', 'index.html');
+    writeFileSync(table, page(CONTRACT));
     assert.equal(addScriptHashes(folder), 1);
-    assert.ok(
-      readFileSync(join(folder, 'controls', 'table', 'index.html'), 'utf8').includes(
-        scriptHash('t()'),
-      ),
-    );
+    assert.ok(readFileSync(table, 'utf8').includes(scriptHash('contract()')));
     assert.equal(readFileSync(join(folder, 'index.csr.html'), 'utf8'), page(''));
+    writeFileSync(table, page('<script>t()</script>'));
+    assert.throws(() => addScriptHashes(folder), /in .*index\.html/);
   } finally {
     rmSync(folder, { recursive: true, force: true });
   }
