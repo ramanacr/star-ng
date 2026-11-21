@@ -135,6 +135,8 @@ export interface ɵStarTableCellState {
   readonly selected: boolean | null;
   readonly columnSelected: boolean;
   readonly label: string | null;
+  /** Column index for the cell keys of the tree table (`data-col`), else `null`. */
+  readonly col?: number | null;
 }
 
 /** What `starTableCell` reads from its table. Internal. */
@@ -161,6 +163,7 @@ export const ɵSTAR_TABLE_CELL_HOST = new InjectionToken<ɵStarTableCellHost>(
     '[attr.aria-colindex]': 'state().colindex',
     '[attr.aria-selected]': 'state().selected',
     '[attr.data-label]': 'state().label',
+    '[attr.data-col]': 'state().col ?? null',
     '[class.star-table__cell--selected]': 'state().selected === true',
     '[class.star-table__cell--col-selected]': 'state().columnSelected',
   },

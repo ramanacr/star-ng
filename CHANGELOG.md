@@ -370,6 +370,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tree table: frozen, resizable and reorderable columns (`columnWidths`, `columnOrder`).
 - Tree table: cell edit (`editable`, `editor`, `cellEdit`) with treegrid cell navigation (`cellNavigation`).
 - Tree table: row context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
+- Tree table: the table slots `starHeaderCell`, `starCell`, `starRow` (with `starTableCell`; the tree column stays), `starFooterRow`, `starLoading`, `starPaginatorStart` and `starPaginatorEnd`; `starIcon` for the `toggle`, `check`, `sort` (new icon name) and `filter` icons; `starTableCaption` and `starTableSummary` content; a `loading` input with `aria-busy` (PrimeNG `p-treeTable` templates and `loading`).
 
 #### Utility
 

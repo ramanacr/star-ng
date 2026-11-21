@@ -15,6 +15,12 @@ import {
   StarTreeTableNode,
 } from '@star-ng/ui/data-display';
 import { StarMenuItem } from '@star-ng/ui/menu';
+import {
+  StarCellTemplate,
+  StarFooterRowTemplate,
+  StarHeaderCellTemplate,
+  StarPaginatorStartTemplate,
+} from '@star-ng/ui/table';
 import { StarNodeTemplate, StarTreeNode } from '@star-ng/ui/tree';
 import { DOCS, DocsRow } from '../shared/docs';
 import { buildLargeTreeTable } from './large-tree-table';
@@ -24,7 +30,16 @@ type Row = Record<string, unknown>;
 
 @Component({
   selector: 'docs-tree-table-page',
-  imports: [DOCS, StarTreeTable, StarNodeTemplate, STAR_SLOTS],
+  imports: [
+    DOCS,
+    StarTreeTable,
+    StarNodeTemplate,
+    STAR_SLOTS,
+    StarHeaderCellTemplate,
+    StarCellTemplate,
+    StarFooterRowTemplate,
+    StarPaginatorStartTemplate,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -147,6 +162,50 @@ type Row = Record<string, unknown>;
             search: {{ query() || 'none' }}
           </p>
         </div>
+      </docs-example>
+
+      <docs-example
+        heading="Table slots"
+        source="tree-table/table-slots"
+        note="The tree table takes the template slots of the table: starHeaderCell (the label of one header), starCell (the content of one column; in the first column the toggle stays), starRow with starTableCell (the cells after the tree column), starFooterRow, starLoading (with the loading input, and in the loading row of lazy children), starPaginatorStart and starPaginatorEnd. starIcon replaces the toggle, check (check box), sort and filter icons; the toggle gets expanded, the check icon checked (false when partly checked), the sort icon true ascending, false descending. Content with starTableCaption goes above the table, starTableSummary below it."
+      >
+        <star-tree-table
+          [nodes]="projects"
+          [columns]="projectColumns"
+          [(expanded)]="slotOpen"
+          selectionMode="checkbox"
+          filter
+          paginator
+          [rows]="3"
+          [rowsPerPageOptions]="[3, 6]"
+          ariaLabel="Projects with table slots"
+        >
+          <strong starTableCaption>Projects this quarter</strong>
+          <ng-template starHeaderCell="hours" let-column>{{ column.header }} (h)</ng-template>
+          <ng-template starCell="hours" [starCellOf]="projects" let-value="value">
+            <strong>{{ value }}</strong>
+          </ng-template>
+          <ng-template starFooterRow [starFooterRowOf]="projects" let-columns let-rows="rows">
+            <td [attr.colspan]="columns.length">{{ rows.length }} projects</td>
+          </ng-template>
+          <ng-template starIcon="toggle" let-open>
+            <i [class]="open ? 'ph-bold ph-minus-square' : 'ph-bold ph-plus-square'"></i>
+          </ng-template>
+          <ng-template starIcon="sort" let-ascending>
+            <i
+              [class]="
+                ascending === undefined
+                  ? 'ph-bold ph-arrows-down-up'
+                  : ascending
+                    ? 'ph-bold ph-arrow-up'
+                    : 'ph-bold ph-arrow-down'
+              "
+            ></i>
+          </ng-template>
+          <ng-template starPaginatorStart let-state>
+            <span>Page {{ state.page + 1 }} of {{ state.pageCount }}</span>
+          </ng-template>
+        </star-tree-table>
       </docs-example>
 
       <docs-example
@@ -335,6 +394,7 @@ export class TreeTablePage {
     { field: 'hours', header: 'Hours', sortable: true, align: 'end' },
   ];
   protected readonly projectOpen = signal<readonly string[]>(['website']);
+  protected readonly slotOpen = signal<readonly string[]>([]);
   protected readonly sortField = signal<string | null>(null);
   protected readonly sortOrder = signal<1 | -1>(1);
   protected readonly query = signal('');

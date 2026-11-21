@@ -62,6 +62,11 @@
     border-top: 2px solid var(--star-border-strong);
   }
 }
+// Icon slots of the tree table (`starIcon`).
+.star-tree-table__icon {
+  display: inline-flex;
+  align-items: center;
+}
 // Column selection (`selectionMode="column"`).
 .star-table .star-table__row td.star-table__cell--col-selected,
 .star-table__th--selected {

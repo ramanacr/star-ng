@@ -21605,6 +21605,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The rows are loading: the body shows one loading row (the `starLoading` slot, else a spinner and the loading text) and the table has `aria-busy`. PrimeNG `loading`."
+      },
+      {
         "name": "selectionMode",
         "type": "'single' | 'multiple' | 'checkbox' | null",
         "default": "null",
@@ -21822,8 +21829,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "filtersCell",
       "filterInput",
       "body",
+      "foot",
+      "footer",
       "spacerRow",
       "spacerCell",
+      "loadingRow",
+      "busyCell",
+      "loadingIcon",
       "emptyRow",
       "emptyCell",
       "emptyIcon",
@@ -21835,6 +21847,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "row",
       "rowCell",
       "expandButton",
+      "toggleIcon",
       "boxPanel",
       "boxIcon",
       "cellInput"
@@ -22666,6 +22679,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-table/lazy": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"folders()\"\n    [columns]=\"folderColumns\"\n    [(expanded)]=\"folderOpen\"\n    lazy\n    (nodeExpand)=\"loadFolder($event.node)\"\n    ariaLabel=\"Folders\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ folderQueue().length ? 'Loading ' + folderQueue()[0] : 'Idle' }}\n  </p>\n</div>",
   "tree-table/slots": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [expanded]=\"allOpen\"\n    ariaLabel=\"Departments with slots\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Budget by department</p>\n    </ng-template>\n    <ng-template starNode [starNodeOf]=\"departments\" let-node let-level=\"level\">\n      <strong [style.color]=\"level === 1 ? 'var(--star-text)' : 'var(--star-text-muted)'\">\n        {{ node.label }}\n      </strong>\n      <small>(level {{ level }})</small>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Figures in millions.</p>\n    </ng-template>\n  </star-tree-table>\n  <star-tree-table [nodes]=\"[]\" [columns]=\"columns\" ariaLabel=\"Empty departments\">\n    <ng-template starEmpty let-text>No departments yet.</ng-template>\n  </star-tree-table>\n</div>",
   "tree-table/sort-filter": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"projects\"\n    [columns]=\"projectColumns\"\n    [(expanded)]=\"projectOpen\"\n    [(sortField)]=\"sortField\"\n    [(sortOrder)]=\"sortOrder\"\n    multiSort\n    filter\n    [(globalFilter)]=\"query\"\n    [filterMode]=\"strict() ? 'strict' : 'lenient'\"\n    paginator\n    [rows]=\"5\"\n    [rowsPerPageOptions]=\"[5, 10]\"\n    ariaLabel=\"Projects\"\n  />\n  <label class=\"docs-output\">\n    <input type=\"checkbox\" [checked]=\"strict()\" (change)=\"strict.set(!strict())\" />\n    Strict filter mode\n  </label>\n  <p class=\"docs-output\" role=\"status\">\n    Sort: {{ sortField() ?? 'none' }} {{ sortOrder() === 1 ? 'ascending' : 'descending' }},\n    search: {{ query() || 'none' }}\n  </p>\n</div>",
+  "tree-table/table-slots": "<star-tree-table\n  [nodes]=\"projects\"\n  [columns]=\"projectColumns\"\n  [(expanded)]=\"slotOpen\"\n  selectionMode=\"checkbox\"\n  filter\n  paginator\n  [rows]=\"3\"\n  [rowsPerPageOptions]=\"[3, 6]\"\n  ariaLabel=\"Projects with table slots\"\n>\n  <strong starTableCaption>Projects this quarter</strong>\n  <ng-template starHeaderCell=\"hours\" let-column>{{ column.header }} (h)</ng-template>\n  <ng-template starCell=\"hours\" [starCellOf]=\"projects\" let-value=\"value\">\n    <strong>{{ value }}</strong>\n  </ng-template>\n  <ng-template starFooterRow [starFooterRowOf]=\"projects\" let-columns let-rows=\"rows\">\n    <td [attr.colspan]=\"columns.length\">{{ rows.length }} projects</td>\n  </ng-template>\n  <ng-template starIcon=\"toggle\" let-open>\n    <i [class]=\"open ? 'ph-bold ph-minus-square' : 'ph-bold ph-plus-square'\"></i>\n  </ng-template>\n  <ng-template starIcon=\"sort\" let-ascending>\n    <i\n      [class]=\"\n        ascending === undefined\n          ? 'ph-bold ph-arrows-down-up'\n          : ascending\n            ? 'ph-bold ph-arrow-up'\n            : 'ph-bold ph-arrow-down'\n      \"\n    ></i>\n  </ng-template>\n  <ng-template starPaginatorStart let-state>\n    <span>Page {{ state.page + 1 }} of {{ state.pageCount }}</span>\n  </ng-template>\n</star-tree-table>",
   "tree-table/virtual": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"large.nodes\"\n    [columns]=\"virtualColumns\"\n    [(expanded)]=\"largeOpen\"\n    virtualScroll\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Stock by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} rows, {{ largeOpen().length }} branches open\n  </p>\n</div>",
   "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
   "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",

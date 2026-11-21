@@ -26,10 +26,12 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarEmptyContext,
+  StarIconContext,
   starInlineKey,
   StarPart,
   StarSlot,
   starSlot,
+  starSlotMap,
   StarStyled,
   ɵSTAR_MIN_COLUMN_WIDTH,
   ɵSTAR_PART_HOST,
@@ -51,8 +53,20 @@ import {
   ɵstarUnchangedEdit,
 } from '@star-ng/ui/core';
 import { StarContextMenu, StarMenu, StarMenuItem } from '@star-ng/ui/menu';
-import { StarPaginator } from '@star-ng/ui/paginator';
-import type { StarSortOrder, StarSortState } from '@star-ng/ui/table';
+import { StarPaginator, StarPaginatorTemplate } from '@star-ng/ui/paginator';
+import {
+  StarCellTemplate,
+  ɵSTAR_TABLE_CELL_HOST,
+  type StarCellContext,
+  type StarFooterRowContext,
+  type StarHeaderCellContext,
+  type StarRowSlotContext,
+  type StarSortOrder,
+  type StarSortState,
+  type StarTablePaginatorContext,
+  type ɵStarTableCellHost,
+  type ɵStarTableCellState,
+} from '@star-ng/ui/table';
 import {
   flattenVisible,
   navigationTarget,
@@ -198,7 +212,12 @@ const LOADING_KEY = '\u0000loading';
  * column, and the toggle stays; the context has `$implicit` (the node), `level`, `expanded` and
  * `selected`), `starEmpty` (a row with one cell over all columns when there are no rows;
  * `$implicit` is the `globalFilter` text; without the slot nothing shows, or the "no results"
- * text while a filter is on), `starHeader` and `starFooter` (content above and below the table).
+ * text while a filter is on), `starHeader` and `starFooter` (content above and below the table;
+ * content with `starTableCaption` / `starTableSummary` goes there too). The slots of
+ * `star-table` work here as well: `starHeaderCell`, `starCell`, `starRow` (with `starTableCell`:
+ * the cells after the tree column, which stays), `starFooterRow`, `starLoading` (the `loading`
+ * row, and the loading row of lazy children), `starPaginatorStart` and `starPaginatorEnd`;
+ * `starIcon` replaces the `toggle`, `check`, `sort` and `filter` icons.
  * Do not put focusable elements (buttons, links, inputs) in these templates: the table owns the
  * keyboard model and the ARIA attributes of its rows.
  *
@@ -208,9 +227,19 @@ const LOADING_KEY = '\u0000loading';
   selector: 'star-tree-table',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, NgTemplateOutlet, StarContextMenu, StarMenu, StarPaginator],
+  imports: [
+    StarPart,
+    NgTemplateOutlet,
+    StarContextMenu,
+    StarMenu,
+    StarPaginator,
+    StarPaginatorTemplate,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTreeTable) }],
+  providers: [
+    { provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTreeTable) },
+    { provide: ɵSTAR_TABLE_CELL_HOST, useExisting: forwardRef(() => StarTreeTable) },
+  ],
   host: {
     class: 'star-table star-tree-table',
     '[class.star-table--sticky]': '!!scrollHeight()',
@@ -218,12 +247,19 @@ const LOADING_KEY = '\u0000loading';
     '[style.--star-table-row-height.px]': 'windowed() ? virtualItemSize() : null',
   },
   template: `
+    <ng-content select="[starTableCaption]" />
     @if (headerSlot(); as header) {
       <ng-container *ngTemplateOutlet="header" />
     }
     @if (filter()) {
       <div data-star-part="filterPanel" class="star-panel__filter star-tree-table__search">
-        <i data-star-part="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+        @if (icons().get('filter'); as icon) {
+          <span data-star-part="filterIcon" class="star-tree-table__icon" aria-hidden="true">
+            <ng-container *ngTemplateOutlet="icon; context: noIconState" />
+          </span>
+        } @else {
+          <i data-star-part="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+        }
         <input
           data-star-part="input"
           type="search"
@@ -255,6 +291,7 @@ const LOADING_KEY = '\u0000loading';
         [attr.aria-label]="ariaLabel()"
         [attr.aria-multiselectable]="multiselectable()"
         [attr.aria-rowcount]="windowed() ? ariaRowCountValue() : null"
+        [attr.aria-busy]="loading() || null"
       >
         <thead data-star-part="head" #header>
           <tr data-star-part="scrollRow" [attr.aria-rowindex]="windowed() ? 1 : null">
@@ -285,8 +322,22 @@ const LOADING_KEY = '\u0000loading';
                     [attr.title]="multiSort() ? text.sortMultiHint : null"
                     (click)="sortBy(column, $event)"
                   >
-                    {{ column.header }}
-                    <i data-star-part="sortIcon" [class]="sortIcon(column)" aria-hidden="true"></i>
+                    <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
+                    @if (icons().get('sort'); as icon) {
+                      <span
+                        data-star-part="sortIcon"
+                        class="star-tree-table__icon"
+                        aria-hidden="true"
+                      >
+                        <ng-container *ngTemplateOutlet="icon; context: sortState(column)" />
+                      </span>
+                    } @else {
+                      <i
+                        data-star-part="sortIcon"
+                        [class]="sortIcon(column)"
+                        aria-hidden="true"
+                      ></i>
+                    }
                     @if (sortRank(column); as rank) {
                       <span data-star-part="sortRankText" class="star-table__sort-rank">{{
                         rank
@@ -294,7 +345,7 @@ const LOADING_KEY = '\u0000loading';
                     }
                   </button>
                 } @else {
-                  {{ column.header }}
+                  <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
                 }
                 @if (canMove(column)) {
                   <span data-star-part="movePanel" class="star-tree-table__move">
@@ -383,6 +434,13 @@ const LOADING_KEY = '\u0000loading';
             <ng-container *ngTemplateOutlet="body" />
           </tbody>
         }
+        @if (footerRowSlot(); as custom) {
+          <tfoot data-star-part="foot">
+            <tr data-star-part="footer" class="star-table__footer">
+              <ng-container *ngTemplateOutlet="custom; context: footerRowContext()" />
+            </tr>
+          </tfoot>
+        }
       </table>
     </div>
     @if (paginator()) {
@@ -392,7 +450,18 @@ const LOADING_KEY = '\u0000loading';
         [(first)]="first"
         [(rows)]="rows"
         [rowsPerPageOptions]="rowsPerPageOptions()"
-      />
+      >
+        @if (paginatorStartSlot(); as start) {
+          <ng-template starPaginatorTemplate="start" let-state>
+            <ng-container *ngTemplateOutlet="start; context: { $implicit: state }" />
+          </ng-template>
+        }
+        @if (paginatorEndSlot(); as end) {
+          <ng-template starPaginatorTemplate="end" let-state>
+            <ng-container *ngTemplateOutlet="end; context: { $implicit: state }" />
+          </ng-template>
+        }
+      </star-paginator>
     }
     <star-menu
       #rowMenu
@@ -403,6 +472,15 @@ const LOADING_KEY = '\u0000loading';
     @if (footerSlot(); as footer) {
       <ng-container *ngTemplateOutlet="footer" />
     }
+    <ng-content select="[starTableSummary]" />
+
+    <ng-template #headerLabel let-column>
+      @if (headerCellSlots().get(column.field); as custom) {
+        <ng-container *ngTemplateOutlet="custom; context: { $implicit: column }" />
+      } @else {
+        {{ column.header }}
+      }
+    </ng-template>
 
     <ng-template #body>
       @if (window().before > 0) {
@@ -414,7 +492,26 @@ const LOADING_KEY = '\u0000loading';
           ></td>
         </tr>
       }
-      @if (showEmpty()) {
+      @if (loading()) {
+        <tr starPart="loadingRow" [attr.aria-rowindex]="windowed() ? headerRows() + 1 : null">
+          <td
+            data-star-part="busyCell"
+            class="star-table__loading"
+            [attr.colspan]="visibleColumns().length"
+          >
+            @if (loadingSlot(); as custom) {
+              <ng-container *ngTemplateOutlet="custom" />
+            } @else {
+              <i
+                data-star-part="loadingIcon"
+                class="ph-bold ph-spinner-gap star-spin"
+                aria-hidden="true"
+              ></i>
+              {{ text.loading }}
+            }
+          </td>
+        </tr>
+      } @else if (showEmpty()) {
         <tr starPart="emptyRow" [attr.aria-rowindex]="windowed() ? headerRows() + 1 : null">
           <td
             data-star-part="emptyCell"
@@ -430,7 +527,7 @@ const LOADING_KEY = '\u0000loading';
           </td>
         </tr>
       }
-      @for (entry of entries(); track entry.key) {
+      @for (entry of loading() ? [] : entries(); track entry.key) {
         @let row = entry.row;
         @if (entry.loading) {
           <tr
@@ -449,12 +546,16 @@ const LOADING_KEY = '\u0000loading';
                   data-star-part="toggleText"
                   class="star-tree__toggle star-tree__toggle--leaf"
                 ></span>
-                <i
-                  data-star-part="firstIcon"
-                  class="ph-bold ph-spinner-gap star-spin"
-                  aria-hidden="true"
-                ></i>
-                {{ text.loading }}
+                @if (loadingSlot(); as custom) {
+                  <ng-container *ngTemplateOutlet="custom" />
+                } @else {
+                  <i
+                    data-star-part="firstIcon"
+                    class="ph-bold ph-spinner-gap star-spin"
+                    aria-hidden="true"
+                  ></i>
+                  {{ text.loading }}
+                }
               </span>
             </td>
           </tr>
@@ -477,7 +578,7 @@ const LOADING_KEY = '\u0000loading';
             (contextmenu)="onContextMenu(row.node)"
           >
             @for (
-              column of visibleColumns();
+              column of rowSlot() ? visibleColumns().slice(0, 1) : visibleColumns();
               track column.field;
               let first = $first;
               let ci = $index
@@ -509,11 +610,23 @@ const LOADING_KEY = '\u0000loading';
                         "
                         (click)="userToggle(row.node)"
                       >
-                        <i
-                          data-star-part="expandIcon"
-                          class="ph-bold ph-caret-right"
-                          aria-hidden="true"
-                        ></i>
+                        @if (icons().get('toggle'); as icon) {
+                          <span
+                            data-star-part="toggleIcon"
+                            class="star-tree-table__icon"
+                            aria-hidden="true"
+                          >
+                            <ng-container
+                              *ngTemplateOutlet="icon; context: toggleState(row.node.key)"
+                            />
+                          </span>
+                        } @else {
+                          <i
+                            data-star-part="expandIcon"
+                            class="ph-bold ph-caret-right"
+                            aria-hidden="true"
+                          ></i>
+                        }
                       </button>
                     } @else {
                       <span
@@ -534,7 +647,17 @@ const LOADING_KEY = '\u0000loading';
                         [attr.aria-disabled]="row.node.disabled || null"
                         (click)="onCheckClick($event, row.node)"
                       >
-                        @if (checkState(row.node.key) === 'mixed') {
+                        @if (checkState(row.node.key) !== false && icons().get('check'); as icon) {
+                          <span
+                            data-star-part="boxIcon"
+                            class="star-tree-table__icon"
+                            aria-hidden="true"
+                          >
+                            <ng-container
+                              *ngTemplateOutlet="icon; context: checkIconState(row.node.key)"
+                            />
+                          </span>
+                        } @else if (checkState(row.node.key) === 'mixed') {
                           <i
                             data-star-part="boxIcon"
                             class="ph-bold ph-minus"
@@ -555,6 +678,8 @@ const LOADING_KEY = '\u0000loading';
                       />
                     } @else if (nodeSlot(); as custom) {
                       <ng-container *ngTemplateOutlet="custom; context: nodeContext(row)" />
+                    } @else if (cellTemplate(column.field); as custom) {
+                      <ng-container *ngTemplateOutlet="custom; context: cellContext(row, column)" />
                     } @else {
                       {{ cellText(row.node, column.field, true) }}
                     }
@@ -563,10 +688,15 @@ const LOADING_KEY = '\u0000loading';
                   <ng-container
                     *ngTemplateOutlet="editor; context: { $implicit: row.node, column }"
                   />
+                } @else if (cellTemplate(column.field); as custom) {
+                  <ng-container *ngTemplateOutlet="custom; context: cellContext(row, column)" />
                 } @else {
                   {{ row.node.data?.[column.field] }}
                 }
               </td>
+            }
+            @if (rowSlot(); as custom) {
+              <ng-container *ngTemplateOutlet="custom; context: rowSlotContext(row)" />
             }
           </tr>
         }
@@ -595,7 +725,7 @@ const LOADING_KEY = '\u0000loading';
     </ng-template>
   `,
 })
-export class StarTreeTable {
+export class StarTreeTable implements ɵStarTableCellHost {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly doc = inject(DOCUMENT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -658,6 +788,11 @@ export class StarTreeTable {
   /** Top-level rows per page. Two-way. */
   readonly rows = model(10);
   readonly rowsPerPageOptions = input<readonly number[]>([10, 25, 50]);
+  /**
+   * The rows are loading: the body shows one loading row (the `starLoading` slot, else a spinner
+   * and the loading text) and the table has `aria-busy`. PrimeNG `loading`.
+   */
+  readonly loading = input(false, { transform: booleanAttribute });
 
   // ---- selection ----
   /**
@@ -730,6 +865,32 @@ export class StarTreeTable {
     'node',
   );
   protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  protected readonly loadingSlot = starSlot<object>(this.slots, this, 'loading');
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly headerCellSlots = starSlotMap<StarHeaderCellContext<unknown>>(
+    this.slots,
+    this,
+    'headerCell',
+  );
+  protected readonly rowSlot = starSlot<StarRowSlotContext<TreeTableNode>>(this.slots, this, 'row');
+  protected readonly footerRowSlot = starSlot<StarFooterRowContext<TreeTableNode>>(
+    this.slots,
+    this,
+    'footerRow',
+  );
+  protected readonly paginatorStartSlot = starSlot<StarTablePaginatorContext>(
+    this.slots,
+    this,
+    'paginatorStart',
+  );
+  protected readonly paginatorEndSlot = starSlot<StarTablePaginatorContext>(
+    this.slots,
+    this,
+    'paginatorEnd',
+  );
+  private readonly cellTemplates = contentChildren(StarCellTemplate, { descendants: true });
+  /** Context of an icon slot without a state. */
+  protected readonly noIconState: StarIconContext = {};
   protected readonly emptyContext = computed<StarEmptyContext>(() => ({
     $implicit: this.globalFilter(),
   }));
@@ -999,6 +1160,79 @@ export class StarTreeTable {
   /** A node shows an expander: it has children, or it is a lazy node that is not a leaf. */
   protected isExpandable(node: TreeTableNode): boolean {
     return !!node.children?.length || (this.lazy() && node.leaf === false);
+  }
+
+  /** Context of the `sort` icon slot: `true` ascending, `false` descending, else `undefined`. */
+  protected sortState(column: StarTreeTableColumn): StarIconContext {
+    const sort = this.sorts().find((item) => item.field === column.field);
+    return { $implicit: sort ? sort.order === 1 : undefined };
+  }
+
+  /** Context of the `toggle` icon slot: the branch is open. */
+  protected toggleState(key: string): StarIconContext {
+    return { $implicit: this.isOpen(key) };
+  }
+
+  /** Context of the `check` icon slot: `true` checked, `false` partly checked. */
+  protected checkIconState(key: string): StarIconContext {
+    return { $implicit: this.checkState(key) === true };
+  }
+
+  /** The `starCell` template of a column, or `null`. */
+  protected cellTemplate(field: string) {
+    return this.cellTemplates().find((item) => item.starCell() === field)?.template ?? null;
+  }
+
+  /** Context of a `starCell` template: the node, the value and the row index. */
+  protected cellContext(
+    row: TreeTableRow,
+    column: StarTreeTableColumn,
+  ): StarCellContext<TreeTableNode> {
+    const value = row.node.data?.[column.field];
+    return {
+      $implicit: row.node,
+      value,
+      index: this.display().findIndex((item) => item.row === row),
+      highlight: (text: unknown) => [{ text: String(text ?? ''), match: false, active: false }],
+    };
+  }
+
+  /** Context of the `starRow` slot: the columns after the first one (the tree column stays). */
+  protected rowSlotContext(row: TreeTableRow): StarRowSlotContext<TreeTableNode> {
+    return {
+      $implicit: row.node,
+      row: row.node,
+      index: this.display().findIndex((item) => item.row === row),
+      columns: this.visibleColumns().slice(
+        1,
+      ) as unknown as StarRowSlotContext<TreeTableNode>['columns'],
+      selected: this.isSelected(row.node.key),
+      expanded: this.isOpen(row.node.key),
+      editing: false,
+      pinned: null,
+    };
+  }
+
+  /** Context of the `starFooterRow` slot: the columns and the top-level rows (all pages). */
+  protected readonly footerRowContext = computed<StarFooterRowContext<TreeTableNode>>(() => {
+    const columns =
+      this.visibleColumns() as unknown as StarFooterRowContext<TreeTableNode>['columns'];
+    return { $implicit: columns, columns, rows: this.sortedNodes() };
+  });
+
+  /** Grid attributes of a `starTableCell` in a `starRow` template. Internal. */
+  ɵcellState(row: unknown, field: string): ɵStarTableCellState {
+    const node = row as TreeTableNode;
+    const ci = this.visibleColumns().findIndex((column) => column.field === field);
+    return {
+      field: null,
+      tabindex: ci < 0 ? null : this.cellTabIndex(node.key, ci),
+      colindex: null,
+      selected: null,
+      columnSelected: false,
+      label: null,
+      col: ci < 0 ? null : ci,
+    };
   }
 
   protected nodeContext(row: TreeTableRow): StarNodeContext<Record<string, unknown>> {

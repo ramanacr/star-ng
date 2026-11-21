@@ -186,13 +186,16 @@ export type StarIconSlotName =
   | 'first'
   | 'last'
   | 'list'
-  | 'grid';
+  | 'grid'
+  | 'sort';
 
 /** Context of the icon slot. */
 export interface StarIconContext {
   /**
-   * Only for the `toggle` icon of the tree: `true` when the branch is open, `false` when it is
-   * closed (`let-expanded`). `undefined` for all other icons.
+   * For the `toggle` icon of the tree and the tree table: `true` when the branch is open, `false`
+   * when it is closed (`let-expanded`). For the `check` icon of the tree table check box: `true`
+   * when checked, `false` when partly checked. For the `sort` icon of the tree table: `true`
+   * ascending, `false` descending, `undefined` not sorted. `undefined` for all other icons.
    */
   readonly $implicit?: boolean;
 }
