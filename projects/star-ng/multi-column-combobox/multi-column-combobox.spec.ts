@@ -235,8 +235,8 @@ describe('StarMultiColumnCombobox', () => {
     expect(options()[0].querySelector('.custom')?.textContent).toBe('Name=Ana Silva');
     expect(options()[0].querySelectorAll('.custom').length).toBe(3);
     // Header and footer slots sit in the shared slot regions, outside the scrolling list.
-    const head = document.querySelector('[data-star-part="panelHeader"]')!;
-    const foot = document.querySelector('[data-star-part="panelFooter"]')!;
+    const head = document.querySelector('[data-star-part="headerSlotPanel"]')!;
+    const foot = document.querySelector('[data-star-part="footerSlotPanel"]')!;
     expect(head.classList).toContain('star-panel__header');
     expect(foot.classList).toContain('star-panel__footer');
     expect(head.textContent).toBe('People');

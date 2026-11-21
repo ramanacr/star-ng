@@ -46,8 +46,8 @@ function regions(page: Page) {
   const panel = page.locator('.star-panel:visible');
   return {
     panel,
-    header: panel.locator('[data-star-part="panelHeader"]'),
-    footer: panel.locator('[data-star-part="panelFooter"]'),
+    header: panel.locator('[data-star-part="headerSlotPanel"]'),
+    footer: panel.locator('[data-star-part="footerSlotPanel"]'),
   };
 }
 
@@ -74,9 +74,9 @@ test.describe('header and footer slots in panels', () => {
     // The footer is the bottom of the panel, inside its border, and outside the scrolling list.
     expect(foot.box.y + foot.box.height).toBeLessThanOrEqual(foot.outer.y + foot.outer.height);
     expect(foot.box.y + foot.box.height).toBeGreaterThan(foot.outer.y + foot.outer.height - 3);
-    await expect(panel.getByRole('listbox').locator('[data-star-part="panelFooter"]')).toHaveCount(
-      0,
-    );
+    await expect(
+      panel.getByRole('listbox').locator('[data-star-part="footerSlotPanel"]'),
+    ).toHaveCount(0);
   });
 
   test('select: the footer stays in view when the list scrolls', async ({ page }) => {
@@ -87,8 +87,8 @@ test.describe('header and footer slots in panels', () => {
     // Positions relative to the panel, measured in one frame (the panel may still slide in).
     const moved = await panel.evaluate((root) => {
       const list = root.querySelector<HTMLElement>('[role=listbox]')!;
-      const foot = root.querySelector('[data-star-part="panelFooter"]')!;
-      const head = root.querySelector('[data-star-part="panelHeader"]')!;
+      const foot = root.querySelector('[data-star-part="footerSlotPanel"]')!;
+      const head = root.querySelector('[data-star-part="headerSlotPanel"]')!;
       const offsets = () => {
         const top = root.getBoundingClientRect().top;
         return [foot.getBoundingClientRect().top - top, head.getBoundingClientRect().top - top];
@@ -118,8 +118,8 @@ test.describe('header and footer slots in panels', () => {
   test('listbox: the inline box has the same regions', async ({ page }) => {
     await openHydrated(page, 'listbox', 'Listbox');
     const live = example(page, 'Slots');
-    const header = live.locator('[data-star-part="panelHeader"]');
-    const footer = live.locator('[data-star-part="panelFooter"]');
+    const header = live.locator('[data-star-part="headerSlotPanel"]');
+    const footer = live.locator('[data-star-part="footerSlotPanel"]');
     await expect(header).toHaveText('Cities with an office');
     await expect(header).toHaveCSS('border-bottom-width', '1px');
     await expect(footer).toHaveCSS('border-top-width', '1px');

@@ -10974,7 +10974,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "panelHeader",
+      "headerSlotPanel",
       "filterPanel",
       "toggleAllButton",
       "boxPanel",
@@ -10991,7 +10991,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "dragHandle",
       "groupItem",
       "emptyPanel",
-      "panelFooter"
+      "footerSlotPanel"
     ]
   },
   "StarListFilterTemplate": {
@@ -12678,7 +12678,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "clearIcon",
       "dropdownIcon",
       "panel",
-      "panelHeader",
+      "headerSlotPanel",
       "header",
       "head",
       "list",
@@ -12688,7 +12688,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "option",
       "skeletonText",
       "cell",
-      "panelFooter"
+      "footerSlotPanel"
     ]
   },
   "StarMultiDatePicker": {
@@ -13522,7 +13522,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "clearIcon",
       "dropdownIcon",
       "panel",
-      "panelHeader",
+      "headerSlotPanel",
       "filterPanel",
       "toggleAllButton",
       "boxPanel",
@@ -13539,7 +13539,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "label",
       "skeletonText",
       "optionIcon",
-      "panelFooter"
+      "footerSlotPanel"
     ]
   },
   "StarNodeTemplate": {
@@ -17177,7 +17177,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "clearIcon",
       "dropdownIcon",
       "panel",
-      "panelHeader",
+      "headerSlotPanel",
       "filterPanel",
       "filterIcon",
       "input",
@@ -17189,7 +17189,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "label",
       "skeletonText",
       "selectedIcon",
-      "panelFooter"
+      "footerSlotPanel"
     ]
   },
   "StarSelectButton": {
@@ -21136,7 +21136,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "panelHeader",
+      "headerSlotPanel",
       "filterPanel",
       "filterIcon",
       "input",
@@ -21153,7 +21153,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "list",
       "emptyItem",
       "body",
-      "panelFooter"
+      "footerSlotPanel"
     ]
   },
   "StarTreeSelect": {
@@ -21377,8 +21377,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "clearIcon",
       "expandIcon",
       "panel",
-      "panelHeader",
-      "panelFooter"
+      "headerSlotPanel",
+      "footerSlotPanel"
     ]
   },
   "StarTreeTable": {

@@ -61,7 +61,7 @@ class PlainHost {
       optionLabel="name"
       ariaLabel="Styled"
       unstyled
-      [pt]="{ panelHeader: { class: 'my-head' }, panelFooter: { class: 'my-foot' } }"
+      [pt]="{ headerSlotPanel: { class: 'my-head' }, footerSlotPanel: { class: 'my-foot' } }"
     >
       <ng-template starHeader>Head</ng-template>
       <ng-template starFooter>Foot</ng-template>
@@ -149,12 +149,12 @@ describe('StarListbox slots', () => {
     expect(head.compareDocumentPosition(filter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(list.compareDocumentPosition(foot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     // The shared slot regions, outside the scrolling list.
-    expect(head.parentElement!.matches('[data-star-part="panelHeader"].star-panel__header')).toBe(
-      true,
-    );
-    expect(foot.parentElement!.matches('[data-star-part="panelFooter"].star-panel__footer')).toBe(
-      true,
-    );
+    expect(
+      head.parentElement!.matches('[data-star-part="headerSlotPanel"].star-panel__header'),
+    ).toBe(true);
+    expect(
+      foot.parentElement!.matches('[data-star-part="footerSlotPanel"].star-panel__footer'),
+    ).toBe(true);
     expect(list.contains(foot)).toBe(false);
   });
 
@@ -162,8 +162,8 @@ describe('StarListbox slots', () => {
     const fixture = TestBed.createComponent(PtHost);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
-    const head = el.querySelector('[data-star-part="panelHeader"]')!;
-    const foot = el.querySelector('[data-star-part="panelFooter"]')!;
+    const head = el.querySelector('[data-star-part="headerSlotPanel"]')!;
+    const foot = el.querySelector('[data-star-part="footerSlotPanel"]')!;
     expect(head.classList).toContain('star-panel__header');
     expect(head.classList).toContain('my-head');
     expect(foot.classList).toContain('star-panel__footer');

@@ -203,8 +203,8 @@ describe('select slots', () => {
     expect(text).toContain('Head');
     expect(text).toContain('Foot');
     const panel = document.querySelector('.star-panel')!;
-    const head = panel.querySelector('[data-star-part="panelHeader"]')!;
-    const foot = panel.querySelector('[data-star-part="panelFooter"]')!;
+    const head = panel.querySelector('[data-star-part="headerSlotPanel"]')!;
+    const foot = panel.querySelector('[data-star-part="footerSlotPanel"]')!;
     expect(head.classList).toContain('star-panel__header');
     expect(foot.classList).toContain('star-panel__footer');
     expect(head.textContent).toBe('Head');

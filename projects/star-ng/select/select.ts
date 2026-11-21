@@ -178,7 +178,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         (focusout)="onPanelFocusout($event)"
       >
         @if (headerSlot(); as header) {
-          <div data-star-part="panelHeader" class="star-panel__header">
+          <div data-star-part="headerSlotPanel" class="star-panel__header">
             <ng-container *ngTemplateOutlet="header" />
           </div>
         }
@@ -328,7 +328,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           }
         </ul>
         @if (footerSlot(); as footer) {
-          <div data-star-part="panelFooter" class="star-panel__footer">
+          <div data-star-part="footerSlotPanel" class="star-panel__footer">
             <ng-container *ngTemplateOutlet="footer" />
           </div>
         }

@@ -90,7 +90,7 @@ export const STAR_DATE_TEMPLATE = `
       (keydown)="onPanelKeydown($event)"
     >
       @if (headerSlot(); as header) {
-        <div data-star-part="panelHeader" class="star-panel__header">
+        <div data-star-part="headerSlotPanel" class="star-panel__header">
           <ng-container *ngTemplateOutlet="header" />
         </div>
       }
@@ -150,7 +150,7 @@ export const STAR_DATE_TEMPLATE = `
       }
       <!-- The footer is last, below the button bar. PrimeNG \`#footer\` template. -->
       @if (footerSlot(); as footer) {
-        <div data-star-part="panelFooter" class="star-panel__footer">
+        <div data-star-part="footerSlotPanel" class="star-panel__footer">
           <ng-container *ngTemplateOutlet="footer" />
         </div>
       }

@@ -173,7 +173,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
   },
   template: `
     @if (headerSlot(); as header) {
-      <div data-star-part="panelHeader" class="star-panel__header">
+      <div data-star-part="headerSlotPanel" class="star-panel__header">
         <ng-container *ngTemplateOutlet="header" />
       </div>
     }
@@ -380,7 +380,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
     }
     <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     @if (footerSlot(); as footer) {
-      <div data-star-part="panelFooter" class="star-panel__footer">
+      <div data-star-part="footerSlotPanel" class="star-panel__footer">
         <ng-container *ngTemplateOutlet="footer" />
       </div>
     }
@@ -1183,7 +1183,7 @@ const POSITIONS: ConnectedPosition[] = [
     >
       <div starPart="panel" class="star-panel star-tree-select__panel">
         @if (headerSlot(); as header) {
-          <div data-star-part="panelHeader" class="star-panel__header">
+          <div data-star-part="headerSlotPanel" class="star-panel__header">
             <ng-container *ngTemplateOutlet="header" />
           </div>
         }
@@ -1213,7 +1213,7 @@ const POSITIONS: ConnectedPosition[] = [
           (nodeCollapse)="nodeCollapse.emit($event)"
         />
         @if (footerSlot(); as footer) {
-          <div data-star-part="panelFooter" class="star-panel__footer">
+          <div data-star-part="footerSlotPanel" class="star-panel__footer">
             <ng-container *ngTemplateOutlet="footer" />
           </div>
         }

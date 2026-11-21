@@ -174,10 +174,10 @@ describe('tree slots', () => {
     expect(el.querySelector('.plain .head')?.textContent).toBe('Head');
     expect(el.querySelector('.plain .foot')?.textContent).toBe('Foot');
     expect(
-      el.querySelector('.plain [data-star-part="panelHeader"].star-panel__header .head'),
+      el.querySelector('.plain [data-star-part="headerSlotPanel"].star-panel__header .head'),
     ).not.toBeNull();
     expect(
-      el.querySelector('.plain [data-star-part="panelFooter"].star-panel__footer .foot'),
+      el.querySelector('.plain [data-star-part="footerSlotPanel"].star-panel__footer .foot'),
     ).not.toBeNull();
     expect(el.querySelector('.plain [role="tree"] .foot')).toBeNull();
   });

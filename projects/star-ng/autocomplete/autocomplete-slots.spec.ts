@@ -157,10 +157,10 @@ describe('StarAutoComplete slots', () => {
     expect(panel.querySelector('[role="listbox"] .head')).toBeNull();
     expect(panel.querySelector('[role="listbox"] .foot')).toBeNull();
     expect(
-      panel.querySelector('[data-star-part="panelHeader"].star-panel__header .head'),
+      panel.querySelector('[data-star-part="headerSlotPanel"].star-panel__header .head'),
     ).not.toBeNull();
     expect(
-      panel.querySelector('[data-star-part="panelFooter"].star-panel__footer .foot'),
+      panel.querySelector('[data-star-part="footerSlotPanel"].star-panel__footer .foot'),
     ).not.toBeNull();
   });
 

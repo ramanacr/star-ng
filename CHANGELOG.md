@@ -6,7 +6,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Fixed
 
-- Header and footer slots (`starHeader`, `starFooter`) of select, multi-select, autocomplete, multi-column combobox, tree select, date picker, listbox and tree: the content sat flush against the edge of the panel, with no padding and no line between it and the list. It now sits in a padded region inside the panel, lined up with the options, with a thin divider to the list and small muted text like the group headings. The header stays above the scrolling list and the footer stays below it. The regions are the new parts `panelHeader` and `panelFooter` (pass-through `pt` and unstyled mode), and work in right-to-left pages and in dark mode.
+- Header and footer slots (`starHeader`, `starFooter`) of select, multi-select, autocomplete, multi-column combobox, tree select, date picker, listbox and tree: the content sat flush against the edge of the panel, with no padding and no line between it and the list. It now sits in a padded region inside the panel, lined up with the options, with a thin divider to the list and small muted text like the group headings. The header stays above the scrolling list and the footer stays below it. The regions are the new parts `headerSlotPanel` and `footerSlotPanel` (pass-through `pt` and unstyled mode), and work in right-to-left pages and in dark mode.
 
 ## [0.4.0] - 2026-11-21
 

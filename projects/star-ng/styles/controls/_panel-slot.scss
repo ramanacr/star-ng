@@ -1,5 +1,5 @@
-// Header and footer slot regions (`starHeader`, `starFooter`): parts `panelHeader` and
-// `panelFooter` of select, multi-select, autocomplete, multi-column combobox, tree select, date
+// Header and footer slot regions (`starHeader`, `starFooter`): parts `headerSlotPanel` and
+// `footerSlotPanel` of select, multi-select, autocomplete, multi-column combobox, tree select, date
 // picker, listbox, tree and calendar. The wrapper sits inside the panel and outside the scrolling
 // list, so the header stays above the list and the footer does not scroll away with it.
 @use '../shared' as *;
