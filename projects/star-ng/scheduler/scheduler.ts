@@ -764,7 +764,9 @@ export class StarScheduler {
   readonly slotSelect = output<StarSchedulerSlotSelect>();
   readonly eventSelect = output<StarSchedulerEventSelect>();
   readonly eventChange = output<StarSchedulerEventChange>();
+  /** Emits when Save is pressed in the built-in editor, before the dialog closes. */
   readonly editorSave = output<StarSchedulerEditorSave>();
+  /** Emits when Delete is pressed in the built-in editor, before the dialog closes. */
   readonly eventDelete = output<StarSchedulerEventSelect>();
 
   private readonly slotsQuery = contentChildren(StarSlot, { descendants: true });

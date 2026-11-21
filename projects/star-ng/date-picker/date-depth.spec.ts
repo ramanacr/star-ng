@@ -1122,6 +1122,8 @@ describe('date slot context', () => {
 });
 
 describe('date picker: focus without display or input format', () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it('switches the text in the focus event without a synchronous render', async () => {
     const fixture = TestBed.createComponent(FormatHost);
     await fixture.whenStable();
@@ -1141,9 +1143,22 @@ describe('date picker: focus without display or input format', () => {
     expect(styled.value).not.toBe(styledText);
     const focused = styled.value;
     expect(spy).not.toHaveBeenCalled();
-    spy.mockRestore();
     // The next render keeps that text.
     await fixture.whenStable();
     expect(styled.value).toBe(focused);
+  });
+
+  it('keeps the text typed before the next render', async () => {
+    const fixture = TestBed.createComponent(FormatHost);
+    await fixture.whenStable();
+    const styled = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'input[aria-label="Due"]',
+    )!;
+    styled.dispatchEvent(new Event('focus'));
+    // Typing comes before any render of the focus change.
+    styled.value = '23/1';
+    styled.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(styled.value).toBe('23/1');
   });
 });
