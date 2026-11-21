@@ -103,8 +103,7 @@ export interface StarRowSlotContext<T = unknown> {
 
 /**
  * Replaces the data cells of each body row: `<ng-template starRow let-row let-columns="columns">`
- * with one `<td [starTableCell]="column.field" [starTableCellRow]="row">` per column. PrimeNG
- * `#body` template. The table keeps the `<tr>` (its keys, selection, row click and context menu),
+ * with one `<td [starTableCell]="column.field" [starTableCellRow]="row">` per column. The table keeps the `<tr>` (its keys, selection, row click and context menu),
  * the lead cells (reorder, expander, selection) and the row actions cell, so the grid semantics of
  * cell navigation stay. `starTableCell` gives each cell its grid attributes (`data-field`, the
  * roving `tabindex`, `aria-colindex`, `aria-selected`). The table does not draw the editors of
@@ -191,7 +190,7 @@ export interface StarFooterRowContext<T = unknown> {
 
 /**
  * Replaces the data cells of the footer row: `<ng-template starFooterRow let-columns let-rows="rows">`
- * with `<td>` cells (one per column, or one with `colspan`). PrimeNG `#footer` template. The table
+ * with `<td>` cells (one per column, or one with `colspan`). The table
  * keeps the `<tfoot>` row and its lead and trail cells; the row shows also when no column has a
  * `footer` or a `summary`.
  */
@@ -224,7 +223,7 @@ export interface StarGroupFooterContext<T = unknown> {
 
 /**
  * A footer row below each group of `groupBy`: `<ng-template starGroupFooter let-label let-rows="rows">`
- * with `<td>` cells. PrimeNG `#groupfooter` template. Without it, `groupSummary` draws the summary
+ * with `<td>` cells. Without it, `groupSummary` draws the summary
  * cells; with it, the template replaces them.
  */
 @Directive({

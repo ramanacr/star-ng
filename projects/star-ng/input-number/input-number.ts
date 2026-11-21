@@ -203,7 +203,7 @@ export class StarInputNumber implements FormValueControl<number | null> {
    * `0`. Default `true` (an empty field is `null`). PrimeNG `allowEmpty`.
    */
   readonly allowEmpty = input(true, { transform: booleanAttribute });
-  /** Selects the whole text when the field gets the focus. PrimeNG `highlightOnFocus`. */
+  /** Selects the whole text when the field gets the focus. */
   readonly highlightOnFocus = input(false, { transform: booleanAttribute });
   readonly placeholder = input<string | null>(null);
   readonly ariaLabel = input<string | null>(null);

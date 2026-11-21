@@ -8282,7 +8282,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starFooterRow]",
     "entry": "@star-ng/ui/table",
-    "description": "Replaces the data cells of the footer row: `<ng-template starFooterRow let-columns let-rows=\"rows\">` with `<td>` cells (one per column, or one with `colspan`). PrimeNG `#footer` template. The table keeps the `<tfoot>` row and its lead and trail cells; the row shows also when no column has a `footer` or a `summary`.",
+    "description": "Replaces the data cells of the footer row: `<ng-template starFooterRow let-columns let-rows=\"rows\">` with `<td>` cells (one per column, or one with `colspan`). The table keeps the `<tfoot>` row and its lead and trail cells; the row shows also when no column has a `footer` or a `summary`.",
     "inputs": [
       {
         "name": "starFooterRowOf",
@@ -8772,7 +8772,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starGroupFooter]",
     "entry": "@star-ng/ui/table",
-    "description": "A footer row below each group of `groupBy`: `<ng-template starGroupFooter let-label let-rows=\"rows\">` with `<td>` cells. PrimeNG `#groupfooter` template. Without it, `groupSummary` draws the summary cells; with it, the template replaces them.",
+    "description": "A footer row below each group of `groupBy`: `<ng-template starGroupFooter let-label let-rows=\"rows\">` with `<td>` cells. Without it, `groupSummary` draws the summary cells; with it, the template replaces them.",
     "inputs": [
       {
         "name": "starGroupFooterOf",
@@ -9948,7 +9948,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Selects the whole text when the field gets the focus. PrimeNG `highlightOnFocus`."
+        "description": "Selects the whole text when the field gets the focus."
       },
       {
         "name": "placeholder",
@@ -16255,7 +16255,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'horizontal' | 'vertical'",
         "default": "'horizontal'",
         "required": false,
-        "description": "`'vertical'` stacks the stars (`aria-orientation`). PrimeNG `orientation`."
+        "description": "`'vertical'` stacks the stars (layout only). PrimeNG `orientation`."
       },
       {
         "name": "ariaLabel",
@@ -16771,7 +16771,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starRow]",
     "entry": "@star-ng/ui/table",
-    "description": "Replaces the data cells of each body row: `<ng-template starRow let-row let-columns=\"columns\">` with one `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">` per column. PrimeNG `#body` template. The table keeps the `<tr>` (its keys, selection, row click and context menu), the lead cells (reorder, expander, selection) and the row actions cell, so the grid semantics of cell navigation stay. `starTableCell` gives each cell its grid attributes (`data-field`, the roving `tabindex`, `aria-colindex`, `aria-selected`). The table does not draw the editors of the cells in this template.",
+    "description": "Replaces the data cells of each body row: `<ng-template starRow let-row let-columns=\"columns\">` with one `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">` per column. The table keeps the `<tr>` (its keys, selection, row click and context menu), the lead cells (reorder, expander, selection) and the row actions cell, so the grid semantics of cell navigation stay. `starTableCell` gives each cell its grid attributes (`data-field`, the roving `tabindex`, `aria-colindex`, `aria-selected`). The table does not draw the editors of the cells in this template.",
     "inputs": [
       {
         "name": "starRowOf",
@@ -19484,7 +19484,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Shows an \"Advanced filter\" button above the table. It opens a dialog with `star-query-builder` over the columns that have a `filter`; Apply sets `advancedQuery`. Ignite UI advanced filtering dialog."
+        "description": "Shows an \"Advanced filter\" button above the table. It opens a dialog with `star-query-builder` over all columns; Apply sets `advancedQuery`. Ignite UI advanced filtering dialog."
       },
       {
         "name": "pt",
@@ -19652,7 +19652,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarQueryGroup",
         "default": "{ operator: 'and', rules: [] }",
         "required": false,
-        "description": "Rules of the advanced filter (`StarQueryGroup`), applied with `starQueryToPredicate` after the column filters. Two-way; it works also without the `advancedFilter` button. Not in lazy mode: the owner filters on the server."
+        "description": "Rules of the advanced filter (`StarQueryGroup`), applied with `starQueryToPredicate` after the column filters. Two-way; it works also without the `advancedFilter` button. In lazy mode the table does not filter and `lazyLoad` does not carry it: the owner reads this model and filters on the server."
       },
       {
         "name": "columnSelection",

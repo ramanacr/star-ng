@@ -169,20 +169,17 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Form inputs
 
-- Color picker: `opened` and `closed` outputs of the custom color panel (PrimeNG `onShow`, `onHide`).
 - Checkbox: `starIcon="check"` slot for the check and the indeterminate icon (PrimeNG `#icon`).
-- Input mask: `characterPattern` (what an `a` slot takes; PrimeNG `characterPattern`).
-- Input number: `buttonLayout` (`horizontal`, `stacked`, `vertical`), `allowEmpty`, `highlightOnFocus` and the `starIcon` slots `increment` and `decrement` (PrimeNG `buttonLayout`, `allowEmpty`, `highlightOnFocus`, `#incrementbuttonicon`, `#decrementbuttonicon`).
+- Color picker: `opened` and `closed` outputs of the custom color panel; `format` (`hex`, `rgb`, `hsb`) of the value, read back without loss (PrimeNG `onShow`, `onHide`, `format`).
+- Input mask: `characterPattern`, `showClear`, `keepCharPositions` (Backspace, Delete, typing and paste keep the other characters in place) and `variant` (PrimeNG names).
+- Input number: `buttonLayout` (`horizontal`, `stacked`, `vertical`), `allowEmpty`, `highlightOnFocus`, `currencyDisplay`, `showClear` and the `starIcon` slots `increment` and `decrement` (PrimeNG `buttonLayout`, `allowEmpty`, `currencyDisplay`, `showClear`, `#incrementbuttonicon`, `#decrementbuttonicon`).
 - Input tags: `starInputTag` chip slot (`StarInputTagTemplate`, `StarInputTagContext`) and the `starIcon` slots `remove` and `clear`.
-- Password: `thresholds` of the strength levels; `starIcon` slots `show` and `hide`; `starHeader` and `starFooter` around the strength feedback (PrimeNG `#showicon`, `#hideicon`, `#header`, `#footer`).
-- Rating: `cancel` (a first option that clears the rating) and the `starIcon` slots `on`, `off` and `cancel` (PrimeNG `cancel`, `#onicon`, `#officon`, `#cancelicon`).
+- Knob: `strokeWidth` (1 to 20, through `--star-knob-stroke-width`) and `showValue` (PrimeNG `strokeWidth`, `showValue`).
+- Password: `thresholds` of the strength levels; `starIcon` slots `show` and `hide`; `starHeader` and `starFooter` around the strength feedback (PrimeNG `#showicon`, `#hideicon`).
+- Range slider: `orientation`, `slideEnd`, `minStepsBetweenHandles` (kept inside the bounds), `disabledMinHandle` and `disabledMaxHandle` (PrimeNG names).
+- Rating: `cancel`, `allowHalf` (half steps with the arrow keys, labels in the locale number format), `orientation` and the `starIcon` slots `on`, `off` and `cancel` (PrimeNG `cancel`, `allowHalf`, `orientation`, `#onicon`, `#officon`, `#cancelicon`).
 - Slider: `orientation="vertical"` and the `slideEnd` output (PrimeNG `orientation`, `onSlideEnd`).
-- Toggle switch: `onLabel` / `offLabel` state text and `starIcon` `on` / `off` in the handle (PrimeNG `#handle`); toggle button: `starIcon` `on` / `off`, `iconPos`, `starToggleButtonContent` (`StarToggleButtonContentTemplate`, PrimeNG `#icon`, `#content`, `iconPos`).
-- Color picker: `format` (`hex`, `rgb`, `hsb`) of the value; the picker reads all three (PrimeNG `format`).
-- Knob: `strokeWidth` and `showValue` (PrimeNG `strokeWidth`, `showValue`).
-- Input number: `currencyDisplay` and `showClear`; input mask: `showClear`, `keepCharPositions` and `variant` (PrimeNG names).
-- Rating: `allowHalf` (half steps with the arrow keys, "2.5 of 5") and `orientation` (PrimeNG `allowHalf`, `orientation`).
-- Range slider: `orientation`, `slideEnd`, `minStepsBetweenHandles`, `disabledMinHandle` and `disabledMaxHandle` (PrimeNG names).
+- Toggle switch: `onLabel` / `offLabel` state text and `starIcon` `on` / `off` in the handle (PrimeNG `#handle`). Toggle button: `starIcon` `on` / `off`, `iconPos` and `starToggleButtonContent` (`StarToggleButtonContentTemplate`; PrimeNG `#icon`, `#content`, `iconPos`).
 - `ariaLabelledBy` and `required` on password, input mask, input tags, input number, checkbox, toggle switch, toggle button, rating, slider, range slider, knob, color picker and select button (`aria-required` where the role takes it; Signal Forms `required()` binds to `required`).
 - Core: new `StarIconSlotName` values `sort`, `on`, `off`, `increment`, `decrement`, `remove`, `show` and `hide`.
 
@@ -340,7 +337,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: keyboard and scroll API: `focusCell(rowKey, field)`, `navigateTo(rowIndex, field)`, `scrollToRow(rowKeyOrIndex, { align })` and `scrollToColumn(field, { align })` (`'nearest'`, `'start'`, `'center'`, `'end'`; `StarScrollOptions`, `StarScrollAlign`). They open the page of a client paginator, render virtual rows and columns first and scroll smoothly unless motion is reduced.
 - UI texts `copiedCells`, `pastedCells`, `skippedCells`, `copyWithHeaders`, `sortAscending`, `sortDescending`, `hideColumn` and `exportCsv` (English, German, Spanish).
 - Table: `StarTablePasteEvent` (the `beforePaste` payload) has `readonly canceled: boolean` next to `cancel()`, like the other cancelable events. Code that builds this object itself must add the member.
-- Table: template slots `starRow` (the data cells of each row, with the new `td[starTableCell]` directive that keeps the grid attributes of cell navigation; context `StarRowSlotContext`), `starFooterRow`, `starGroupFooter`, `starPaginatorStart` and `starPaginatorEnd` (PrimeNG `#body`, `#footer`, `#groupfooter`, `#paginatorleft`, `#paginatorright`).
+- Table: template slots `starRow` (the data cells of each row, with the new `td[starTableCell]` directive that keeps the grid attributes of cell navigation; context `StarRowSlotContext`), `starFooterRow`, `starGroupFooter`, `starPaginatorStart` and `starPaginatorEnd` (PrimeNG `#paginatorleft`, `#paginatorright`).
 - Table: row pinning. Two-way `pinnedRows` (`StarRowPins`: row keys at the `top` or the `bottom`), `pinRow(row, side)`, `unpinRow(row)`, `rowPin` output (`StarRowPinEvent`) and the context menu items `pinRowTop`, `pinRowBottom` and `unpinRow`. Pinned rows leave the paged rows and stay in view in sticky body parts, also with virtual scroll (with `aria-rowindex`), also while their group is closed, and in lazy mode on every page (Ignite UI row pinning).
 - Table: `filterDelay` waits before typed filter text (filter row, filter menu without Apply, `globalFilter`) applies (PrimeNG `filterDelay`).
 - Table: Excel-style filter (`excelFilter` on a `'multiselect'` column): a header menu with a search box, Select all, Clear and a value check list (Ignite UI excel style filtering).

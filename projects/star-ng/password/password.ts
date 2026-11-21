@@ -53,11 +53,10 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
  * `<star-password [formField]="form.newPassword" feedback />`
  *
  * Strength: the share of `rules` met gives 1 to 4 bars; `thresholds` sets the shares for fair,
- * good and strong (PrimeNG `mediumRegex` / `strongRegex`; the texts come from `STAR_UI_TEXT`,
- * PrimeNG `weakLabel` / `mediumLabel` / `strongLabel`). Slots: `<ng-template starIcon="show">`
+ * good and strong; the level texts come from `STAR_UI_TEXT`. Slots: `<ng-template starIcon="show">`
  * and `starIcon="hide"` replace the icons of the show / hide button (PrimeNG `#showicon`,
- * `#hideicon`); `starHeader` and `starFooter` add content above and below the strength feedback
- * (PrimeNG `#header`, `#footer`).
+ * `#hideicon`); `starHeader` and `starFooter` add content above and below the strength
+ * feedback.
  */
 @Component({
   selector: 'star-password',
