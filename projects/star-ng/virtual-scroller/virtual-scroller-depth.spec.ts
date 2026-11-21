@@ -24,7 +24,7 @@ const NUMBERS = Array.from({ length: 1000 }, (_, i) => i);
     <star-virtual-scroller
       id="grid"
       orientation="both"
-      [items]="rows"
+      [items]="rows()"
       [itemSize]="30"
       [columnSize]="80"
       scrollHeight="300px"
@@ -67,7 +67,7 @@ const NUMBERS = Array.from({ length: 1000 }, (_, i) => i);
   `,
 })
 class Host {
-  readonly rows = ROWS;
+  readonly rows = signal<readonly (readonly string[])[]>(ROWS);
   readonly numbers = NUMBERS;
   readonly loading = signal(false);
   readonly delay = signal(0);
@@ -95,6 +95,16 @@ describe('StarVirtualScroller depth', () => {
     expect(cells.length).toBeLessThan(100);
     const row = rows[0].querySelector<HTMLElement>('[data-star-part=rowPanel]')!;
     expect(row.style.width).toBe('8000px');
+  });
+
+  it('counts the columns of 200 000 rows without a stack overflow', async () => {
+    const { fixture, el, host } = await setup();
+    host.rows.set(
+      Array.from({ length: 200_000 }, (_, r) => (r === 150_000 ? ['a', 'b', 'c', 'd'] : ['a'])),
+    );
+    await fixture.whenStable();
+    const row = el.querySelector<HTMLElement>('#grid [data-star-part=rowPanel]')!;
+    expect(row.style.width).toBe(`${4 * 80}px`);
   });
 
   it('shows the loader slot in place of each item while loading', async () => {
