@@ -36,6 +36,6 @@ test.describe('form inputs depth (wave N1)', () => {
     await expect(slider).toHaveAttribute('aria-orientation', 'vertical');
     await slider.focus();
     await page.keyboard.press('ArrowUp');
-    await expect(live.getByRole('status')).toHaveText('Last end: 61');
+    await expect(live.locator('p.docs-output')).toHaveText('Last end: 61');
   });
 });

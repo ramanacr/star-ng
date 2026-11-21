@@ -1184,7 +1184,7 @@ const STATES: readonly State[] = [
       await example(page, 'Excel-style filter')
         .getByRole('button', { name: 'Filter Status' })
         .click();
-      await expect(page.getByRole('searchbox', { name: 'Search' })).toBeVisible();
+      await expect(page.getByRole('searchbox', { name: 'Search', exact: true })).toBeVisible();
     },
   },
   {

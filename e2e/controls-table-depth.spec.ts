@@ -42,7 +42,7 @@ test.describe('table depth (wave N1)', () => {
     const live = example(page, 'Excel-style filter');
     await live.getByRole('button', { name: 'Filter Status' }).click();
     const dialog = page.getByRole('dialog', { name: 'Filter Status' });
-    await dialog.getByRole('searchbox', { name: 'Search' }).fill('pai');
+    await dialog.getByRole('searchbox', { name: 'Search', exact: true }).fill('pai');
     await expect(dialog.getByRole('checkbox')).toHaveCount(1);
     await dialog.getByRole('button', { name: 'Select all' }).click();
     await dialog.getByRole('button', { name: 'Apply' }).click();
