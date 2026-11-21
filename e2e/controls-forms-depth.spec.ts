@@ -107,4 +107,26 @@ test.describe('form inputs depth (wave N1)', () => {
     expect(await width(0)).toBe('14px');
     expect(await width(1)).toBe('10px');
   });
+
+  test('color picker: the inline hue slider changes the color with the keys', async ({ page }) => {
+    await openPage(page, '/controls/color-picker', 'Color picker');
+    const live = example(page, 'Inline panel');
+    const hue = live.getByRole('slider', { name: 'Hue' });
+    await hue.focus();
+    await page.keyboard.press('End');
+    await expect(live.locator('p.docs-output')).not.toHaveText('Value: #0f766e');
+    await expect(hue).toBeFocused();
+  });
+
+  test('password: the show button keeps the focus and reports its state', async ({ page }) => {
+    await openPage(page, '/controls/password', 'Password');
+    const live = example(page, 'Strength and templates');
+    const button = live.getByRole('button', { name: 'Show password' });
+    await button.click();
+    await expect(live.getByRole('button', { name: 'Hide password' })).toBeFocused();
+    await expect(live.getByRole('button', { name: 'Hide password' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
 });
