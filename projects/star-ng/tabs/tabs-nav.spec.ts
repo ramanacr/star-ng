@@ -81,6 +81,48 @@ describe('StarTabNav', () => {
   });
 });
 
+// RouterLink first: its click handler is set up before the one of the tab link.
+@Component({
+  imports: [RouterLink, RouterLinkActive, StarTabNav, StarTabLink, StarTabNavPanel],
+  template: `
+    <star-tab-nav ariaLabel="Pages" [tabPanel]="panel">
+      <a starTabLink routerLink="/details" routerLinkActive>Details</a>
+      <a starTabLink routerLink="/files" routerLinkActive disabled>Files</a>
+    </star-tab-nav>
+    <star-tab-nav-panel #panel>Content</star-tab-nav-panel>
+  `,
+})
+class DisabledHost {}
+
+describe('StarTabLink disabled', () => {
+  it('does not navigate on a click or Enter, and says so with aria-disabled', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([
+          { path: 'details', component: Page },
+          { path: 'files', component: Page },
+        ]),
+      ],
+    });
+    const fixture = TestBed.createComponent(DisabledHost);
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/details');
+    await fixture.whenStable();
+    const files = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>(
+      'a[starTabLink]',
+    )[1];
+    expect(files.getAttribute('aria-disabled')).toBe('true');
+    files.click();
+    await fixture.whenStable();
+    expect(router.url).toBe('/details');
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    files.dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(true);
+    await fixture.whenStable();
+    expect(router.url).toBe('/details');
+  });
+});
+
 @Component({
   imports: [StarTabs, StarTab],
   template: `

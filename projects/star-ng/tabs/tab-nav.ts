@@ -62,7 +62,6 @@ export class StarTabNavPanel {
     '[attr.aria-current]': '!nav.tabPanel() && isActive() ? "page" : null',
     '[attr.aria-disabled]': 'disabled() || null',
     '[attr.tabindex]': 'tabIndex()',
-    '(click)': 'onClick($event)',
     '(keydown)': 'nav.onKeydown($event, this)',
   },
 })
@@ -90,12 +89,23 @@ export class StarTabLink {
       );
       inject(DestroyRef).onDestroy(() => subscription.unsubscribe());
     }
-  }
-
-  protected onClick(event: MouseEvent): void {
-    if (!this.disabled()) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
+    // A disabled link must not navigate. `RouterLink` does not check `defaultPrevented`, and its
+    // listener can run first. A capture listener on the link runs before the bubble listeners of
+    // the target, so it stops the click (and the click that Enter makes) before `RouterLink`.
+    const block = (event: Event) => {
+      if (!this.disabled()) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    const blockEnter = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') block(event);
+    };
+    this.element.addEventListener('click', block, { capture: true });
+    this.element.addEventListener('keydown', blockEnter, { capture: true });
+    inject(DestroyRef).onDestroy(() => {
+      this.element.removeEventListener('click', block, { capture: true });
+      this.element.removeEventListener('keydown', blockEnter, { capture: true });
+    });
   }
 }
 
