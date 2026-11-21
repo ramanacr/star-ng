@@ -132,6 +132,7 @@ export const STAR_DATE_TEMPLATE = `
                 [showSeconds]="showSeconds()"
                 [hourFormat]="hourFormat()"
                 [disabled]="!field.value"
+                [cellTemplate]="timeCellSlot()"
                 (valueChange)="$event && field.set($event)"
               />
             </div>

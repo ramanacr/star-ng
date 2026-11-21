@@ -59,7 +59,12 @@ import {
 import { STAR_DATE_PICKER_DEFAULTS } from './date-picker-defaults';
 import { STAR_DATE_HOST, STAR_DATE_TEMPLATE } from './date-picker.template';
 import { StarDateSheet } from './date-sheet';
-import type { StarButtonBarContext, StarDateContext, StarDecadeContext } from './date-slots';
+import type {
+  StarButtonBarContext,
+  StarDateContext,
+  StarDecadeContext,
+  StarTimeCellContext,
+} from './date-slots';
 import {
   compareDays,
   DEFAULT_DATE_FORMAT,
@@ -285,6 +290,8 @@ export abstract class StarDateInputBase<TValue> {
   protected readonly dateSlot = starSlot<StarDateContext>(this.slots, this, 'date');
   protected readonly decadeSlot = starSlot<StarDecadeContext>(this.slots, this, 'decade');
   protected readonly buttonBarSlot = starSlot<StarButtonBarContext>(this.slots, this, 'buttonBar');
+  /** `starTimeCell`: the cells of the time columns of `showTime`. */
+  protected readonly timeCellSlot = starSlot<StarTimeCellContext>(this.slots, this, 'timeCell');
   protected readonly buttonBarContext: StarButtonBarContext = {
     today: () => this.today(),
     clear: () => this.onClearClick(),

@@ -119,7 +119,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Date pickers: `touchUI` opens the popup as a centered modal sheet in a native `<dialog>` with larger days, and `breakpoint` (a CSS length, for example `'640px'`) does so only on a window that is not wider; the page does not scroll under the sheet, and the keyboard model stays (PrimeNG `touchUI`, `breakpoint`).
 - Date pickers with `showTime`: `minTime` / `maxTime` limit the time of every day (`HH:mm` or `HH:mm:ss`), together with `minDate` / `maxDate`. `star-time-picker` keeps its `min` / `max` for the same purpose; its 12-hour clock works with seconds.
 
-- Date pickers and calendar: the slots `starDecade` (the title of the year view; calendar input `decadeTemplate`) and `starButtonBar` (the buttons of the button bar, with `today` and `clear`). Time picker: the slots `starHeader`, `starFooter` and `starTimeCell` (each hour, minute, second and period cell; `star-time-columns` input `cellTemplate`) (PrimeNG `#decade`, `#buttonbar` and the time templates).
+- Date pickers and calendar: the slots `starDecade` (the title of the year view; calendar input `decadeTemplate`) and `starButtonBar` (the buttons of the button bar, with `today` and `clear`). Time picker: the slots `starHeader`, `starFooter` and `starTimeCell` (each hour, minute, second and period cell; `star-time-columns` input `cellTemplate`; the date pickers with `showTime` pass it to their time columns too) (PrimeNG `#decade`, `#buttonbar` and the time templates).
 
 #### Diagram
 

@@ -68,6 +68,35 @@ class TimeHost {
   readonly time = signal<string | null>('09:30');
 }
 
+@Component({
+  imports: [StarDatePicker, StarTimeCellTemplate],
+  template: `
+    <star-date-picker ariaLabel="Meeting" showTime [(value)]="when">
+      <ng-template starTimeCell let-label let-part="part"
+        ><b class="own-date-cell">{{ part }}:{{ label }}</b></ng-template
+      >
+    </star-date-picker>
+  `,
+})
+class DateTimeHost {
+  readonly when = signal<Date | null>(new Date(2026, 0, 5, 9, 30));
+}
+
+describe('Date picker with showTime and starTimeCell', () => {
+  it('passes the time cell slot to the time columns', async () => {
+    const fixture = TestBed.createComponent(DateTimeHost);
+    await fixture.whenStable();
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('.star-date__toggle')!
+      .click();
+    await fixture.whenStable();
+    const cells = [...document.querySelectorAll('.own-date-cell')].map((c) => c.textContent);
+    expect(cells.some((c) => c!.startsWith('hour:'))).toBe(true);
+    expect(cells).toContain('minute:30');
+    expect(document.querySelector('.own-date-cell')!.closest('[role=option]')).not.toBeNull();
+  });
+});
+
 describe('Time picker slots', () => {
   it('renders the header, footer and cell slots in the panel', async () => {
     const fixture = TestBed.createComponent(TimeHost);
