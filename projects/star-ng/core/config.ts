@@ -104,6 +104,13 @@ export interface StarConfig {
    * `unstyled` input of a control wins.
    */
   readonly unstyled?: boolean;
+  /**
+   * `true`: form controls fill the width of their container in the whole application (PrimeNG
+   * `p-fluid` on the root and the `fluid` default). Most StarNG form controls fill their container
+   * already; this also widens the compact ones (for example `star-cascade-select`) and is the
+   * default of their `fluid` input. For one area, use the `starFluid` directive.
+   */
+  readonly fluid?: boolean;
 }
 
 /**
@@ -131,6 +138,7 @@ export class StarConfigService {
   /** What this service set on `<html>`: it removes only its own values. */
   private motionSet = false;
   private zIndexSet = false;
+  private fluidSet = false;
 
   constructor() {
     // The controls with styling hooks inject this service too, so it can exist without
@@ -145,6 +153,13 @@ export class StarConfigService {
       } else if (this.motionSet) {
         root.removeAttribute('data-star-motion');
         this.motionSet = false;
+      }
+      if (config.fluid) {
+        root.setAttribute('data-star-fluid', '');
+        this.fluidSet = true;
+      } else if (this.fluidSet) {
+        root.removeAttribute('data-star-fluid');
+        this.fluidSet = false;
       }
       const base = config.overlay?.zIndexBase;
       const style = (root as HTMLElement).style;
@@ -187,6 +202,7 @@ export interface StarControlDefaults<TSize extends 'sm' | 'md' | 'lg' = 'sm' | '
   readonly appendTo?: 'body' | 'self';
   readonly filterMatchMode?: StarFilterMatchMode;
   readonly locale?: string;
+  readonly fluid?: boolean;
 }
 
 /**
@@ -214,6 +230,7 @@ export function injectStarControlDefaults<
     appendTo: config.overlay?.appendTo,
     filterMatchMode: config.filterMatchMode,
     locale: config.locale,
+    fluid: config.fluid,
   };
   for (const [key, value] of Object.entries(overrides ?? {})) {
     if (value !== undefined) merged[key] = value;

@@ -97,6 +97,8 @@ export interface StarTreeNode<T = unknown> {
   readonly leaf?: boolean;
   /** The children of this node are loading: the node shows a loading row or icon. */
   readonly loading?: boolean;
+  /** Kind of the node, for a `starNode="<type>"` template (PrimeNG `type`). */
+  readonly type?: string;
   /** `false`: the node cannot be dragged, also when the tree has `draggableNodes`. */
   readonly draggable?: boolean;
   /** `false`: no node can be dropped inside this node (before and after it still work). */
@@ -271,7 +273,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
           ></i>
         }
         <span data-star-part="label" class="star-tree__label">
-          @if (nodeSlot(); as custom) {
+          @if (nodeSlotFor(item.node); as custom) {
             <ng-container *ngTemplateOutlet="custom; context: nodeContext(item)" />
           } @else {
             <ng-container>{{ item.node.label }}</ng-container>
@@ -475,6 +477,12 @@ export class StarTree implements FormValueControl<readonly string[]> {
    */
   readonly nodeTemplate = input<TemplateRef<StarNodeContext> | null>(null);
   /**
+   * Set by `star-tree-select`: its `starNode` templates by type. Not public API.
+   *
+   * @internal
+   */
+  readonly nodeTemplates = input<ReadonlyMap<string, TemplateRef<StarNodeContext>> | null>(null);
+  /**
    * Set by `star-tree-select`. In your own markup, use the `starEmpty` slot.
    *
    * @internal
@@ -508,11 +516,21 @@ export class StarTree implements FormValueControl<readonly string[]> {
   private readonly slots = contentChildren(StarSlot, { descendants: true });
   protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
   protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
-  private readonly ownNodeSlot = starSlot<StarNodeContext>(this.slots, this, 'node');
+  private readonly ownNodeSlots = starSlotMap<StarNodeContext>(this.slots, this, 'node');
   private readonly ownEmptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
   private readonly ownIconSlots = starSlotMap<StarToggleIconContext>(this.slots, this, 'icon');
-  /** Own `starNode` slot first, then the `nodeTemplate` input. */
-  protected readonly nodeSlot = computed(() => this.ownNodeSlot() ?? this.nodeTemplate());
+  /** The template of a node: own `starNode` slots first (by `type`), then the inputs. */
+  protected nodeSlotFor(node: StarTreeNode): TemplateRef<StarNodeContext> | null {
+    const own = this.ownNodeSlots();
+    const passed = this.nodeTemplates();
+    const type = node.type;
+    return (
+      (type ? (own.get(type) ?? passed?.get(type)) : undefined) ??
+      own.get('') ??
+      passed?.get('') ??
+      this.nodeTemplate()
+    );
+  }
   protected readonly emptySlot = computed(() => this.ownEmptySlot() ?? this.emptyTemplate());
   protected readonly toggleIcon = computed(
     () => this.ownIconSlots().get('toggle') ?? this.toggleIconTemplate(),
@@ -1204,7 +1222,7 @@ const POSITIONS: ConnectedPosition[] = [
           [virtualScroll]="virtualScroll()"
           [virtualItemSize]="virtualItemSize()"
           [ariaLabel]="ariaLabel() ?? (field?.label() || null)"
-          [nodeTemplate]="nodeSlot()"
+          [nodeTemplates]="nodeSlots()"
           [emptyTemplate]="emptySlot()"
           [toggleIconTemplate]="toggleIcon()"
           (nodeSelect)="onNodeSelect($event)"
@@ -1285,7 +1303,7 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   private readonly slots = contentChildren(StarSlot, { descendants: true });
   protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
   protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
-  protected readonly nodeSlot = starSlot<StarNodeContext>(this.slots, this, 'node');
+  protected readonly nodeSlots = starSlotMap<StarNodeContext>(this.slots, this, 'node');
   protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
   private readonly iconSlots = starSlotMap<StarToggleIconContext>(this.slots, this, 'icon');
   protected readonly toggleIcon = computed(() => this.iconSlots().get('toggle') ?? null);

@@ -1,7 +1,8 @@
 // Header and footer slot regions (`starHeader`, `starFooter`): parts `headerSlotPanel` and
-// `footerSlotPanel` of select, multi-select, autocomplete, multi-column combobox, tree select, date
-// picker, listbox, tree and calendar. The wrapper sits inside the panel and outside the scrolling
-// list, so the header stays above the list and the footer does not scroll away with it.
+// `footerSlotPanel` of select, multi-select, autocomplete, multi-column combobox, tree select,
+// cascade select, date picker, listbox and tree, and the `headerPanel` of the popover. The wrapper
+// sits inside the panel and outside the scrolling list, so the header stays above the list and the
+// footer does not scroll away with it.
 @use '../shared' as *;
 
 .star-panel__header {
@@ -17,4 +18,21 @@
 }
 .star-date__panel > .star-panel__footer {
   @include star-slot-region(footer, $inline: var(--star-space-3), $bleed: 0.75rem);
+}
+// Cascade select: the regions are the start and end content of its menu, whose frame has a
+// padding and a gap of its own.
+.star-menu__start:has(> .star-panel__header),
+.star-menu__end:has(> .star-panel__footer) {
+  padding: 0;
+}
+.star-menu__start > .star-panel__header {
+  @include star-slot-region(header, $bleed: 0.375rem, $gap: 0);
+}
+.star-menu__end > .star-panel__footer {
+  @include star-slot-region(footer, $bleed: 0.375rem, $gap: 0);
+}
+// Popover: the header reaches the edges of the padded surface, and the text lines up with the
+// content.
+.star-popover > .star-panel__header {
+  @include star-slot-region(header, $inline: var(--star-space-4), $bleed: 1rem, $gap: 0.75rem);
 }

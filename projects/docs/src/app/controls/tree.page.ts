@@ -597,6 +597,11 @@ readonly share = form(this.shareModel, (path) => {
 
   protected readonly slots: readonly DocsRow[] = [
     {
+      name: 'ng-template[starNode="type"]',
+      description:
+        'Content child. The template of the nodes with that type (StarTreeNode type); the template without a type draws the other nodes. PrimeNG node templates per type.',
+    },
+    {
       name: 'ng-template[starNode]',
       description:
         'Content child. Replaces the label of a node. The toggle, checkbox and icon stay. The context has $implicit (the node), level, expanded and selected. Do not add focusable elements: the tree owns the keys. The content is inside the label. With virtualScroll the row keeps the height virtualItemSize and long content is cut off with an ellipsis.',

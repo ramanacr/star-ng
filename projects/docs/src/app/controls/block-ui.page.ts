@@ -60,6 +60,11 @@ blockFor(ms: number): void {
 }`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starLoading]',
+      description:
+        'Content child. Replaces the spinner and the message on the mask. PrimeNG #content.',
+    },
     { name: '(default)', description: 'The content that the block covers.' },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

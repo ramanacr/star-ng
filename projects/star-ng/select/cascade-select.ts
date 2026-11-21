@@ -14,6 +14,7 @@ import {
   input,
   model,
   output,
+  TemplateRef,
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
@@ -44,6 +45,14 @@ interface Leaf<TOption, TValue> {
   readonly path: readonly string[];
 }
 
+/** Payload of `groupChange` of `star-cascade-select`: a group (parent option) opened. */
+export interface StarCascadeGroupChangeEvent<TOption> {
+  /** The parent option whose submenu opened. */
+  readonly option: TOption;
+  /** Depth of that option: `1` for a top-level option. */
+  readonly level: number;
+}
+
 /** One entry of the cascade menu: the menu item and the data of its option. */
 interface CascadeItem<TOption> extends StarMenuItem {
   readonly option: TOption;
@@ -68,11 +77,14 @@ interface CascadeItem<TOption> extends StarMenuItem {
  *
  * Slots: `ng-template[starCascadeOption]` replaces the label of each menu entry
  * (`StarCascadeOptionTemplate`, PrimeNG `#option`); `ng-template[starSelected]` replaces the text
- * of the chosen leaf in the trigger (PrimeNG `#value`); `starIcon` with `dropdown`, `clear` and
- * `loading` replaces those icons.
+ * of the chosen leaf in the trigger (PrimeNG `#value`); `starHeader` and `starFooter` add content
+ * above and below the options in the menu (PrimeNG `#header`, `#footer`; keep them free of
+ * focusable elements: the menu owns the keyboard and Tab closes it); `starIcon` with `dropdown`,
+ * `clear`, `loading` and `group` (the submenu arrow, PrimeNG `#groupicon`) replaces those icons.
  *
  * PrimeNG names that star-ng covers in another way: `optionGroupChildren` = `optionChildren`,
  * `dataKey` = `compareWith`, `id` = `inputId`, `onChange` = `valueChange` and `optionSelect`,
+ * `onGroupChange` = `groupChange`,
  * `onFocus` and `onBlur` = the native `focusin` and `focusout` events of the host, `variant` =
  * `inputVariant` of `provideStarNg`, `panelStyle` and `panelStyleClass` = `pt` of the menu. Not
  * applicable: `appendTo`, `overlayOptions` and `motionOptions` (the menu is a CDK overlay with
@@ -113,8 +125,8 @@ interface CascadeItem<TOption> extends StarMenuItem {
         [attr.aria-describedby]="fieldDescribedBy()"
         [attr.aria-invalid]="showInvalid() || null"
         [attr.tabindex]="tabindex()"
-        (cdkMenuOpened)="beforeShow.emit(); show.emit()"
-        (cdkMenuClosed)="beforeHide.emit(); hide.emit(); touch.emit()"
+        (cdkMenuOpened)="beforeShow.emit()"
+        (cdkMenuClosed)="beforeHide.emit(); touch.emit()"
       >
         @if (selected(); as leaf) {
           @if (selectedSlot(); as custom) {
@@ -176,9 +188,24 @@ interface CascadeItem<TOption> extends StarMenuItem {
       #menu
       [ariaLabel]="ariaLabel() ?? (field?.label() || null)"
       [itemTemplate]="optionSlot() && options().length ? optionItem : null"
+      [inheritedSlots]="menuSlots()"
+      (show)="show.emit()"
+      (hide)="hide.emit()"
+      (submenuShow)="onGroup($event)"
     />
     <ng-template #optionItem let-item>
       <ng-container *ngTemplateOutlet="optionSlot(); context: optionContext(item)" />
+    </ng-template>
+    <!-- The header and footer slots, in the shared slot regions of the panels. -->
+    <ng-template #headerRegion>
+      <div data-star-part="headerSlotPanel" class="star-panel__header">
+        <ng-container *ngTemplateOutlet="headerSlot()" />
+      </div>
+    </ng-template>
+    <ng-template #footerRegion>
+      <div data-star-part="footerSlotPanel" class="star-panel__footer">
+        <ng-container *ngTemplateOutlet="footerSlot()" />
+      </div>
     </ng-template>
   `,
 })
@@ -225,8 +252,12 @@ export class StarCascadeSelect<
   readonly loading = input(false, { transform: booleanAttribute });
   /** Icon classes of the loading state. */
   readonly loadingIcon = input('ph-bold ph-spinner-gap star-spin');
-  /** The control fills the width of its container. PrimeNG `fluid`. */
-  readonly fluid = input(false, { transform: booleanAttribute });
+  /**
+   * The control fills the width of its container. Default: `fluid` of `provideStarNg`, else
+   * `false`; a `starFluid` container widens it too, and a nearer `data-star-fluid="false"`
+   * (`starFluid="false"`) turns it off. PrimeNG `fluid`.
+   */
+  readonly fluid = input(this.defaults.fluid ?? false, { transform: booleanAttribute });
   /** `tabindex` of the trigger button. */
   readonly tabindex = input<number | null>(null);
   /** Focuses the trigger once, after the first render. PrimeNG `autofocus`. */
@@ -246,20 +277,16 @@ export class StarCascadeSelect<
   readonly touch = output<void>();
   /** The user chose a leaf. */
   readonly optionSelect = output<TOption>();
-  /**
-   * Emits right before `show`, after the menu opened (the CDK menu has no earlier hook).
-   * PrimeNG `onBeforeShow`.
-   */
+  /** Emits when the menu starts to open, before its overlay is created. PrimeNG `onBeforeShow`. */
   readonly beforeShow = output<void>();
-  /** Emits when the menu opens. PrimeNG `onShow`. */
+  /** Emits when the menu is open and in the page. PrimeNG `onShow`. */
   readonly show = output<void>();
-  /**
-   * Emits right before `hide`, after the menu closed (the CDK menu has no earlier hook).
-   * PrimeNG `onBeforeHide`.
-   */
+  /** Emits when the menu starts to close, before its overlay is removed. PrimeNG `onBeforeHide`. */
   readonly beforeHide = output<void>();
-  /** Emits when the menu closes. PrimeNG `onHide`. */
+  /** Emits when the menu is closed and removed. PrimeNG `onHide`. */
   readonly hide = output<void>();
+  /** Emits when a submenu opens: the parent option and its level. PrimeNG `onGroupChange`. */
+  readonly groupChange = output<StarCascadeGroupChangeEvent<TOption>>();
   /** Emits after the clear button removed the value. PrimeNG `onClear`. */
   readonly cleared = output<void>();
 
@@ -343,6 +370,26 @@ export class StarCascadeSelect<
   );
   protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
   protected readonly iconContext: StarIconContext = {};
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  /** Header, footer and group icon, as `start`, `end` and the submenu icon of the menu. */
+  private readonly headerRegion = viewChild<TemplateRef<unknown>>('headerRegion');
+  private readonly footerRegion = viewChild<TemplateRef<unknown>>('footerRegion');
+  protected readonly menuSlots = computed(() => {
+    const map = new Map<string, TemplateRef<unknown>>();
+    const group = this.icons().get('group');
+    const header = this.headerSlot() && this.headerRegion();
+    const footer = this.footerSlot() && this.footerRegion();
+    if (header) map.set('start', header);
+    if (footer) map.set('end', footer);
+    if (group) map.set('icon:submenu', group);
+    return map;
+  });
+
+  protected onGroup(item: StarMenuItem): void {
+    const entry = item as CascadeItem<TOption>;
+    this.groupChange.emit({ option: entry.option, level: entry.level });
+  }
 
   /** Context of the option slot for one menu entry. The entries are the `CascadeItem`s of `menuItems`. */
   protected optionContext(item: StarMenuItem): StarCascadeOptionContext<TOption> {

@@ -473,6 +473,11 @@ export class ChartPage {
   protected readonly interactionScript = `readonly picked = signal<StarChartPointSelectEvent | null>(null);`;
   protected readonly slots: readonly DocsRow[] = [
     {
+      name: 'plugins input',
+      description:
+        'Not a slot: StarChartPlugin objects with beforeDraw (a layer under the plot) and afterDraw (a layer over it). The layers are aria-hidden. refresh() draws again. PrimeNG plugins and refresh().',
+    },
+    {
       name: 'ng-template starChartTooltip',
       description:
         'Content of the tooltip. Context: $implicit and points (seriesIndex, index, value, series, label of each point at the hover position), label (the category, or the series for scatter).',

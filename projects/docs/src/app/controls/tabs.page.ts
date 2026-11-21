@@ -1,11 +1,16 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import {
   StarTab,
   StarTabCloseEvent,
   StarTabContent,
   StarTabHeader,
+  StarTabLink,
+  StarTabNav,
+  StarTabNavPanel,
   StarTabReorderEvent,
   StarTabs,
 } from '@star-ng/ui/tabs';
@@ -13,7 +18,20 @@ import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-tabs-page',
-  imports: [DOCS, StarTabs, StarTab, StarTabContent, StarTabHeader, StarField, StarInput],
+  imports: [
+    DOCS,
+    StarTabs,
+    StarTab,
+    StarTabContent,
+    StarTabHeader,
+    StarField,
+    StarInput,
+    StarTabNav,
+    StarTabLink,
+    StarTabNavPanel,
+    RouterLink,
+    RouterLinkActive,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -186,6 +204,43 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Router link tabs"
+        source="tabs/nav"
+        [script]="navScript"
+        note="star-tab-nav with a[starTabLink] and routerLinkActive: the router decides the active link. With tabPanel the bar is a tablist of tab links (Arrow keys, Home and End move the focus; Enter or Space follows the link) and star-tab-nav-panel is the tabpanel, usually around a router-outlet. Here the links change a query parameter of this page. dynamicHeight on star-tabs animates the height of the panels, and animationDuration fades the new panel in; both stop with reduced motion."
+      >
+        <star-tab-nav ariaLabel="Order views" [tabPanel]="orderPanel">
+          <a
+            starTabLink
+            routerLink="."
+            [queryParams]="{ view: null }"
+            routerLinkActive
+            [routerLinkActiveOptions]="exactQuery"
+            >Summary</a
+          >
+          <a
+            starTabLink
+            routerLink="."
+            [queryParams]="{ view: 'lines' }"
+            routerLinkActive
+            [routerLinkActiveOptions]="exactQuery"
+            >Lines</a
+          >
+          <a
+            starTabLink
+            routerLink="."
+            [queryParams]="{ view: 'notes' }"
+            routerLinkActive
+            [routerLinkActiveOptions]="exactQuery"
+            >Notes</a
+          >
+        </star-tab-nav>
+        <star-tab-nav-panel #orderPanel>
+          <p class="docs-output">{{ viewText() }}</p>
+        </star-tab-nav-panel>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         With <code>dir="rtl"</code> the first tab is on the right. Arrow left moves to the next tab
@@ -194,7 +249,15 @@ import { DOCS, DocsRow } from '../shared/docs';
       </p>
 
       <docs-api
-        [of]="['StarTabs', 'StarTab', 'StarTabContent', 'StarTabHeader']"
+        [of]="[
+          'StarTabs',
+          'StarTab',
+          'StarTabContent',
+          'StarTabHeader',
+          'StarTabNav',
+          'StarTabLink',
+          'StarTabNavPanel',
+        ]"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -249,6 +312,29 @@ moveBoard(event: StarTabReorderEvent): void {
     'November',
     'December',
   ];
+
+  private readonly view = toSignal(inject(ActivatedRoute).queryParamMap, {
+    initialValue: null,
+  });
+  protected readonly viewText = computed(() => {
+    const view = this.view()?.get('view');
+    if (view === 'lines') return 'Lines: 3 items, 12 units.';
+    if (view === 'notes') return 'Notes: deliver after 10:00.';
+    return 'Summary: order 1042, packed.';
+  });
+  protected readonly exactQuery = {
+    paths: 'exact',
+    queryParams: 'exact',
+    fragment: 'ignored',
+    matrixParams: 'ignored',
+  } as const;
+  protected readonly navScript = `// Links of this page with a query parameter; usually routerLink="details" and a router-outlet.
+readonly exactQuery = {
+  paths: 'exact',
+  queryParams: 'exact',
+  fragment: 'ignored',
+  matrixParams: 'ignored',
+} as const;`;
 
   protected readonly slots: readonly DocsRow[] = [
     {

@@ -135,6 +135,11 @@ export class PopoverPage {
   ];
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starHeader]',
+      description:
+        'Content child. A header above the content. closeOnEscape off keeps the popover open on Escape; dismissable off keeps it open on an outside click.',
+    },
     { name: '(default)', description: 'The content of the panel.' },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

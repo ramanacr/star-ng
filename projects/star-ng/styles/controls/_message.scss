@@ -15,6 +15,15 @@
     display: none;
   }
 }
+.star-message--sm {
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  font: var(--star-type-body);
+}
+.star-message--lg {
+  gap: 0.875rem;
+  padding: 1rem 1.125rem;
+}
 .star-message--outlined {
   background: var(--star-surface);
   border: 1px solid color-mix(in srgb, var(--star-tone) 40%, var(--star-border));

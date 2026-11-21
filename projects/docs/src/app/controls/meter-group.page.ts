@@ -33,7 +33,11 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
-      <docs-api [of]="['StarMeterGroup']" [cssVars]="cssVars" />
+      <docs-api
+        [of]="['StarMeterGroup', 'StarMeterGroupTemplate', 'StarMeterGroupItemTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+      />
     </docs-page>
   `,
 })
@@ -56,6 +60,18 @@ export class MeterGroupPage {
   { label: 'Backups', value: 15 },
 ];`;
 
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starMeterGroupTemplate]',
+      description:
+        'Content child. "label" replaces the legend, "start" and "end" add content around the group. Context: $implicit (the items), percentages, totalPercent. PrimeNG #label, #start and #end. orientation, labelPosition and labelOrientation set the layout.',
+    },
+    {
+      name: 'ng-template[starMeterGroupItem]',
+      description:
+        'Content child. "meter" adds content inside each part (the part keeps role meter), "icon" replaces the legend icon. Context: $implicit (the item), index, percent, color. PrimeNG #meter and #icon.',
+    },
+  ];
   protected readonly cssVars: readonly DocsRow[] = [
     {
       name: '--star-chart-1 … --star-chart-8',
