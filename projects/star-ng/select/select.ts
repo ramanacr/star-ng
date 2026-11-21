@@ -178,7 +178,9 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         (focusout)="onPanelFocusout($event)"
       >
         @if (headerSlot(); as header) {
-          <ng-container *ngTemplateOutlet="header" />
+          <div data-star-part="panelHeader" class="star-panel__header">
+            <ng-container *ngTemplateOutlet="header" />
+          </div>
         }
         @if (filter() && !editable()) {
           <div data-star-part="filterPanel" class="star-panel__filter">
@@ -326,7 +328,9 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           }
         </ul>
         @if (footerSlot(); as footer) {
-          <ng-container *ngTemplateOutlet="footer" />
+          <div data-star-part="panelFooter" class="star-panel__footer">
+            <ng-container *ngTemplateOutlet="footer" />
+          </div>
         }
       </div>
     </ng-template>

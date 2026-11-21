@@ -1,0 +1,20 @@
+// Header and footer slot regions (`starHeader`, `starFooter`): parts `panelHeader` and
+// `panelFooter` of select, multi-select, autocomplete, multi-column combobox, tree select, date
+// picker, listbox, tree and calendar. The wrapper sits inside the panel and outside the scrolling
+// list, so the header stays above the list and the footer does not scroll away with it.
+@use '../shared' as *;
+
+.star-panel__header {
+  @include star-slot-region(header);
+}
+.star-panel__footer {
+  @include star-slot-region(footer);
+}
+// The date picker panel has a padding of its own: the regions reach its edges, and the text lines
+// up with the calendar.
+.star-date__panel > .star-panel__header {
+  @include star-slot-region(header, $inline: var(--star-space-3), $bleed: 0.75rem);
+}
+.star-date__panel > .star-panel__footer {
+  @include star-slot-region(footer, $inline: var(--star-space-3), $bleed: 0.75rem);
+}

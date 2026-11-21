@@ -276,9 +276,7 @@ interface Project {
           scrollHeight="16rem"
           ariaLabel="Projects"
         >
-          <ng-template starHeader>
-            <p class="docs-output">Active projects</p>
-          </ng-template>
+          <ng-template starHeader> Active projects </ng-template>
           <ng-template starNode [starNodeOf]="projects" let-node let-level="level">
             {{ node.label }}
             @if (node.data) {
@@ -289,9 +287,7 @@ interface Project {
             ><i class="ph-bold ph-arrow-right" aria-hidden="true"></i
           ></ng-template>
           <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>
-          <ng-template starFooter>
-            <p class="docs-output">3 projects</p>
-          </ng-template>
+          <ng-template starFooter> 3 projects </ng-template>
         </star-tree>
       </docs-example>
 

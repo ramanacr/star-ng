@@ -199,9 +199,7 @@ interface OfficeCity {
             placeholder="Search a city"
             ariaLabel="Office city"
           >
-            <ng-template starHeader>
-              <p class="docs-output">Cities with an office</p>
-            </ng-template>
+            <ng-template starHeader> Cities with an office </ng-template>
             <ng-template starGroup let-country let-count="count">
               {{ country }} ({{ count }})
             </ng-template>
@@ -210,7 +208,7 @@ interface OfficeCity {
               <p class="docs-output">Loading the office list...</p>
             </ng-template>
             <ng-template starFooter>
-              <p class="docs-output">{{ officeCities.length }} cities</p>
+              {{ officeCities.length }} cities
               <button
                 type="button"
                 class="star-btn star-btn--sm star-btn--ghost"

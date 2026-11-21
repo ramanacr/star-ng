@@ -173,9 +173,7 @@ interface Parcel {
           ariaLabel="Cities"
           filter
         >
-          <ng-template starHeader>
-            <p class="docs-output">Cities with an office</p>
-          </ng-template>
+          <ng-template starHeader> Cities with an office </ng-template>
           <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
           <ng-template
             starChip
@@ -200,7 +198,7 @@ interface Parcel {
             </span>
           </ng-template>
           <ng-template starFooter>
-            <p class="docs-output">{{ cities.length }} cities</p>
+            {{ cities.length }} cities
             <button
               type="button"
               class="star-btn star-btn--sm star-btn--ghost"

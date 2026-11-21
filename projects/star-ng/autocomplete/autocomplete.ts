@@ -352,7 +352,9 @@ const TEMPLATE = `
       (focusout)="onPanelFocusout($event)"
     >
       @if (headerSlot(); as header) {
-        <ng-container *ngTemplateOutlet="header" />
+        <div data-star-part="panelHeader" class="star-panel__header">
+          <ng-container *ngTemplateOutlet="header" />
+        </div>
       }
       <ul data-star-part="optionList"
         class="star-listbox"
@@ -447,7 +449,9 @@ const TEMPLATE = `
         }
       </ul>
       @if (footerSlot(); as footer) {
-        <ng-container *ngTemplateOutlet="footer" />
+        <div data-star-part="panelFooter" class="star-panel__footer">
+          <ng-container *ngTemplateOutlet="footer" />
+        </div>
       }
     </div>
   </ng-template>

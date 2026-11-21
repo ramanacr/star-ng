@@ -173,6 +173,13 @@ describe('tree slots', () => {
     const { el } = await setup();
     expect(el.querySelector('.plain .head')?.textContent).toBe('Head');
     expect(el.querySelector('.plain .foot')?.textContent).toBe('Foot');
+    expect(
+      el.querySelector('.plain [data-star-part="panelHeader"].star-panel__header .head'),
+    ).not.toBeNull();
+    expect(
+      el.querySelector('.plain [data-star-part="panelFooter"].star-panel__footer .foot'),
+    ).not.toBeNull();
+    expect(el.querySelector('.plain [role="tree"] .foot')).toBeNull();
   });
 
   it('empty slot receives the filter text', async () => {
@@ -220,6 +227,9 @@ describe('tree slots', () => {
     ]);
     expect(panel.querySelector('.head')?.textContent).toBe('Pick');
     expect(panel.querySelector('.foot')?.textContent).toBe('Done');
+    // The slot regions of the panel itself, not of the inner tree.
+    expect(panel.querySelector(':scope > .star-panel__header .head')).not.toBeNull();
+    expect(panel.querySelector(':scope > .star-panel__footer .foot')).not.toBeNull();
     expect(panel.querySelector('.my-toggle')).not.toBeNull();
     const input = panel.querySelector<HTMLInputElement>('input')!;
     input.value = 'qq';
