@@ -69,11 +69,21 @@ import { DOCS, DocsRow } from '../shared/docs';
         <p class="docs-output" role="status">Value: {{ rgbColor() }}</p>
       </docs-example>
 
+      <docs-example
+        heading="Inline panel"
+        source="color-picker/inline"
+        note="inline shows the saturation and brightness area and the hue slider in the page, without the custom color tile and its popup. The keys and the slider roles stay."
+      >
+        <star-color-picker [(value)]="inlineColor" inline ariaLabel="Theme color" />
+        <p class="docs-output" role="status">Value: {{ inlineColor() }}</p>
+      </docs-example>
+
       <docs-api [of]="['StarColorPicker']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class ColorPickerPage {
+  protected readonly inlineColor = signal('#0f766e');
   protected readonly rgbColor = signal('rgb(79, 70, 229)');
   protected readonly color = signal('#4f46e5');
   protected readonly category = signal('#0f766e');

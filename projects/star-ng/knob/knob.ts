@@ -1,6 +1,6 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -40,6 +40,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-knob',
+    '[class.star-knob--invalid]': 'showInvalid()',
     '[class.star-knob--disabled]': 'disabled()',
     '[style.--star-knob-stroke-width]': 'strokeWidthValue()',
   },
@@ -60,6 +61,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       [attr.aria-valuenow]="value()"
       [attr.aria-valuetext]="text()"
       [attr.aria-disabled]="disabled() || null"
+      [attr.aria-invalid]="showInvalid() || null"
       (keydown)="onKeydown($event)"
       (pointerdown)="onPointer($event)"
       (pointermove)="$event.buttons === 1 && onPointer($event)"
@@ -73,6 +75,9 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
         </text>
       }
     </svg>
+    @if (name()) {
+      <input data-star-part="valueInput" type="hidden" [name]="name()" [value]="value()" />
+    }
   `,
 })
 export class StarKnob implements FormValueControl<number> {
@@ -100,6 +105,12 @@ export class StarKnob implements FormValueControl<number> {
   readonly ariaLabelledBy = input<string | null>(null);
   /** A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`). */
   readonly required = input(false, { transform: booleanAttribute });
+  /** The value is not valid; it shows after `touched` (also bound from Signal Forms). */
+  readonly invalid = input(false, { transform: booleanAttribute });
+  /** The user has visited the control (Signal Forms binds it). */
+  readonly touched = input(false, { transform: booleanAttribute });
+  /** Name of the value in a native form submit. */
+  readonly name = input('');
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
@@ -109,6 +120,10 @@ export class StarKnob implements FormValueControl<number> {
   private readonly field = injectStarFieldLink(null, () => this.focus());
   protected readonly labelledBy = computed(() =>
     starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
   );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
@@ -371,9 +386,14 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
   selector: 'star-color-picker',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, CdkConnectedOverlay, CdkOverlayOrigin],
+  imports: [StarPart, NgTemplateOutlet, CdkConnectedOverlay, CdkOverlayOrigin],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-color', '[class.star-color--open]': 'open()' },
+  host: {
+    class: 'star-color',
+    '[class.star-color--open]': 'open()',
+    '[class.star-color--inline]': 'inline()',
+    '[class.star-color--invalid]': 'showInvalid()',
+  },
   template: `
     <div
       data-star-part="swatchesPanel"
@@ -383,6 +403,7 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
       [attr.aria-labelledby]="labelledBy()"
       [attr.aria-describedby]="fieldDescribedBy()"
       [attr.aria-required]="required() || null"
+      [attr.aria-invalid]="showInvalid() || null"
     >
       @for (swatch of shownSwatches(); track swatch) {
         <button
@@ -398,21 +419,23 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
         ></button>
       }
     </div>
-    <button
-      data-star-part="customButton"
-      #custom
-      type="button"
-      class="star-color__custom"
-      cdkOverlayOrigin
-      #origin="cdkOverlayOrigin"
-      aria-haspopup="dialog"
-      [style.background]="hex()"
-      [attr.aria-label]="text.customColor"
-      [attr.aria-expanded]="open()"
-      [attr.aria-controls]="open() ? panelId : null"
-      [disabled]="disabled()"
-      (click)="togglePanel()"
-    ></button>
+    @if (!inline()) {
+      <button
+        data-star-part="customButton"
+        #custom
+        type="button"
+        class="star-color__custom"
+        cdkOverlayOrigin
+        #origin="cdkOverlayOrigin"
+        aria-haspopup="dialog"
+        [style.background]="hex()"
+        [attr.aria-label]="text.customColor"
+        [attr.aria-expanded]="open()"
+        [attr.aria-controls]="open() ? panelId : null"
+        [disabled]="disabled()"
+        (click)="togglePanel()"
+      ></button>
+    }
     @if (canEyeDrop()) {
       <button
         data-star-part="pickButton"
@@ -436,11 +459,24 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
       (change)="onHex($any($event.target))"
       (blur)="touch.emit()"
     />
+    @if (name()) {
+      <input data-star-part="valueInput" type="hidden" [name]="name()" [value]="value()" />
+    }
+    @if (inline()) {
+      <div
+        data-star-part="panel"
+        class="star-panel star-color__panel star-color__panel--inline"
+        role="group"
+        [attr.aria-label]="text.customColor"
+      >
+        <ng-container *ngTemplateOutlet="panelBody" />
+      </div>
+    }
 
     <ng-template
       cdkConnectedOverlay
       cdkConnectedOverlayUsePopover="inline"
-      [cdkConnectedOverlayOrigin]="origin"
+      [cdkConnectedOverlayOrigin]="originRef()!"
       [cdkConnectedOverlayOpen]="open()"
       [cdkConnectedOverlayPositions]="positions"
       (attach)="onAttached()"
@@ -456,61 +492,9 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
         [attr.aria-label]="text.customColor"
         (keydown)="onPanelKeydown($event)"
       >
-        <div
-          data-star-part="areaPanel"
-          #area
-          class="star-color__area"
-          role="slider"
-          tabindex="0"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          [style.background]="areaBackground()"
-          [attr.aria-label]="text.colorArea"
-          [attr.aria-valuenow]="hsv().s"
-          [attr.aria-valuetext]="text.colorAreaValue(hsv().s, hsv().v)"
-          (keydown)="onAreaKeydown($event)"
-          (pointerdown)="onAreaPointer($event, true)"
-          (pointermove)="$event.buttons === 1 && onAreaPointer($event, false)"
-        >
-          <span
-            data-star-part="thumbnail"
-            class="star-color__thumb"
-            [style.inset-inline-start.%]="hsv().s"
-            [style.top.%]="100 - hsv().v"
-            [style.background]="hex()"
-          ></span>
-        </div>
-        <div
-          data-star-part="hueTrack"
-          class="star-color__hue"
-          role="slider"
-          tabindex="0"
-          aria-valuemin="0"
-          aria-valuemax="359"
-          aria-orientation="horizontal"
-          [style.background]="hueBackground()"
-          [attr.aria-label]="text.hue"
-          [attr.aria-valuenow]="hsv().h"
-          [attr.aria-valuetext]="text.hueValue(hsv().h)"
-          (keydown)="onHueKeydown($event)"
-          (pointerdown)="onHuePointer($event, true)"
-          (pointermove)="$event.buttons === 1 && onHuePointer($event, false)"
-        >
-          <span
-            data-star-part="thumbnail"
-            class="star-color__thumb"
-            [style.inset-inline-start.%]="(hsv().h / 359) * 100"
-            [style.background]="hueColor()"
-          ></span>
-        </div>
+        <ng-container *ngTemplateOutlet="panelBody" />
         <div data-star-part="barPanel" class="star-color__bar">
-          <span
-            data-star-part="previewText"
-            class="star-color__preview"
-            [style.background]="hex()"
-            aria-hidden="true"
-          ></span>
-          <span data-star-part="codeText" class="star-color__code">{{ hex() }}</span>
+          <ng-container *ngTemplateOutlet="panelBar" />
           <button
             data-star-part="barButton"
             type="button"
@@ -521,6 +505,65 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
           </button>
         </div>
       </div>
+    </ng-template>
+
+    <ng-template #panelBody>
+      <div
+        data-star-part="areaPanel"
+        #area
+        class="star-color__area"
+        role="slider"
+        tabindex="0"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [style.background]="areaBackground()"
+        [attr.aria-label]="text.colorArea"
+        [attr.aria-valuenow]="hsv().s"
+        [attr.aria-valuetext]="text.colorAreaValue(hsv().s, hsv().v)"
+        (keydown)="onAreaKeydown($event)"
+        (pointerdown)="onAreaPointer($event, true)"
+        (pointermove)="$event.buttons === 1 && onAreaPointer($event, false)"
+      >
+        <span
+          data-star-part="thumbnail"
+          class="star-color__thumb"
+          [style.inset-inline-start.%]="hsv().s"
+          [style.top.%]="100 - hsv().v"
+          [style.background]="hex()"
+        ></span>
+      </div>
+      <div
+        data-star-part="hueTrack"
+        class="star-color__hue"
+        role="slider"
+        tabindex="0"
+        aria-valuemin="0"
+        aria-valuemax="359"
+        aria-orientation="horizontal"
+        [style.background]="hueBackground()"
+        [attr.aria-label]="text.hue"
+        [attr.aria-valuenow]="hsv().h"
+        [attr.aria-valuetext]="text.hueValue(hsv().h)"
+        (keydown)="onHueKeydown($event)"
+        (pointerdown)="onHuePointer($event, true)"
+        (pointermove)="$event.buttons === 1 && onHuePointer($event, false)"
+      >
+        <span
+          data-star-part="thumbnail"
+          class="star-color__thumb"
+          [style.inset-inline-start.%]="(hsv().h / 359) * 100"
+          [style.background]="hueColor()"
+        ></span>
+      </div>
+    </ng-template>
+    <ng-template #panelBar>
+      <span
+        data-star-part="previewText"
+        class="star-color__preview"
+        [style.background]="hex()"
+        aria-hidden="true"
+      ></span>
+      <span data-star-part="codeText" class="star-color__code">{{ hex() }}</span>
     </ng-template>
   `,
 })
@@ -539,6 +582,17 @@ export class StarColorPicker implements FormValueControl<string> {
    * (`'hsb'`). The control reads all three.
    */
   readonly value = model('#4f46e5');
+  /**
+   * Shows the saturation / brightness area and the hue slider in place, without the custom color
+   * tile and its popup (same keys and slider roles). PrimeNG `inline`.
+   */
+  readonly inline = input(false, { transform: booleanAttribute });
+  /** The value is not valid; it shows after `touched` (also bound from Signal Forms). */
+  readonly invalid = input(false, { transform: booleanAttribute });
+  /** The user has visited the control (Signal Forms binds it). */
+  readonly touched = input(false, { transform: booleanAttribute });
+  /** Name of the value in a native form submit. */
+  readonly name = input('');
   /** Text format of the value that the control writes. PrimeNG `format`. */
   readonly format = input<'hex' | 'rgb' | 'hsb'>('hex');
   /** The value as `#rrggbb` (black when it cannot be read). */
@@ -572,6 +626,10 @@ export class StarColorPicker implements FormValueControl<string> {
   protected readonly field = injectStarFieldLink(null, () => this.focus());
   protected readonly labelledBy = computed(() =>
     starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
   );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
@@ -638,7 +696,9 @@ export class StarColorPicker implements FormValueControl<string> {
   protected readonly panelId = this.ids.getId('star-color-panel-');
   protected readonly open = signal(false);
 
-  private readonly custom = viewChild.required<ElementRef<HTMLButtonElement>>('custom');
+  private readonly custom = viewChild<ElementRef<HTMLButtonElement>>('custom');
+  /** The overlay origin (the custom color tile); none with `inline`. */
+  protected readonly originRef = viewChild('origin', { read: CdkOverlayOrigin });
   private readonly area = viewChild<ElementRef<HTMLElement>>('area');
 
   /**
@@ -673,10 +733,15 @@ export class StarColorPicker implements FormValueControl<string> {
     return `linear-gradient(${end}, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)`;
   });
 
+  /** Inline panel: the direction comes from the page at each key or pointer event. */
+  private syncInlineDir(): void {
+    if (this.inline()) this.rtl.set(starIsRtl(this.host.nativeElement));
+  }
+
   /** Opens the custom color panel. The focus goes to the saturation and brightness area. */
   openPanel(): void {
     if (this.disabled() || this.open()) return;
-    this.rtl.set(starIsRtl(this.custom().nativeElement));
+    this.rtl.set(starIsRtl(this.host.nativeElement));
     this.open.set(true);
     this.opened.emit();
   }
@@ -687,7 +752,7 @@ export class StarColorPicker implements FormValueControl<string> {
     this.open.set(false);
     this.closed.emit();
     this.touch.emit();
-    if (focusTile) this.custom().nativeElement.focus();
+    if (focusTile) this.custom()?.nativeElement.focus();
   }
 
   protected togglePanel(): void {
@@ -701,7 +766,7 @@ export class StarColorPicker implements FormValueControl<string> {
   }
 
   protected onOutsideClick(event: MouseEvent): void {
-    if (this.custom().nativeElement.contains(event.target as Node)) return;
+    if (this.custom()?.nativeElement.contains(event.target as Node)) return;
     this.closePanel(false);
   }
 
@@ -715,6 +780,7 @@ export class StarColorPicker implements FormValueControl<string> {
 
   /** Arrow left / right, Home and End: saturation; Arrow up / down, Page up / down: brightness. */
   protected onAreaKeydown(event: KeyboardEvent): void {
+    this.syncInlineDir();
     const step = event.shiftKey ? 10 : 1;
     const { s, v } = this.hsv();
     const moves: Record<string, Partial<Hsv>> = {
@@ -735,6 +801,7 @@ export class StarColorPicker implements FormValueControl<string> {
 
   /** The arrow keys move the hue; Page up / down in steps of 10, Home and End to the ends. */
   protected onHueKeydown(event: KeyboardEvent): void {
+    this.syncInlineDir();
     const step = event.shiftKey ? 10 : 1;
     const { h } = this.hsv();
     const moves: Record<string, number> = {
@@ -754,6 +821,7 @@ export class StarColorPicker implements FormValueControl<string> {
   }
 
   protected onAreaPointer(event: PointerEvent, start: boolean): void {
+    this.syncInlineDir();
     const area = event.currentTarget as HTMLElement;
     if (start) this.capture(event, area);
     const box = area.getBoundingClientRect();
@@ -762,6 +830,7 @@ export class StarColorPicker implements FormValueControl<string> {
   }
 
   protected onHuePointer(event: PointerEvent, start: boolean): void {
+    this.syncInlineDir();
     const track = event.currentTarget as HTMLElement;
     if (start) this.capture(event, track);
     this.setHsv({ h: this.inlineRatio(event.clientX, track.getBoundingClientRect()) * 359 });
