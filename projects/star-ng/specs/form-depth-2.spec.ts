@@ -6,7 +6,7 @@ import { StarIconTemplate } from '@star-ng/ui/core';
 import { StarInputMask } from '@star-ng/ui/input-mask';
 import { StarInputNumber } from '@star-ng/ui/input-number';
 import { StarInputTags } from '@star-ng/ui/input-tags';
-import { StarColorPicker, StarKnob } from '@star-ng/ui/knob';
+import { StarColorPicker, StarKnob, ɵstarColorFromHex, ɵstarColorToHex } from '@star-ng/ui/knob';
 import { StarPassword } from '@star-ng/ui/password';
 import { StarRating } from '@star-ng/ui/rating';
 import {
@@ -385,5 +385,51 @@ describe('form controls depth, part 2 (N1)', () => {
     await fixture.whenStable();
     expect(low.disabled).toBe(true);
     expect(high.disabled).toBe(false);
+  });
+});
+
+describe('color picker format round trip (N1 review)', () => {
+  @Component({
+    imports: [StarColorPicker],
+    template: `<star-color-picker [(value)]="color" format="hsb" ariaLabel="Color" />`,
+  })
+  class HsbHost {
+    readonly color = signal('hsb(0, 0%, 0%)');
+  }
+
+  it('the default swatches and 2,000 random colors read back the same in hex, rgb and hsb', async () => {
+    const fixture = TestBed.createComponent(HsbHost);
+    await fixture.whenStable();
+    const swatches = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('[data-star-part="swatchButton"]'),
+    ).map((button) => button.getAttribute('aria-label')!.toLowerCase());
+    expect(swatches.length).toBeGreaterThan(0);
+    let seed = 7;
+    const random = () => (seed = (seed * 1103515245 + 12345) % 2147483648) % 16777216;
+    const colors = [
+      ...swatches,
+      ...Array.from({ length: 2000 }, () => '#' + random().toString(16).padStart(6, '0')),
+    ];
+    for (const format of ['hex', 'rgb', 'hsb'] as const) {
+      const lost = colors.filter((hex) => ɵstarColorToHex(ɵstarColorFromHex(hex, format)) !== hex);
+      expect(lost, format).toEqual([]);
+    }
+  });
+
+  it('with format hsb a picked swatch stays checked and the hex field shows it', async () => {
+    const fixture = TestBed.createComponent(HsbHost);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const buttons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[data-star-part="swatchButton"]'),
+    );
+    for (const button of buttons) {
+      button.click();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.color()).toMatch(/^hsb\(/);
+      expect(button.getAttribute('aria-checked')).toBe('true');
+      const hex = root.querySelector<HTMLInputElement>('[data-star-part="hexInput"]')!.value;
+      expect(hex).toBe(button.getAttribute('aria-label')!.toLowerCase());
+    }
   });
 });

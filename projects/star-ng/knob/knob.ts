@@ -303,7 +303,7 @@ type StarEyeDropperType = new () => { open(): Promise<{ sRGBHex: string }> };
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 /** Reads `#rgb`, `#rrggbb`, `rgb(r, g, b)` or `hsb(h, s%, b%)` as `#rrggbb`, else `null`. */
-function starColorToHex(text: string | null | undefined): string | null {
+export function ɵstarColorToHex(text: string | null | undefined): string | null {
   const value = (text ?? '').trim().toLowerCase();
   if (/^#[0-9a-f]{6}$/.test(value)) return value;
   if (/^#[0-9a-f]{3}$/.test(value)) {
@@ -330,14 +330,26 @@ function starColorToHex(text: string | null | undefined): string | null {
 }
 
 /** Writes `#rrggbb` in the `format` of the color picker. */
-function starColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): string {
+export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): string {
   if (format === 'rgb') {
     const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
     return `rgb(${r}, ${g}, ${b})`;
   }
   if (format === 'hsb') {
-    const hsv = hexToHsv(hex) ?? { h: 0, s: 0, v: 0 };
-    return `hsb(${Math.round(hsv.h)}, ${Math.round(hsv.s)}%, ${Math.round(hsv.v)}%)`;
+    // Two decimals, so that every `#rrggbb` color reads back to itself.
+    const number = parseInt(hex.slice(1), 16);
+    const [r, g, b] = [(number >> 16) & 255, (number >> 8) & 255, number & 255].map((c) => c / 255);
+    const max = Math.max(r, g, b);
+    const delta = max - Math.min(r, g, b);
+    let h = 0;
+    if (delta) {
+      if (max === r) h = ((g - b) / delta) % 6;
+      else if (max === g) h = (b - r) / delta + 2;
+      else h = (r - g) / delta + 4;
+    }
+    const fixed = (n: number) => String(Math.round(n * 100) / 100);
+    const hue = (h * 60 + 360) % 360;
+    return `hsb(${fixed(hue)}, ${fixed(max ? (delta / max) * 100 : 0)}%, ${fixed(max * 100)}%)`;
   }
   return hex;
 }
@@ -528,7 +540,7 @@ export class StarColorPicker implements FormValueControl<string> {
   /** Text format of the value that the control writes. PrimeNG `format`. */
   readonly format = input<'hex' | 'rgb' | 'hsb'>('hex');
   /** The value as `#rrggbb` (black when it cannot be read). */
-  protected readonly hex = computed(() => starColorToHex(this.value()) ?? '#000000');
+  protected readonly hex = computed(() => ɵstarColorToHex(this.value()) ?? '#000000');
   /**
    * The preset swatches (`#rrggbb`). When you do not set it, the swatches come from the theme:
    * after the first render, the control reads `--star-primary`, `--star-accent`, `--star-success`,
@@ -612,7 +624,7 @@ export class StarColorPicker implements FormValueControl<string> {
 
   /** Sets the value that the user chose and emits `changed`. */
   protected commit(hex: string): void {
-    const value = starColorFromHex(hex, this.format());
+    const value = ɵstarColorFromHex(hex, this.format());
     this.value.set(value);
     this.changed.emit(value);
   }
