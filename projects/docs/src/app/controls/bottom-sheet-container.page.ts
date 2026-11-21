@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   signal,
   TemplateRef,
@@ -93,6 +94,12 @@ import { DOCS, DocsRow } from '../shared/docs';
 })
 export class BottomSheetContainerPage {
   private readonly sheet = inject(StarBottomSheet);
+
+  constructor() {
+    // The service puts its overlays in the body, outside the page: close them when the page
+    // goes, as its route styles go with it.
+    inject(DestroyRef).onDestroy(() => this.sheet.dismiss());
+  }
 
   protected readonly filter = signal('none');
   protected readonly city = signal('none');
