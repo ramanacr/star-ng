@@ -123,3 +123,14 @@ test('the host copy leaves out the accent and the focus rings, which unstyled mo
     block.slice(0, 200),
   );
 });
+
+test('unstyled mode resets every color role token except the accent (help included)', () => {
+  const text = readFileSync(join(styles, '_tokens.scss'), 'utf8');
+  const block = /\/\/ Color roles([\s\S]*?)\/\/ Surfaces/.exec(text)?.[1] ?? '';
+  const roles = [...block.matchAll(/--star-([a-z0-9-]+):/g)].map((match) => match[1]);
+  assert.ok(roles.includes('help'), 'the help token is a color role');
+  const reset = resetTokens();
+  // The accent stays on purpose: it is the focus color of unstyled mode.
+  const missing = roles.filter((name) => name !== 'accent' && !reset.has(name));
+  assert.deepEqual(missing, []);
+});

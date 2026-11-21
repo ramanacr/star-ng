@@ -137,6 +137,53 @@ interface Place {
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Loading, empty menu and events"
+        source="cascade-select/events"
+        [script]="eventsScript"
+        note="loading shows a turning icon in place of the caret and sets aria-busy; the menu still opens. emptyMessage is the text of the menu when there are no options. optionGroupLabel names the field of a parent label when it differs from optionLabel. beforeShow, show, beforeHide and hide report the menu, and cleared the clear button. fluid fills the width. starSelected replaces the text of the chosen leaf, and starIcon with dropdown, clear or loading replaces that icon."
+      >
+        <div class="docs-stack">
+          <star-cascade-select
+            [options]="loadingPlaces() ? [] : places"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="eventPlace"
+            [loading]="loadingPlaces()"
+            emptyMessage="The places are loading"
+            ariaLabel="City while loading"
+            showClear
+            fluid
+            (show)="menuLog.set('menu open')"
+            (hide)="menuLog.set('menu closed')"
+            (cleared)="menuLog.set('cleared')"
+          />
+          <div class="docs-row">
+            <button
+              type="button"
+              class="star-btn star-btn--secondary star-btn--sm"
+              (click)="loadingPlaces.set(!loadingPlaces())"
+            >
+              {{ loadingPlaces() ? 'Finish loading' : 'Load again' }}
+            </button>
+            <span class="docs-output" role="status">{{ menuLog() || 'No event yet' }}</span>
+          </div>
+        </div>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The PrimeNG p-cascadeselect names that StarNG gives in another way: optionGroupChildren is
+        optionChildren; dataKey is compareWith; id is inputId; onChange is valueChange and
+        optionSelect; onClear is cleared; onFocus and onBlur are the native focusin and focusout
+        events; variant is inputVariant of provideStarNg; the value template is starSelected and the
+        option template starCascadeOption; panelStyle and panelStyleClass are the pass-through pt.
+        Not needed: appendTo, overlayOptions and motionOptions (the menu is an overlay of the
+        Angular CDK with theme motion) and the search options (searchLocale, searchMessage,
+        emptySearchMessage, focusOnHover, selectOnFocus, autoOptionFocus: the menu has typeahead and
+        the keyboard model of the CDK menu, not a search field).
+      </p>
+
       <h2>Right-to-left</h2>
       <p>
         The list opens aligned with the start edge of the field. In a right-to-left page Arrow left
@@ -180,6 +227,12 @@ export class CascadeSelectPage {
   protected readonly place = signal<string | null>(null);
   protected readonly pathPlace = signal<string | null>(null);
   protected readonly templated = signal<string | null>(null);
+  protected readonly eventPlace = signal<string | null>(null);
+  protected readonly loadingPlaces = signal(true);
+  protected readonly menuLog = signal('');
+  protected readonly eventsScript = `readonly eventPlace = signal<string | null>(null);
+readonly loadingPlaces = signal(true);
+readonly menuLog = signal('');`;
 
   protected readonly officeModel = signal<{ city: string | null }>({ city: null });
   protected readonly office = form(this.officeModel, (path) => {
@@ -221,6 +274,16 @@ readonly office = form(this.officeModel, (path) => {
       name: 'ng-template[starCascadeOption]',
       description:
         'Content child. Replaces the label of each option (PrimeNG #option template). The context has $implicit (the option), selected, index, level and hasChildren. No focusable elements. The check icon and the submenu arrow stay.',
+    },
+    {
+      name: 'ng-template[starSelected]',
+      description:
+        'Content child. Replaces the text of the chosen leaf in the trigger; $implicit is the leaf option. PrimeNG value template.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. "dropdown", "clear" or "loading" replaces that icon. PrimeNG triggericon, clearicon and loadingicon.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

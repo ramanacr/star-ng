@@ -77,6 +77,7 @@
 
 // Data view
 .star-data-view {
+  position: relative;
   display: block;
 }
 .star-data-view__header {
@@ -96,6 +97,29 @@
 .star-data-view__items--grid {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
 }
+.star-data-view__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--star-radius-lg);
+  background: color-mix(in srgb, var(--star-surface) 70%, transparent);
+  color: var(--star-primary-text);
+  font-size: 1.5rem;
+}
+.star-data-view__pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+
+  star-paginator {
+    flex: 1;
+  }
+}
+.star-data-view__icon {
+  display: inline-flex;
+}
 .star-data-view__item {
   padding: 1rem;
   border: 1px solid var(--star-border);
@@ -107,6 +131,79 @@
 .star-order-list {
   display: flex;
   gap: 0.5rem;
+}
+.star-order-list--controls-end {
+  flex-direction: row-reverse;
+}
+.star-order-list__box {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.star-order-list__header {
+  font: var(--star-type-label);
+  color: var(--star-text-muted);
+}
+.star-order-list__frame {
+  position: relative;
+  display: flex;
+}
+.star-order-list__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.star-order-list__option--dragging {
+  opacity: 0.5;
+}
+.star-order-list__icon,
+.star-pick-list__icon {
+  display: inline-flex;
+}
+.star-order-list__list--striped,
+.star-pick-list__list--striped {
+  .star-listbox__option:nth-child(even):not(.star-listbox__option--selected) {
+    background: var(--star-surface-muted);
+  }
+}
+.star-pick-list__filter,
+.star-order-list__filter {
+  margin-bottom: 0.5rem;
+
+  .star-input {
+    width: 100%;
+  }
+}
+.star-order-list__filter {
+  margin-bottom: 0;
+}
+.star-pick-list__body {
+  display: flex;
+  gap: 0.5rem;
+}
+.star-pick-list__box {
+  flex: 1;
+  min-width: 0;
+}
+.star-pick-list__reorder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+}
+.star-order-list--disabled,
+.star-pick-list--disabled {
+  .star-listbox__option {
+    cursor: default;
+  }
+  .star-order-list__list,
+  .star-pick-list__list {
+    opacity: 0.6;
+  }
 }
 .star-order-list__buttons,
 .star-pick-list__buttons {
@@ -156,10 +253,10 @@
   font: var(--star-type-label);
   color: var(--star-text-muted);
 }
-@media (width < 640px) {
-  .star-pick-list {
-    grid-template-columns: 1fr;
-  }
+// Stacked lists: under 640px by default, or at the `breakpoint` input (then the class decides).
+@mixin star-pick-list-stacked {
+  grid-template-columns: 1fr;
+
   .star-pick-list__buttons {
     flex-direction: row;
     justify-content: center;
@@ -170,4 +267,12 @@
       rotate: -90deg;
     }
   }
+}
+@media (width < 640px) {
+  .star-pick-list:not(.star-pick-list--breakpoint) {
+    @include star-pick-list-stacked;
+  }
+}
+.star-pick-list--stacked {
+  @include star-pick-list-stacked;
 }

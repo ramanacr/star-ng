@@ -2291,6 +2291,69 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "label",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the button, before the projected content. With `iconOnly` it is the accessible name (when `ariaLabel` is not set). PrimeNG `label`."
+      },
+      {
+        "name": "loadingIcon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon classes of the loading state (default: a turning spinner). PrimeNG `loadingIcon`."
+      },
+      {
+        "name": "appearance",
+        "type": "StarButtonAppearance",
+        "default": "'filled'",
+        "required": false,
+        "description": "`'outlined'`, `'text'` or `'link'` draw the variant without its fill. Default `'filled'`."
+      },
+      {
+        "name": "raised",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A shadow under the button. PrimeNG `raised`."
+      },
+      {
+        "name": "rounded",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Fully round ends. PrimeNG `rounded`."
+      },
+      {
+        "name": "badge",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": "A small badge after the text, for example a count. The badge text is part of the accessible name; an `ariaLabel` must keep the visible text (WCAG 2.5.3). PrimeNG `badge`."
+      },
+      {
+        "name": "badgeSeverity",
+        "type": "StarSeverity",
+        "default": "'danger'",
+        "required": false,
+        "description": "Color of the badge. PrimeNG `badgeSeverity`."
+      },
+      {
+        "name": "tabindex",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "`tabindex` of the inner button."
+      },
+      {
+        "name": "autofocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Focuses the button once, after the first render (browser only). PrimeNG `autofocus`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -2323,7 +2386,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "loadingIcon",
       "leadingIcon",
       "text",
-      "trailingIcon"
+      "trailingIcon",
+      "badgeText"
     ]
   },
   "StarButtonGroup": {
@@ -2798,11 +2862,67 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of an element that names the control (in place of a `star-field` label or `ariaLabel`)."
+      },
+      {
         "name": "inputId",
         "type": "string",
         "default": "(generated id)",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "optionGroupLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Label of a parent option (a group) when it differs from the label of a leaf. Default: `optionLabel`. PrimeNG `optionGroupLabel`."
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the menu when there are no options (default `STAR_UI_TEXT.emptyMessage`)."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a loading icon in place of the caret and sets `aria-busy`; the menu still opens."
+      },
+      {
+        "name": "loadingIcon",
+        "type": "string",
+        "default": "'ph-bold ph-spinner-gap star-spin'",
+        "required": false,
+        "description": "Icon classes of the loading state."
+      },
+      {
+        "name": "fluid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The control fills the width of its container. PrimeNG `fluid`."
+      },
+      {
+        "name": "tabindex",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "`tabindex` of the trigger button."
+      },
+      {
+        "name": "autofocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Focuses the trigger once, after the first render. PrimeNG `autofocus`."
       },
       {
         "name": "disabled",
@@ -2879,6 +2999,41 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "The user chose a leaf."
+      },
+      {
+        "name": "beforeShow",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits right before `show`, after the menu opened (the CDK menu has no earlier hook). PrimeNG `onBeforeShow`."
+      },
+      {
+        "name": "show",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu opens. PrimeNG `onShow`."
+      },
+      {
+        "name": "beforeHide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits right before `hide`, after the menu closed (the CDK menu has no earlier hook). PrimeNG `onBeforeHide`."
+      },
+      {
+        "name": "hide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu closes. PrimeNG `onHide`."
+      },
+      {
+        "name": "cleared",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits after the clear button removed the value. PrimeNG `onClear`."
       }
     ],
     "parts": [
@@ -3795,7 +3950,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-data-view",
     "entry": "@star-ng/ui/data-display",
-    "description": "Data view (PrimeNG `p-dataview`): items in a list or a responsive grid, layout switch, client pagination and an empty state. It does not sort: sort the items before you pass them in. You design each item with a template.",
+    "description": "Data view (PrimeNG `p-dataview`): items in a list or a responsive grid, layout switch, client or lazy pagination, an optional sort and filter, a loading state and an empty state. You design each item with a template.",
     "inputs": [
       {
         "name": "items",
@@ -3817,6 +3972,139 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "rowsPerPageOptions",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "Rows-per-page choices of the paginator (default none). PrimeNG `rowsPerPageOptions`."
+      },
+      {
+        "name": "paginatorPosition",
+        "type": "'top' | 'bottom' | 'both'",
+        "default": "'bottom'",
+        "required": false,
+        "description": "Where the paginator goes: `'bottom'` (default), `'top'` or `'both'`."
+      },
+      {
+        "name": "alwaysShowPaginator",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the paginator also when everything fits on one page. PrimeNG `alwaysShowPaginator`."
+      },
+      {
+        "name": "pageLinks",
+        "type": "number",
+        "default": "5",
+        "required": false,
+        "description": "Number of page links of the paginator (default 5). PrimeNG `pageLinks`."
+      },
+      {
+        "name": "showCurrentPageReport",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The \"1–6 of 24\" report of the paginator (default `true`)."
+      },
+      {
+        "name": "currentPageReportTemplate",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Report text with placeholders; see `star-paginator`."
+      },
+      {
+        "name": "showJumpToPageDropdown",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A select of every page in the paginator."
+      },
+      {
+        "name": "showFirstLastIcon",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "First and last page buttons in the paginator (default `true`)."
+      },
+      {
+        "name": "paginatorAriaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the paginator navigation (default `STAR_UI_TEXT.pagination`). Give each data view on a page its own name, so the navigation landmarks differ. With `paginatorPosition=\"both\"` the two get \", top\" and \", bottom\", and only the bottom report is a live region."
+      },
+      {
+        "name": "showPageLinks",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Page number buttons in the paginator (default `true`)."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lazy mode: `items` is the current page only, `totalRecords` the count of all items, and `lazyLoad` asks for a page: at start (`lazyLoadOnInit`), after a page change, after `filter()`, and once after each change of `sortField` or `sortOrder` (then from the first page)."
+      },
+      {
+        "name": "lazyLoadOnInit",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Emits `lazyLoad` for the first page at start (default `true`). PrimeNG `lazyLoadOnInit`."
+      },
+      {
+        "name": "totalRecords",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Count of all items in lazy mode. PrimeNG `totalRecords`."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a loading indicator over the items and sets `aria-busy`."
+      },
+      {
+        "name": "loadingIcon",
+        "type": "string",
+        "default": "'ph-bold ph-spinner-gap star-spin'",
+        "required": false,
+        "description": "Icon classes of the loading indicator."
+      },
+      {
+        "name": "sortField",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Field (or function) to sort the items by; `null` keeps the given order. A change of the sort goes back to the first page."
+      },
+      {
+        "name": "sortOrder",
+        "type": "1 | -1",
+        "default": "1",
+        "required": false,
+        "description": "`1` ascending (default), `-1` descending."
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<T>",
+        "default": "null",
+        "required": false,
+        "description": "Fields that `filter()` searches (one key or several). Default: the item itself as text."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the case and accent folding of the filter."
       },
       {
         "name": "pt",
@@ -3858,7 +4146,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "pageChange",
+        "type": "StarPageEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits the page after a page change. PrimeNG `onPage`."
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarDataViewLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "Lazy mode: emits what the page needs. PrimeNG `onLazyLoad`."
+      }
+    ],
     "parts": [
       "root",
       "header",
@@ -3867,7 +4170,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "itemIcon",
       "itemsList",
       "emptyItem",
-      "emptyIcon"
+      "emptyIcon",
+      "loadingPanel",
+      "loadingIcon",
+      "pagerPanel"
     ]
   },
   "StarDataViewItem": {
@@ -6721,6 +7027,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "textChange",
+        "type": "StarEditorTextChange",
+        "default": null,
+        "required": false,
+        "description": "Emits after the user changed the content (typing, a toolbar command, a paste, undo …) with the HTML and the plain text. A value that the owner writes does not emit. PrimeNG `onTextChange` (its `htmlValue` and `textValue`; the Quill `delta` and `source` have no equivalent)."
+      },
+      {
+        "name": "selectionChange",
+        "type": "StarEditorSelectionChange | null",
+        "default": null,
+        "required": false,
+        "description": "Emits when the selection in the area changes: its text offset, length and text, or `null` when the selection leaves the area. A caret move is a change too (also while the user types), and the offset is counted from the start of the area each time: keep the handler light. PrimeNG `onSelectionChange` (its `range`; `oldRange` is the previous event)."
       }
     ],
     "parts": [
@@ -7662,6 +7982,90 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "mode",
+        "type": "'advanced' | 'basic'",
+        "default": "'advanced'",
+        "required": false,
+        "description": "`'advanced'` (default): a drop zone and a file list. `'basic'`: one button that chooses the files and shows their names. PrimeNG `mode`."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "`name` of the file input, for a native form post (a Signal Forms field sets it too)."
+      },
+      {
+        "name": "auto",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Emits `uploadHandler` right after files are chosen. PrimeNG `auto`."
+      },
+      {
+        "name": "showUploadButton",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows an Upload button above the list that emits `uploadHandler`."
+      },
+      {
+        "name": "showCancelButton",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a Cancel button above the list that removes every file (`clear`)."
+      },
+      {
+        "name": "chooseLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the choose button (default `STAR_UI_TEXT.chooseFiles`)."
+      },
+      {
+        "name": "uploadLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the upload button (default `STAR_UI_TEXT.upload`)."
+      },
+      {
+        "name": "cancelLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the cancel button (default `STAR_UI_TEXT.cancel`)."
+      },
+      {
+        "name": "chooseIcon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon classes of the choose button (default: none)."
+      },
+      {
+        "name": "uploadIcon",
+        "type": "string | null",
+        "default": "'ph-bold ph-upload-simple'",
+        "required": false,
+        "description": "Icon classes of the upload button (default an upload arrow)."
+      },
+      {
+        "name": "cancelIcon",
+        "type": "string | null",
+        "default": "'ph-bold ph-x'",
+        "required": false,
+        "description": "Icon classes of the cancel button (default a cross)."
+      },
+      {
+        "name": "previewWidth",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Width and height of the image thumbnails in pixels (with `thumbnails`)."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -7708,14 +8112,47 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "Emits the files that failed a check, with the reason (`type`, `size` or `limit`)."
+      },
+      {
+        "name": "uploadHandler",
+        "type": "StarFileUploadHandlerEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits the files to upload when the user presses Upload, or after the choice with `auto`. Upload them in your own service and report the state with `fileStatus`. PrimeNG `uploadHandler` (with `customUpload`)."
+      },
+      {
+        "name": "cleared",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits after Cancel or `clear()` removed every file. PrimeNG `onClear`."
+      },
+      {
+        "name": "fileRemove",
+        "type": "File",
+        "default": null,
+        "required": false,
+        "description": "Emits a file that the user removed from the list. PrimeNG `onRemove`."
+      },
+      {
+        "name": "imageError",
+        "type": "Event",
+        "default": null,
+        "required": false,
+        "description": "Emits the `error` event of a thumbnail that cannot load. PrimeNG `onImageError`."
       }
     ],
     "parts": [
       "root",
+      "header",
+      "buttonIcon",
+      "toolbarPanel",
+      "uploadButton",
+      "cancelButton",
+      "chooseButton",
       "zonePanel",
       "icon",
       "leadText",
-      "chooseButton",
       "hintText",
       "list",
       "fileItem",
@@ -7734,6 +8171,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "errorsList",
       "errorsItem"
     ]
+  },
+  "StarFileUploadTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starFileUploadTemplate]",
+    "entry": "@star-ng/ui/file-upload",
+    "description": "Replaces a part of `star-file-upload`: `toolbar` (the row of choose, upload and cancel buttons), `content` (the file list and the empty content) or `fileLabel` (the text of the button in `mode=\"basic\"`). PrimeNG `#toolbar`, `#content` and `#filelabel` templates. The context has the files and the actions `choose()`, `upload()`, `clear()` and `remove(file)`.",
+    "inputs": [
+      {
+        "name": "starFileUploadTemplate",
+        "type": "'toolbar' | 'content' | 'fileLabel'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarFloatLabel": {
     "kind": "component",
@@ -7795,14 +8249,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-galleria",
     "entry": "@star-ng/ui/media",
-    "description": "Image gallery (PrimeNG `p-galleria`): main image with caption, previous / next, Arrow keys, and a thumbnail strip (`aria-current` on the active one). `<star-galleria [images]=\"photos\" [(activeIndex)]=\"current\" />`",
+    "description": "Image gallery (PrimeNG `p-galleria`): main image with caption, previous and next buttons, Arrow keys, a thumbnail strip (`aria-current` on the active one), optional indicators, autoplay with a pause button and a full-screen mode in a modal dialog. `<star-galleria [images]=\"photos\" [(activeIndex)]=\"current\" />`",
     "inputs": [
       {
         "name": "images",
         "type": "readonly StarGalleryImage[]",
         "default": "[]",
         "required": false,
-        "description": "The images: `src`, `alt`, and optional `thumbnail` and `caption`."
+        "description": "The images: `src`, `alt`, and optional `thumbnail` and `caption`. PrimeNG `value`."
       },
       {
         "name": "ariaLabel",
@@ -7810,6 +8264,125 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Accessible name of the gallery region (default: the `galleryLabel` text)."
+      },
+      {
+        "name": "showItemNavigators",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The previous and next buttons on the image (default `true`)."
+      },
+      {
+        "name": "showItemNavigatorsOnHover",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The previous and next buttons show only while the pointer or the focus is on the gallery."
+      },
+      {
+        "name": "circular",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "After the last image comes the first (default `true`); without it the buttons stop at the ends."
+      },
+      {
+        "name": "showThumbnails",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The thumbnail strip (default `true`)."
+      },
+      {
+        "name": "thumbnailsPosition",
+        "type": "Position",
+        "default": "'bottom'",
+        "required": false,
+        "description": "Side of the thumbnails: `'bottom'` (default), `'top'`, `'left'` or `'right'` (logical)."
+      },
+      {
+        "name": "numVisible",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Number of thumbnails shown at once; the strip follows the image on show. Default: all."
+      },
+      {
+        "name": "responsiveOptions",
+        "type": "readonly StarGalleriaResponsiveOption[] | null",
+        "default": "null",
+        "required": false,
+        "description": "`numVisible` per window width (the entry with the smallest fitting `breakpoint` wins)."
+      },
+      {
+        "name": "showThumbnailNavigators",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Previous and next buttons at the ends of the thumbnail strip."
+      },
+      {
+        "name": "verticalThumbnailViewPortHeight",
+        "type": "string",
+        "default": "'20rem'",
+        "required": false,
+        "description": "CSS `max-height` of a `left` or `right` thumbnail strip (default `'20rem'`)."
+      },
+      {
+        "name": "showIndicators",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A row of indicator buttons, one per image."
+      },
+      {
+        "name": "showIndicatorsOnItem",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The indicators lie on the image."
+      },
+      {
+        "name": "indicatorsPosition",
+        "type": "Position",
+        "default": "'bottom'",
+        "required": false,
+        "description": "Side of the indicators: `'bottom'` (default), `'top'`, `'left'` or `'right'`."
+      },
+      {
+        "name": "changeItemOnIndicatorHover",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Pointing at an indicator shows its image."
+      },
+      {
+        "name": "autoPlay",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the next image every `transitionInterval` milliseconds, with a pause button. It pauses while the pointer or the focus is on the gallery and does not advance while motion is reduced or while a `fullScreen` gallery is closed. While it plays, the image counter is not a live region (WAI-ARIA carousel pattern); paused (also by hover or focus) or stopped, it announces the position again."
+      },
+      {
+        "name": "transitionInterval",
+        "type": "number",
+        "default": "4000",
+        "required": false,
+        "description": "Time between two images of the autoplay, in milliseconds (default 4000)."
+      },
+      {
+        "name": "shouldStopAutoplayByClick",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "A click on a button, a thumbnail or an indicator stops the autoplay (default `true`)."
+      },
+      {
+        "name": "fullScreen",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Full-screen mode: the gallery shows in a modal dialog that fills the window while `visible` is true, and nothing shows in the page."
       },
       {
         "name": "pt",
@@ -7835,22 +8408,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "0",
         "required": false,
         "description": "Index of the image on show."
+      },
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `fullScreen`: the dialog is open."
       }
     ],
     "outputs": [],
     "parts": [
       "root",
+      "bodyPanel",
+      "header",
+      "itemPanel",
       "stagePanel",
       "picture",
       "caption",
       "navigation",
-      "previousIcon",
-      "nextIcon",
       "countText",
+      "playButton",
+      "playIcon",
       "thumbsPanel",
+      "thumbnailNavigatorButton",
+      "thumbnailList",
       "thumbnailButton",
-      "thumbnail"
+      "thumbnail",
+      "footer",
+      "indicatorList",
+      "indicatorButton",
+      "navigationIcon"
     ]
+  },
+  "StarGalleriaTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starGalleriaTemplate]",
+    "entry": "@star-ng/ui/media",
+    "description": "Replaces a part of `star-galleria`: `item` (the main image), `thumbnail`, `caption` or `indicator` (the content of an indicator button). PrimeNG `#item`, `#thumbnail`, `#caption` and `#indicator` templates. The context has the image (`let-image`), `index` and `active`. `<ng-template starGalleriaTemplate=\"caption\" let-image>{{ image.alt }}</ng-template>`",
+    "inputs": [
+      {
+        "name": "starGalleriaTemplate",
+        "type": "StarGalleriaTemplateName",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarGantt": {
     "kind": "component",
@@ -8408,7 +9014,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-image",
     "entry": "@star-ng/ui/media",
-    "description": "Image with preview (PrimeNG `p-image [preview]`): lazy-loaded thumbnail; click opens the full image in a modal `star-dialog` with zoom in / out. `<star-image src=\"label.png\" alt=\"Product label\" width=\"160\" preview />`",
+    "description": "Image with preview (PrimeNG `p-image [preview]`): lazy-loaded thumbnail; click opens the full image (or `previewImageSrc`) in a modal `star-dialog` with zoom in and out and rotate left and right. `<star-image src=\"label.png\" alt=\"Product label\" width=\"160\" preview />`",
     "inputs": [
       {
         "name": "src",
@@ -8432,11 +9038,60 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Width attribute of the thumbnail."
       },
       {
+        "name": "height",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": "Height attribute of the thumbnail."
+      },
+      {
+        "name": "srcSet",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`srcset` of the thumbnail (other sizes or densities of the image)."
+      },
+      {
+        "name": "sizes",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`sizes` of the thumbnail, for `srcSet`."
+      },
+      {
+        "name": "loading",
+        "type": "'lazy' | 'eager'",
+        "default": "'lazy'",
+        "required": false,
+        "description": "`loading` of the thumbnail: `'lazy'` (default) or `'eager'`."
+      },
+      {
         "name": "preview",
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "The image opens in a dialog with zoom buttons when the user activates it."
+        "description": "The image opens in a dialog with zoom and rotate buttons when the user activates it."
+      },
+      {
+        "name": "previewImageSrc",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Address of the image in the preview, for example a larger file (default: `src`)."
+      },
+      {
+        "name": "previewImageSrcSet",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`srcset` of the image in the preview."
+      },
+      {
+        "name": "previewImageSizes",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`sizes` of the image in the preview."
       },
       {
         "name": "pt",
@@ -8456,19 +9111,40 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "models": [],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "show",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the preview opens. PrimeNG `onShow`."
+      },
+      {
+        "name": "hide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the preview closes. PrimeNG `onHide`."
+      },
+      {
+        "name": "imageError",
+        "type": "Event",
+        "default": null,
+        "required": false,
+        "description": "Emits the `error` event of the thumbnail when it cannot load. PrimeNG `onImageError`."
+      }
+    ],
     "parts": [
       "root",
+      "picture",
+      "controlIcon",
       "triggerButton",
-      "previewPanel",
       "hintPanel",
       "hintIcon",
       "zoomPanel",
       "controlButton",
-      "zoomIcon",
       "zoomBarText",
-      "stagePanel",
-      "picture"
+      "stagePanel"
     ]
   },
   "StarImageCompare": {
@@ -8662,6 +9338,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "cropIcon",
       "selectionPanel"
     ]
+  },
+  "StarImageTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starImageTemplate]",
+    "entry": "@star-ng/ui/media",
+    "description": "Replaces the picture of `star-image`: `image` (the thumbnail in the page) or `preview` (the picture in the preview dialog, with the zoom and the rotation in the context). PrimeNG `#image` and `#preview` templates. `<ng-template starImageTemplate=\"preview\" let-src let-transform=\"transform\">…</ng-template>`",
+    "inputs": [
+      {
+        "name": "starImageTemplate",
+        "type": "'image' | 'preview'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarInplace": {
     "kind": "component",
@@ -10298,6 +10991,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "groupItem",
       "emptyPanel"
     ]
+  },
+  "StarListFilterTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starListFilter]",
+    "entry": "@star-ng/ui/data-display",
+    "description": "Replaces the filter field of `star-order-list` and `star-pick-list` (shown with `filter`): `<ng-template starListFilter let-query let-filter=\"filter\">…</ng-template>`. Call `filter(text)` from your own field. PrimeNG `#filter`, `#sourcefilter` and `#targetfilter` templates (use `list` to tell the two lists apart).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarListItem": {
     "kind": "component",
@@ -13163,7 +13865,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-order-list",
     "entry": "@star-ng/ui/data-display",
-    "description": "Order list (PrimeNG `p-orderlist`): reorder items with buttons or Alt + Arrow keys; the moved item keeps focus and a live region announces its new position. `<star-order-list [(value)]=\"priorities\" optionLabel=\"name\" ariaLabel=\"Queue order\" />`",
+    "description": "Order list (PrimeNG `p-orderlist`): reorder items with buttons, Alt + Arrow keys or (with `dragdrop`) the mouse; the moved item keeps focus and a live region announces its new position. `<star-order-list [(value)]=\"priorities\" optionLabel=\"name\" ariaLabel=\"Queue order\" />`",
     "inputs": [
       {
         "name": "optionLabel",
@@ -13178,6 +13880,97 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that names the list. Default: the header, when there is one."
+      },
+      {
+        "name": "header",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the header above the list. PrimeNG `header`. A `starHeader` slot replaces it."
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a filter field above the list. PrimeNG shows it when `filterBy` is set."
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<T>",
+        "default": "null",
+        "required": false,
+        "description": "The fields that the filter searches (one key or several); default: the label."
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text matches. PrimeNG `filterMatchMode`."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the case and accent folding of the filter. PrimeNG `filterLocale`."
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the filter field (default `STAR_UI_TEXT.filterPlaceholder`)."
+      },
+      {
+        "name": "ariaFilterLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the filter field (default `STAR_UI_TEXT.filterPlaceholder`)."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off the buttons, the keys, the filter and the drag."
+      },
+      {
+        "name": "stripedRows",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Every second item has a tinted background."
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "CSS `max-height` of the list, for example `'20rem'` (default `16rem`)."
+      },
+      {
+        "name": "dragdrop",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Reorder by drag and drop with the mouse, next to the buttons and the keys."
+      },
+      {
+        "name": "controlsPosition",
+        "type": "'start' | 'end'",
+        "default": "'start'",
+        "required": false,
+        "description": "Side of the move buttons: `'start'` (default) or `'end'`. PrimeNG `controlsPosition`."
       },
       {
         "name": "pt",
@@ -13203,17 +13996,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "[]",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "selection",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": "The selected items, in list order. A click selects one item, Ctrl or Cmd and a click adds or removes one, Shift and a click or Shift and an arrow key select a range, Space adds or removes the focused item. Keyboard focus on an item selects it while at most one item is selected. The move buttons and Alt with the arrow keys move every selected item and keep their order. PrimeNG `selection` and `onSelectionChange` (`selectionChange`)."
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "reorder",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the moved item after each move. PrimeNG `onReorder`."
+      },
+      {
+        "name": "listFilter",
+        "type": "StarListFilterEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the filter text and the matching items. PrimeNG `onFilterEvent`."
+      }
+    ],
     "parts": [
       "root",
       "buttonsPanel",
       "moveButton",
       "moveIcon",
+      "boxPanel",
+      "header",
+      "filterPanel",
+      "filterInput",
+      "listPanel",
       "list",
       "option",
-      "dragHandle"
+      "dragHandle",
+      "emptyPanel"
     ]
   },
   "StarOrgChart": {
@@ -13390,7 +14211,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-paginator",
     "entry": "@star-ng/ui/paginator",
-    "description": "Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window, first / last buttons, a rows-per-page `star-select` and a \"1–10 of 240\" report.",
+    "description": "Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window, first / last buttons, a rows-per-page `star-select` and a \"1–10 of 240\" report, with an optional jump to a page (a select or a number field).",
     "inputs": [
       {
         "name": "totalRecords",
@@ -13433,6 +14254,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "alwaysShow",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the paginator also when there is only one page (default `true`). PrimeNG `alwaysShow`."
+      },
+      {
+        "name": "liveReport",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The report announces the new page (`aria-live=\"polite\"`, default `true`). Turn it off when two paginators show the same pages, so the page is announced once."
+      },
+      {
+        "name": "showPageLinks",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The page number buttons (default `true`). PrimeNG `showPageLinks`."
+      },
+      {
+        "name": "showJumpToPageDropdown",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A select of every page next to the buttons. PrimeNG `showJumpToPageDropdown`."
+      },
+      {
+        "name": "showJumpToPageInput",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A number field that goes to the typed page on Enter or change. PrimeNG `showJumpToPageInput`."
+      },
+      {
+        "name": "currentPageReportTemplate",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the report with the placeholders `{currentPage}`, `{totalPages}`, `{first}`, `{last}`, `{rows}` and `{totalRecords}`, for example `'Page {currentPage} of {totalPages}'`. Default: `STAR_UI_TEXT.pageReport`. PrimeNG `currentPageReportTemplate`."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "pt",
@@ -13478,17 +14348,37 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
+      "pageIcon",
+      "startPanel",
       "reportText",
       "pagesPanel",
       "pageButton",
-      "firstPageIcon",
-      "previousPageIcon",
       "pageNumberButton",
-      "nextPageIcon",
-      "lastPageIcon",
+      "jumpPanel",
+      "jumpText",
+      "jumpLabel",
+      "jumpInput",
       "rowsPanel",
-      "rowsText"
+      "rowsText",
+      "endPanel"
     ]
+  },
+  "StarPaginatorTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starPaginatorTemplate]",
+    "entry": "@star-ng/ui/paginator",
+    "description": "Content at the start or the end of `star-paginator`: `<ng-template starPaginatorTemplate=\"start\" let-state>…</ng-template>`. The context is the current page state (`first`, `rows`, `page`, `pageCount`). PrimeNG `templateLeft` and `templateRight` (here logical: start and end).",
+    "inputs": [
+      {
+        "name": "starPaginatorTemplate",
+        "type": "'start' | 'end'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarPanel": {
     "kind": "component",
@@ -13509,6 +14399,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "showHeader",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the header (default `true`). Without it the region is named by `header`."
+      },
+      {
+        "name": "toggler",
+        "type": "'icon' | 'header'",
+        "default": "'icon'",
+        "required": false,
+        "description": "What toggles: `'icon'` (default, a button next to the actions) or `'header'` (the title is the button, with the icon before the text). PrimeNG `toggler`."
+      },
+      {
+        "name": "iconPos",
+        "type": "'start' | 'end'",
+        "default": "'end'",
+        "required": false,
+        "description": "Side of the toggle button in the header: `'end'` (default) or `'start'`. PrimeNG `iconPos`."
       },
       {
         "name": "pt",
@@ -13536,14 +14447,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "beforeToggle",
+        "type": "StarPanelToggleEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits before the panel opens or closes, with the state before the toggle. PrimeNG `onBeforeToggle`."
+      },
+      {
+        "name": "afterToggle",
+        "type": "StarPanelToggleEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits after the panel opened or closed (after the render), with the new state. PrimeNG `onAfterToggle`."
+      }
+    ],
     "parts": [
       "root",
+      "toggleIcon",
       "header",
       "titleText",
+      "headerButton",
       "actionList",
       "toggleButton",
-      "toggleIcon",
       "regionPanel",
       "innerPanel",
       "body"
@@ -13784,7 +14711,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-pick-list",
     "entry": "@star-ng/ui/data-display",
-    "description": "Pick list (PrimeNG `p-picklist`): move items between a source and a target list. Double-click or Enter moves one item; buttons move the selection or everything. `<star-pick-list [(source)]=\"available\" [(target)]=\"assigned\" optionLabel=\"name\" sourceHeader=\"Available\" targetHeader=\"Assigned\" />`",
+    "description": "Pick list (PrimeNG `p-picklist`): move items between a source and a target list. Double-click or Enter moves one item; buttons move the selection or every shown item; with `dragdrop` the mouse drags items between the lists and inside a list. `<star-pick-list [(source)]=\"available\" [(target)]=\"assigned\" optionLabel=\"name\" sourceHeader=\"Available\" targetHeader=\"Assigned\" />`",
     "inputs": [
       {
         "name": "optionLabel",
@@ -13806,6 +14733,153 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a filter field above each list. PrimeNG shows them when `filterBy` is set."
+      },
+      {
+        "name": "showSourceFilter",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "With `filter`: shows the filter of the source list (default `true`)."
+      },
+      {
+        "name": "showTargetFilter",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "With `filter`: shows the filter of the target list (default `true`)."
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<T>",
+        "default": "null",
+        "required": false,
+        "description": "The fields that the filters search (one key or several); default: the label."
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text matches. PrimeNG `filterMatchMode`."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the case and accent folding of the filters. PrimeNG `filterLocale`."
+      },
+      {
+        "name": "sourceFilterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the source filter (default `STAR_UI_TEXT.filterPlaceholder`)."
+      },
+      {
+        "name": "targetFilterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the target filter (default `STAR_UI_TEXT.filterPlaceholder`)."
+      },
+      {
+        "name": "ariaSourceFilterLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the source filter (default: its placeholder)."
+      },
+      {
+        "name": "ariaTargetFilterLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the target filter (default: its placeholder)."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off the lists, the buttons, the filters and the drag."
+      },
+      {
+        "name": "stripedRows",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Every second item has a tinted background."
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "CSS `max-height` of the lists, for example `'20rem'` (default `16rem`)."
+      },
+      {
+        "name": "metaKeySelection",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A click selects only the clicked item; Ctrl or Cmd and a click adds or removes it. Without it (default), each click adds or removes the item. Space always adds or removes."
+      },
+      {
+        "name": "keepSelection",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The moved items stay selected in the list they went to."
+      },
+      {
+        "name": "sourceOptionDisabled",
+        "type": "((item: T) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "Items of the source list that cannot be selected or moved."
+      },
+      {
+        "name": "targetOptionDisabled",
+        "type": "((item: T) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "Items of the target list that cannot be selected or moved."
+      },
+      {
+        "name": "showSourceControls",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Buttons that reorder the selected items of the source list (default `false`)."
+      },
+      {
+        "name": "showTargetControls",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Buttons that reorder the selected items of the target list (default `false`)."
+      },
+      {
+        "name": "dragdrop",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Move items with the mouse: between the lists and to another place in a list. It uses the native drag and drop of the browser, so it does not work with touch; the keys and the buttons do the same on every device."
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or under which the lists stack (for example `'960px'`). Default: the style sheet stacks them under 640px."
       },
       {
         "name": "pt",
@@ -13840,21 +14914,106 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "moveToTarget",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that moved from the source to the target (selected, double-click, drag)."
+      },
+      {
+        "name": "moveAllToTarget",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that \"Move all to target\" moved."
+      },
+      {
+        "name": "moveToSource",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that moved from the target to the source (selected, double-click, drag)."
+      },
+      {
+        "name": "moveAllToSource",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that \"Move all to source\" moved."
+      },
+      {
+        "name": "sourceReorder",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that moved inside the source list."
+      },
+      {
+        "name": "targetReorder",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that moved inside the target list."
+      },
+      {
+        "name": "sourceSelect",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the selected items of the source list when they change."
+      },
+      {
+        "name": "targetSelect",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the selected items of the target list when they change."
+      },
+      {
+        "name": "sourceFilter",
+        "type": "StarListFilterEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the filter text of the source list and its matching items."
+      },
+      {
+        "name": "targetFilter",
+        "type": "StarListFilterEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the filter text of the target list and its matching items."
+      }
+    ],
     "parts": [
       "root",
+      "moveIcon",
+      "moveAllIcon",
       "sidePanel",
       "header",
       "badgeText",
+      "filterPanel",
+      "filterInput",
+      "bodyPanel",
       "boxPanel",
       "list",
       "option",
       "emptyPanel",
       "buttonsPanel",
       "transferButton",
-      "moveIcon",
-      "moveAllIcon"
+      "reorderPanel",
+      "reorderButton"
     ]
+  },
+  "StarPickListHeaderTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starPickListHeader]",
+    "entry": "@star-ng/ui/data-display",
+    "description": "Replaces the header text of each list of `star-pick-list`: `<ng-template starPickListHeader let-list let-count=\"count\">…</ng-template>`. The header stays the name of its list. PrimeNG `#sourceheader` and `#targetheader` templates.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarPivotGrid": {
     "kind": "component",
@@ -16629,7 +17788,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-speed-dial",
     "entry": "@star-ng/ui/utility",
-    "description": "Speed dial (PrimeNG `p-speeddial`): floating action button that opens a short list of actions (up, down, left or right). `aria-expanded`, Escape closes, focus moves to the first action. `<star-speed-dial [items]=\"quickActions\" direction=\"up\" ariaLabel=\"Quick actions\" />`",
+    "description": "Speed dial (PrimeNG `p-speeddial`): floating action button that opens a short list of actions: in a line (up, down, left, right, start, end) or on a circle, a half circle or a quarter circle. `aria-expanded`, Escape closes, focus moves to the first action. `<star-speed-dial [items]=\"quickActions\" direction=\"up\" ariaLabel=\"Quick actions\" />`",
     "inputs": [
       {
         "name": "items",
@@ -16640,10 +17799,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "direction",
-        "type": "'up' | 'down' | 'left' | 'right' | 'start' | 'end'",
+        "type": "StarSpeedDialDirection",
         "default": "'up'",
         "required": false,
-        "description": ""
+        "description": "Where the actions go. `up-left`, `up-right`, `down-left`, `down-right`: for `quarter-circle`."
       },
       {
         "name": "ariaLabel",
@@ -16653,11 +17812,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
-        "name": "icon",
-        "type": "string",
-        "default": "'ph-bold ph-plus'",
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
         "required": false,
-        "description": "Icon of the main button. With another icon than the default, the button does not turn."
+        "description": "Id of an element that names the main button (instead of `ariaLabel`)."
+      },
+      {
+        "name": "icon",
+        "type": "unknown",
+        "default": "DEFAULT_ICON",
+        "required": false,
+        "description": "Icon of the main button. With another icon than the default, the button does not turn. PrimeNG `showIcon`."
+      },
+      {
+        "name": "hideIcon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon of the main button while the actions show (then the button does not turn). PrimeNG `hideIcon`."
+      },
+      {
+        "name": "rotateAnimation",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The default icon turns while the actions show (default `true`). PrimeNG `rotateAnimation`."
       },
       {
         "name": "size",
@@ -16672,6 +17852,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Index of the item that is the current choice (a set of options, for example a theme)."
+      },
+      {
+        "name": "type",
+        "type": "StarSpeedDialType",
+        "default": "'linear'",
+        "required": false,
+        "description": "Layout of the actions (default `'linear'`). PrimeNG `type`."
+      },
+      {
+        "name": "radius",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Radius in pixels of a circular layout (default: 80). PrimeNG `radius`."
+      },
+      {
+        "name": "transitionDelay",
+        "type": "number",
+        "default": "30",
+        "required": false,
+        "description": "Delay in milliseconds between the actions when they appear (default 30)."
+      },
+      {
+        "name": "mask",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A scrim behind the open actions; a click on it closes them. PrimeNG `mask`."
+      },
+      {
+        "name": "hideOnClickOutside",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "A click outside the speed dial closes it (default `true`). PrimeNG `hideOnClickOutside`."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off the main button."
       },
       {
         "name": "pt",
@@ -16690,7 +17912,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarStyled"
       }
     ],
-    "models": [],
+    "models": [
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The actions show. Two-way: `[(visible)]`. PrimeNG `visible` and `onVisibleChange`."
+      }
+    ],
     "outputs": [
       {
         "name": "itemClick",
@@ -16698,10 +17928,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pressed",
+        "type": "MouseEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits a click on the main button. PrimeNG `onClick`."
+      },
+      {
+        "name": "show",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the actions show after a user action (the main button). A change of `visible` by the owner emits `visibleChange` only, and does not move the focus. PrimeNG `onShow`."
+      },
+      {
+        "name": "hide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the actions hide after a user action (main button, action, Escape, click outside, mask). PrimeNG `onHide`."
       }
     ],
     "parts": [
       "root",
+      "maskPanel",
       "triggerButton",
       "triggerIcon",
       "list",
@@ -16709,6 +17961,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "actionButton",
       "actionIcon"
     ]
+  },
+  "StarSpeedDialTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starSpeedDialTemplate]",
+    "entry": "@star-ng/ui/utility",
+    "description": "Replaces content of `star-speed-dial`: `button` (the content of the main button) or `item` (the content of an action button). PrimeNG `#button` and `#item` templates. The buttons stay, with their names: put no focusable elements in the templates.",
+    "inputs": [
+      {
+        "name": "starSpeedDialTemplate",
+        "type": "'button' | 'item'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarSpinner": {
     "kind": "component",
@@ -16812,6 +18081,76 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "iconPos",
+        "type": "'start' | 'end'",
+        "default": "'start'",
+        "required": false,
+        "description": "Side of `icon` in the main button: `'start'` (default) or `'end'`. PrimeNG `iconPos`."
+      },
+      {
+        "name": "appearance",
+        "type": "StarButtonAppearance",
+        "default": "'filled'",
+        "required": false,
+        "description": "`'outlined'`, `'text'` or `'link'` draw both buttons without their fill. PrimeNG `outlined`, `text`."
+      },
+      {
+        "name": "raised",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A shadow under both buttons. PrimeNG `raised`."
+      },
+      {
+        "name": "rounded",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Fully round outer ends. PrimeNG `rounded`."
+      },
+      {
+        "name": "buttonDisabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off only the main button. PrimeNG `buttonDisabled`."
+      },
+      {
+        "name": "menuButtonDisabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off only the menu button. PrimeNG `menuButtonDisabled`."
+      },
+      {
+        "name": "dropdownIcon",
+        "type": "string",
+        "default": "'ph-bold ph-caret-down'",
+        "required": false,
+        "description": "Icon classes of the menu button (default a caret). PrimeNG `dropdownIcon`."
+      },
+      {
+        "name": "expandAriaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the menu button (default `STAR_UI_TEXT.moreActions`). PrimeNG `expandAriaLabel`."
+      },
+      {
+        "name": "tabindex",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "`tabindex` of both buttons."
+      },
+      {
+        "name": "autofocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Focuses the main button once, after the first render. PrimeNG `autofocus`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -16843,6 +18182,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "dropdownClick",
+        "type": "MouseEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits a click on the menu button. PrimeNG `onDropdownClick`."
+      },
+      {
+        "name": "menuShow",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu opens. PrimeNG `onMenuShow`."
+      },
+      {
+        "name": "menuHide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu closes. PrimeNG `onMenuHide`."
       }
     ],
     "parts": [
@@ -20656,11 +22016,12 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "button-group/basic": "<div class=\"docs-stack\">\n  <star-button-group ariaLabel=\"Order actions\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-floppy-disk\"\n      (pressed)=\"last.set('Save')\"\n    >\n      Save\n    </star-button>\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-copy\"\n      (pressed)=\"last.set('Copy')\"\n    >\n      Copy\n    </star-button>\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-trash\"\n      (pressed)=\"last.set('Delete')\"\n    >\n      Delete\n    </star-button>\n  </star-button-group>\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "button-group/icons": "<div class=\"docs-stack\">\n  <star-button-group ariaLabel=\"Text alignment\">\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-text-align-left\"\n      ariaLabel=\"Align left\"\n    />\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-text-align-center\"\n      ariaLabel=\"Align center\"\n    />\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-text-align-right\"\n      ariaLabel=\"Align right\"\n    />\n  </star-button-group>\n  <star-button-group ariaLabel=\"Pages\">\n    <star-button variant=\"secondary\" size=\"sm\">Previous</star-button>\n    <star-button variant=\"secondary\" size=\"sm\">Next</star-button>\n  </star-button-group>\n</div>",
   "button-group/split": "<star-button-group ariaLabel=\"Invoice actions\">\n  <star-button variant=\"secondary\">Preview</star-button>\n  <star-split-button label=\"Send\" variant=\"secondary\" [items]=\"sendOptions\" />\n</star-button-group>",
+  "button/appearance": "<div class=\"docs-row\">\n  <star-button appearance=\"outlined\">Outlined</star-button>\n  <star-button appearance=\"text\" variant=\"secondary\">Text</star-button>\n  <star-button appearance=\"link\">Link</star-button>\n  <star-button variant=\"danger\" appearance=\"outlined\">Delete</star-button>\n  <star-button raised>Raised</star-button>\n  <star-button rounded variant=\"secondary\">Rounded</star-button>\n  <star-button variant=\"secondary\" label=\"Inbox\" [badge]=\"4\" badgeSeverity=\"info\" />\n  <star-button iconOnly leadingIcon=\"ph-bold ph-gear\" label=\"Settings\" variant=\"ghost\" />\n</div>",
   "button/full": "<div class=\"docs-stack\">\n  <star-button fullWidth>Continue</star-button>\n</div>",
   "button/icons": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>\n<star-button variant=\"secondary\" trailingIcon=\"ph-bold ph-arrow-right star-icon-mirror\"\n  >Next</star-button\n>\n<star-button variant=\"ghost\" iconOnly leadingIcon=\"ph-bold ph-gear\" ariaLabel=\"Settings\" />",
   "button/sizes": "<star-button size=\"sm\">Small</star-button>\n<star-button size=\"md\">Medium</star-button>\n<star-button size=\"lg\">Large</star-button>",
   "button/states": "<star-button [loading]=\"saving()\" (pressed)=\"save()\">Save changes</star-button>\n<star-button variant=\"secondary\" disabled>Disabled</star-button>\n<p class=\"docs-output\" role=\"status\">Saved {{ saves() }} times</p>",
-  "button/variants": "<star-button variant=\"primary\">Save</star-button>\n<star-button variant=\"secondary\">Cancel</star-button>\n<star-button variant=\"ghost\">Skip</star-button>\n<star-button variant=\"success\">Approve</star-button>\n<star-button variant=\"warning\">Hold</star-button>\n<star-button variant=\"danger\">Delete</star-button>\n<star-button variant=\"ghost-danger\">Remove</star-button>",
+  "button/variants": "<star-button variant=\"primary\">Save</star-button>\n<star-button variant=\"secondary\">Cancel</star-button>\n<star-button variant=\"ghost\">Skip</star-button>\n<star-button variant=\"success\">Approve</star-button>\n<star-button variant=\"warning\">Hold</star-button>\n<star-button variant=\"danger\">Delete</star-button>\n<star-button variant=\"ghost-danger\">Remove</star-button>\n<star-button variant=\"info\">Details</star-button>\n<star-button variant=\"help\">Help</star-button>\n<star-button variant=\"contrast\">Publish</star-button>",
   "calendar/basic": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"shipDate()\"\n    (dateSelect)=\"shipDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Ship date: {{ iso(shipDate()) }}</p>\n</div>",
   "calendar/events": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"eventsDate()\"\n    (dateSelect)=\"eventsDate.set($event)\"\n    (monthChange)=\"shownMonth.set($event.month + '/' + $event.year)\"\n    (viewChange)=\"shownView.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shown month: {{ shownMonth() }}. View: {{ shownView() }}\n  </p>\n</div>",
   "calendar/granularity": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    granularity=\"month\"\n    [selected]=\"reportMonth()\"\n    (dateSelect)=\"reportMonth.set($event)\"\n    locale=\"en-GB\"\n  />\n  <p class=\"docs-output\" role=\"status\">Month: {{ iso(reportMonth()) }}</p>\n</div>",
@@ -20675,6 +22036,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "carousel/basic": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  ariaLabel=\"Warehouse photos\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo>\n    <img\n      style=\"display: block; width: 100%; height: auto\"\n      [src]=\"photo.src\"\n      [alt]=\"photo.label\"\n    />\n  </ng-template>\n</star-carousel>",
   "carousel/visible": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  [numVisible]=\"3\"\n  ariaLabel=\"Warehouse photo pages\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo let-index=\"index\">\n    <figure style=\"margin: 0\">\n      <img\n        style=\"display: block; width: 100%; height: auto\"\n        [src]=\"photo.src\"\n        [alt]=\"photo.label\"\n      />\n      <figcaption>Slide {{ index + 1 }}</figcaption>\n    </figure>\n  </ng-template>\n</star-carousel>",
   "cascade-select/basic": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"place\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">Value: {{ place() ?? 'none' }}</p>\n</div>",
+  "cascade-select/events": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"loadingPlaces() ? [] : places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"eventPlace\"\n    [loading]=\"loadingPlaces()\"\n    emptyMessage=\"The places are loading\"\n    ariaLabel=\"City while loading\"\n    showClear\n    fluid\n    (show)=\"menuLog.set('menu open')\"\n    (hide)=\"menuLog.set('menu closed')\"\n    (cleared)=\"menuLog.set('cleared')\"\n  />\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"loadingPlaces.set(!loadingPlaces())\"\n    >\n      {{ loadingPlaces() ? 'Finish loading' : 'Load again' }}\n    </button>\n    <span class=\"docs-output\" role=\"status\">{{ menuLog() || 'No event yet' }}</span>\n  </div>\n</div>",
   "cascade-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office city\" for=\"cascade-form-city\" [state]=\"office.city()\">\n    <star-cascade-select\n      inputId=\"cascade-form-city\"\n      [formField]=\"office.city\"\n      [options]=\"places\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Choose a city\"\n      showPath\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "cascade-select/option": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"templated\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City with option template\"\n  >\n    <ng-template\n      starCascadeOption\n      [starCascadeOptionOf]=\"places\"\n      let-place\n      let-hasChildren=\"hasChildren\"\n    >\n      @if (hasChildren) {\n        <strong>{{ place.name }}</strong>\n      } @else {\n        {{ place.name }} ({{ place.code }})\n      }\n    </ng-template>\n  </star-cascade-select>\n  <p class=\"docs-output\" role=\"status\">Value: {{ templated() ?? 'none' }}</p>\n</div>",
   "cascade-select/path": "<star-cascade-select\n  [options]=\"places\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"pathPlace\"\n  placeholder=\"Choose a city\"\n  ariaLabel=\"City with path\"\n  showPath\n  showClear\n/>",
@@ -20725,6 +22087,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",
   "data-view/empty": "<star-data-view [items]=\"[]\" emptyMessage=\"No products match this filter.\">\n  <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n</star-data-view>",
   "data-view/layouts": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" [(layout)]=\"layout\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p let-mode=\"layout\">\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n      @if (mode === 'grid') {\n        <small>Grid card</small>\n      }\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">Layout: {{ layout() }}</p>\n</div>",
+  "data-view/options": "<star-data-view\n  #catalog\n  [items]=\"products\"\n  paginator\n  [rows]=\"3\"\n  [rowsPerPageOptions]=\"[3, 6]\"\n  paginatorPosition=\"both\"\n  paginatorAriaLabel=\"Catalog pages\"\n  sortField=\"price\"\n  [sortOrder]=\"priceOrder()\"\n  filterBy=\"name\"\n  [loading]=\"busy()\"\n>\n  <div starDataViewHeader class=\"docs-row\">\n    <label class=\"docs-row\">\n      Find\n      <input\n        class=\"star-input star-input--sm\"\n        type=\"search\"\n        (input)=\"catalog.filter($any($event.target).value)\"\n      />\n    </label>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (click)=\"priceOrder.set(priceOrder() === 1 ? -1 : 1)\"\n    >\n      Price {{ priceOrder() === 1 ? 'low to high' : 'high to low' }}\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"busy.set(!busy())\">\n      {{ busy() ? 'Stop loading' : 'Show loading' }}\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",
   "data-view/paging": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" paginator [rows]=\"4\" [(first)]=\"first\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">First item on the page: {{ first() + 1 }}</p>\n</div>",
   "data-view/slots": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products.slice(0, 3)\">\n    <ng-template starHeader>\n      <p class=\"docs-output\">Today's picks</p>\n    </ng-template>\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ '$' + p.price }}</div>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Prices include tax.</p>\n    </ng-template>\n  </star-data-view>\n  <star-data-view [items]=\"[]\">\n    <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n    <ng-template starEmpty let-text>\n      <span style=\"color: var(--star-text-muted)\">Nothing to show yet.</span>\n    </ng-template>\n  </star-data-view>\n</div>",
   "data-view/sorting": "<star-data-view [items]=\"sorted()\">\n  <div starDataViewHeader>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('name')\">\n      Sort by name\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('price')\">\n      Sort by price\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"sorted()\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",
@@ -20778,6 +22141,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "editor/accessibility": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"audited\"\n    [toolbar]=\"auditToolbar\"\n    ariaLabel=\"Checked announcement\"\n  />\n</div>",
   "editor/allow-list": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"strict\"\n    [sanitize]=\"strictRules\"\n    ariaLabel=\"Strict announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the strict editor\">{{\n    strict()\n  }}</pre>\n</div>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
+  "editor/events": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"eventsNote\"\n    ariaLabel=\"Order note\"\n    (textChange)=\"lastText.set($event.text)\"\n    (selectionChange)=\"selection.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Text: {{ lastText() || '(no change yet)' }}. Selection:\n    {{\n      selection()\n        ? 'from ' + selection()!.index + ', ' + selection()!.length + ' characters'\n        : 'outside the editor'\n    }}.\n  </p>\n</div>",
   "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"report\"\n    [toolbar]=\"fullToolbar\"\n    ariaLabel=\"Product announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
   "editor/lists": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"plan\" [toolbar]=\"listToolbar\" ariaLabel=\"Launch plan\" />\n</div>",
   "editor/media": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"media\"\n    [toolbar]=\"mediaToolbar\"\n    [upload]=\"upload\"\n    [sanitize]=\"embedRules\"\n    ariaLabel=\"Release with images\"\n  />\n</div>",
@@ -20805,6 +22169,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "file-upload/slots": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"templated\" multiple>\n    <ng-template starEmpty>\n      <p class=\"docs-output\">No file yet. Add an invoice or a packing list.</p>\n    </ng-template>\n    <ng-template\n      starFile\n      let-file\n      let-remove=\"remove\"\n      let-index=\"index\"\n      let-interactive=\"interactive\"\n    >\n      <i class=\"ph-bold ph-file-pdf star-upload__file-icon\" aria-hidden=\"true\"></i>\n      <span class=\"star-upload__main\">\n        <span class=\"star-upload__name\">{{ index + 1 }}. {{ file.name }}</span>\n      </span>\n      <span class=\"star-upload__size\">{{ file.size }} bytes</span>\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-select__icon-btn\"\n          [attr.aria-label]=\"'Remove ' + file.name\"\n          (click)=\"remove()\"\n        >\n          <i class=\"ph-bold ph-trash\" aria-hidden=\"true\"></i>\n        </button>\n      }\n    </ng-template>\n  </star-file-upload>\n</div>",
   "file-upload/states": "<div class=\"docs-stack\">\n  <star-file-upload [value]=\"existing\" readonly />\n  <star-file-upload disabled />\n</div>",
   "file-upload/status": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"uploads\"\n    accept=\".pdf\"\n    multiple\n    [fileStatus]=\"statusOf\"\n    (selected)=\"send($event)\"\n  />\n</div>",
+  "file-upload/upload-hooks": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"queued\"\n    multiple\n    showUploadButton\n    showCancelButton\n    chooseLabel=\"Add invoices\"\n    (uploadHandler)=\"uploadLog.set('Upload ' + $event.files.length + ' files')\"\n    (cleared)=\"uploadLog.set('Cleared')\"\n    (fileRemove)=\"uploadLog.set('Removed ' + $event.name)\"\n  />\n  <star-file-upload [(value)]=\"basic\" mode=\"basic\" chooseLabel=\"Attach a receipt\" />\n  <p class=\"docs-output\" role=\"status\">{{ uploadLog() || 'Nothing yet' }}</p>\n</div>",
   "float-label/basic": "<div class=\"docs-stack\">\n  <star-float-label label=\"Customer name\">\n    <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n  </star-float-label>\n  <star-float-label label=\"Delivery note\">\n    <textarea starInput rows=\"3\"></textarea>\n  </star-float-label>\n  <p class=\"docs-output\" role=\"status\">Customer: {{ name() || 'empty' }}</p>\n</div>",
   "float-label/select": "<div class=\"docs-stack\">\n  <star-float-label label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" ariaLabel=\"City\" />\n  </star-float-label>\n</div>",
   "focus-trap/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row docs-trap\" [starFocusTrap]=\"trapOn()\">\n    <star-toggle-switch [(checked)]=\"trapOn\">Keep Tab in this row</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\">One</star-button>\n    <star-button size=\"sm\" variant=\"secondary\">Two</star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Trap is {{ trapOn() ? 'on' : 'off' }}.</p>\n</div>",
@@ -20813,7 +22178,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "forms/signal": "<div class=\"docs-stack\">\n  <star-field label=\"Name\" [state]=\"profile.name()\">\n    <input starInput [formField]=\"profile.name\" />\n  </star-field>\n  <star-toggle-switch [formField]=\"profile.newsletter\">Newsletter</star-toggle-switch>\n  <p class=\"docs-output\" role=\"status\">\n    {{ profile().valid() ? 'Valid' : 'Not valid' }}: {{ model().name || '(no name)' }}\n  </p>\n</div>",
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "galleria/basic": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Site photos\"\n/>",
+  "galleria/full-screen": "<div class=\"docs-row\">\n  @for (image of images; track image.src; let i = $index) {\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"openAt(i)\"\n    >\n      Open {{ image.alt }}\n    </button>\n  }\n</div>\n<star-galleria\n  [images]=\"images\"\n  [(activeIndex)]=\"fullIndex\"\n  [(visible)]=\"fullOpen\"\n  fullScreen\n  ariaLabel=\"Dock photos\"\n/>",
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
+  "galleria/options": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Dock photos with indicators\"\n  thumbnailsPosition=\"right\"\n  [numVisible]=\"3\"\n  [responsiveOptions]=\"responsive\"\n  showThumbnailNavigators\n  showIndicators\n  showItemNavigatorsOnHover\n  autoPlay\n  [transitionInterval]=\"5000\"\n  [circular]=\"false\"\n/>",
+  "galleria/templates": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Dock photos with captions\"\n  showIndicators\n>\n  <ng-template starGalleriaTemplate=\"caption\" let-image let-i=\"index\">\n    <strong>{{ i + 1 }}.</strong> {{ image.alt }}\n  </ng-template>\n  <ng-template starGalleriaTemplate=\"indicator\" let-i=\"index\">{{ i + 1 }}</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">Photos of the north loading dock.</p>\n  </ng-template>\n</star-galleria>",
   "gantt/large": "<star-gantt [tasks]=\"large\" scale=\"month\" ariaLabel=\"Order batches\" readonly />",
   "gantt/launch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"scales\"\n    optionLabel=\"label\"\n    optionValue=\"value\"\n    [allowEmpty]=\"false\"\n    size=\"sm\"\n    ariaLabel=\"Scale\"\n    [(value)]=\"scale\"\n  />\n  <star-gantt\n    [tasks]=\"tasks()\"\n    [(scale)]=\"scale\"\n    [(collapsed)]=\"collapsed\"\n    locale=\"en-GB\"\n    ariaLabel=\"Launch plan\"\n    (taskChange)=\"onChange($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
   "gauge/interactive": "<div class=\"docs-stack\">\n  <star-field label=\"Volume\">\n    <star-linear-gauge interactive [step]=\"5\" [formField]=\"model.volume\" />\n  </star-field>\n  <star-radial-gauge pointer=\"bar\" [value]=\"settings().volume\" ariaLabel=\"Volume level\" />\n  <p>Volume: {{ settings().volume }}</p>\n</div>",
@@ -20832,6 +22200,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "image-editor/file": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    Image file\n    <input type=\"file\" accept=\"image/*\" (change)=\"openFile($event)\" />\n  </label>\n  <star-image-editor [src]=\"fileUrl()\" ariaLabel=\"File editor\" />\n</div>",
   "image/basic": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" />",
   "image/preview": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" preview />",
+  "image/sources": "<div class=\"docs-stack\">\n  <star-image\n    [src]=\"shelf\"\n    [previewImageSrc]=\"shelfLarge\"\n    alt=\"Shelf photo, large\"\n    [width]=\"240\"\n    [height]=\"135\"\n    preview\n    (show)=\"previewLog.set('Preview open')\"\n    (hide)=\"previewLog.set('Preview closed')\"\n  >\n    <ng-template starIcon=\"preview\"\n      ><i class=\"ph-bold ph-arrows-out\" aria-hidden=\"true\"></i\n    ></ng-template>\n  </star-image>\n  <p class=\"docs-output\" role=\"status\">{{ previewLog() || 'Preview not opened yet' }}</p>\n</div>",
   "inplace/active": "<div class=\"docs-stack\">\n  <star-inplace ariaLabel=\"Edit title\" [(active)]=\"editing\">\n    <ng-template starInplaceDisplay>{{ title() }}</ng-template>\n    <ng-template starInplaceContent>\n      <input\n        starInput\n        size=\"sm\"\n        aria-label=\"Title\"\n        [value]=\"title()\"\n        (input)=\"title.set($any($event.target).value)\"\n        (keydown.enter)=\"editing.set(false)\"\n      />\n    </ng-template>\n  </star-inplace>\n  <p class=\"docs-output\" role=\"status\">Editing: {{ editing() }}</p>\n  <star-inplace disabled ariaLabel=\"Locked value\">\n    <ng-template starInplaceDisplay>Locked value</ng-template>\n    <ng-template starInplaceContent>Not shown</ng-template>\n  </star-inplace>\n</div>",
   "inplace/basic": "<div class=\"docs-stack\">\n  <p class=\"docs-output\">\n    Requester:\n    <star-inplace ariaLabel=\"Edit requester\" closable>\n      <ng-template starInplaceDisplay>{{ name() }}</ng-template>\n      <ng-template starInplaceContent>\n        <input\n          starInput\n          size=\"sm\"\n          aria-label=\"Requester\"\n          [value]=\"name()\"\n          (input)=\"name.set($any($event.target).value)\"\n        />\n      </ng-template>\n    </star-inplace>\n  </p>\n</div>",
   "input-group/addons": "<div class=\"docs-stack\">\n  <star-field label=\"Website\">\n    <star-input-group>\n      <star-input-group-addon>https://</star-input-group-addon>\n      <input starInput placeholder=\"example.com\" />\n    </star-input-group>\n  </star-field>\n  <star-input-group ariaLabel=\"Weight\">\n    <input starInput inputmode=\"decimal\" aria-label=\"Weight\" placeholder=\"0.0\" />\n    <star-input-group-addon>kg</star-input-group-addon>\n  </star-input-group>\n</div>",
@@ -20908,7 +22277,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template\n    starChip\n    [starChipOf]=\"cities\"\n    let-item\n    let-remove=\"remove\"\n    let-interactive=\"interactive\"\n  >\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-chip__remove\"\n          tabindex=\"-1\"\n          [attr.aria-label]=\"'Remove ' + item.name\"\n          (click)=\"remove()\"\n        >\n          x\n        </button>\n      }\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"visited.set([])\"\n    >\n      Clear the choice\n    </button>\n  </ng-template>\n</star-multi-select>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
   "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
+  "order-list/filter-drag": "<div class=\"docs-stack\">\n  <star-order-list\n    [(value)]=\"queue\"\n    [(selection)]=\"current\"\n    header=\"Delivery queue\"\n    filter\n    dragdrop\n    stripedRows\n    controlsPosition=\"end\"\n    scrollHeight=\"12rem\"\n    (reorder)=\"moved.set($event.items.join(', '))\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ current().join(', ') || 'none' }}. Last moved: {{ moved() || 'none' }}.\n  </p>\n</div>",
   "order-list/item": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task priorities\">\n    <ng-template\n      starItem\n      [starItemOf]=\"playlist()\"\n      let-task\n      let-i=\"index\"\n      let-on=\"selected\"\n    >\n      <strong>{{ i + 1 }}.</strong> {{ task.name }}\n      @if (on) {\n        <small style=\"color: var(--star-text-muted)\">(selected)</small>\n      }\n    </ng-template>\n  </star-order-list>\n</div>",
+  "order-list/multiple": "<div class=\"docs-stack\">\n  <star-order-list\n    [(value)]=\"batch\"\n    [(selection)]=\"batchSelection\"\n    ariaLabel=\"Batch order\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ batchSelection().join(', ') || 'none' }}\n  </p>\n</div>",
   "order-list/objects": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task playlist\" />\n  <p class=\"docs-output\" role=\"status\">Ids: {{ ids() }}</p>\n</div>",
   "org-chart/basic": "<div class=\"docs-stack\">\n  <star-org-chart ariaLabel=\"Company\" [value]=\"company\" [(collapsedKeys)]=\"closed\" />\n  <p class=\"docs-output\" role=\"status\">Collapsed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
   "org-chart/selectable": "<div class=\"docs-stack\">\n  <star-org-chart\n    ariaLabel=\"Company, selectable\"\n    [value]=\"company\"\n    selectable\n    [(selectedKey)]=\"selected\"\n    (nodeSelect)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected() ?? 'none' }}</p>\n  <p class=\"docs-output\" role=\"status\">Last node: {{ last() }}</p>\n</div>",
@@ -20917,16 +22288,20 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "overlay-badge/positions": "<div class=\"docs-row\">\n  <star-overlay-badge dot severity=\"success\" position=\"bottom-end\" ariaLabel=\"online\">\n    <star-avatar name=\"Jane Doe\" />\n  </star-overlay-badge>\n  <star-overlay-badge [value]=\"2\" position=\"top-start\" ariaLabel=\"new comments\">\n    <star-avatar name=\"Sam Lee\" shape=\"square\" />\n  </star-overlay-badge>\n  <star-overlay-badge [value]=\"5\" severity=\"warn\" position=\"bottom-start\" size=\"md\">\n    <star-avatar icon=\"ph-bold ph-folder\" />\n  </star-overlay-badge>\n</div>",
   "paginator/basic": "<div class=\"docs-stack\">\n  <star-paginator\n    ariaLabel=\"Pagination of the list\"\n    [totalRecords]=\"95\"\n    [(first)]=\"first\"\n    [(rows)]=\"rows\"\n    (pageChange)=\"last.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Showing {{ shown() }}. Last event: page {{ last() ? last()!.page + 1 : '-' }}.\n  </p>\n</div>",
   "paginator/compact": "<star-paginator\n  ariaLabel=\"Pagination of the compact list\"\n  [totalRecords]=\"60\"\n  [rowsPerPageOptions]=\"[]\"\n  [showCurrentPageReport]=\"false\"\n  [showFirstLast]=\"false\"\n  [pageLinkSize]=\"3\"\n/>",
+  "paginator/jump": "<star-paginator\n  [totalRecords]=\"12000\"\n  [(first)]=\"jumpFirst\"\n  [rows]=\"20\"\n  [rowsPerPageOptions]=\"[]\"\n  [showPageLinks]=\"false\"\n  showJumpToPageInput\n  currentPageReportTemplate=\"Page {currentPage} of {totalPages} ({totalRecords} orders)\"\n  ariaLabel=\"Order pages\"\n>\n  <ng-template starPaginatorTemplate=\"end\" let-state>\n    <span class=\"docs-output\">Orders {{ state.first + 1 }} and on</span>\n  </ng-template>\n</star-paginator>",
   "panel-menu/basic": "<div class=\"docs-stack\">\n  <star-panel-menu\n    ariaLabel=\"Settings\"\n    [items]=\"sections\"\n    [(expandedKeys)]=\"open\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ open().join(', ') || 'none' }}. Last action: {{ last() }}\n  </p>\n</div>",
   "panel-menu/single": "<star-panel-menu ariaLabel=\"Settings, single\" single [items]=\"sections\" />",
   "panel/basic": "<div class=\"docs-stack\">\n  <star-panel header=\"Order notes\" toggleable [(collapsed)]=\"collapsed\">\n    <star-button starPanelActions variant=\"ghost\" size=\"sm\" leadingIcon=\"ph-bold ph-plus\">\n      Add note\n    </star-button>\n    Ship with the next pallet. Call the front desk on arrival.\n  </star-panel>\n  <p class=\"docs-output\" role=\"status\">\n    The panel is {{ collapsed() ? 'collapsed' : 'open' }}.\n  </p>\n</div>",
   "panel/fieldset": "<div class=\"docs-stack\">\n  <star-fieldset legend=\"Contact person\" toggleable>\n    <star-field label=\"Name\">\n      <input starInput />\n    </star-field>\n    <star-field label=\"Email\">\n      <input starInput type=\"email\" placeholder=\"name@example.com\" />\n    </star-field>\n  </star-fieldset>\n</div>",
+  "panel/toggler": "<div class=\"docs-stack\">\n  <star-panel\n    header=\"Delivery address\"\n    toggleable\n    toggler=\"header\"\n    (beforeToggle)=\"toggleLog.set('before: ' + ($event.collapsed ? 'collapsed' : 'open'))\"\n    (afterToggle)=\"\n      toggleLog.set(toggleLog() + ', after: ' + ($event.collapsed ? 'collapsed' : 'open'))\n    \"\n  >\n    12 Harbor Road, Lakeside.\n  </star-panel>\n  <star-panel header=\"Invoice notes\" toggleable iconPos=\"start\">\n    Send the invoice at the end of the month.\n  </star-panel>\n  <p class=\"docs-output\" role=\"status\">{{ toggleLog() || 'No toggle yet' }}</p>\n</div>",
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
   "pick-list/basic": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"available\" [(target)]=\"chosen\" />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
+  "pick-list/filter-drag": "<div class=\"docs-stack\">\n  <star-pick-list\n    [(source)]=\"cities\"\n    [(target)]=\"route\"\n    filter\n    filterMatchMode=\"startsWith\"\n    dragdrop\n    showTargetControls\n    stripedRows\n    sourceHeader=\"Cities\"\n    targetHeader=\"Route\"\n    sourceFilterPlaceholder=\"Find a city\"\n    targetFilterPlaceholder=\"Find a stop\"\n    (moveToTarget)=\"lastMove.set('to the route: ' + names($event))\"\n    (moveAllToTarget)=\"lastMove.set('all to the route: ' + names($event))\"\n    (moveToSource)=\"lastMove.set('back to the cities: ' + names($event))\"\n    (moveAllToSource)=\"lastMove.set('all back: ' + names($event))\"\n    (targetReorder)=\"lastMove.set('route reordered: ' + names($event))\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last move: {{ lastMove() || 'none' }}</p>\n</div>",
   "pick-list/item": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"people\" [(target)]=\"team\" optionLabel=\"name\">\n    <ng-template starItem [starItemOf]=\"people()\" let-member let-list=\"list\">\n      {{ member.name }}\n      @if (list === 'target') {\n        <small style=\"color: var(--star-text-muted)\">on the team</small>\n      }\n    </ng-template>\n  </star-pick-list>\n</div>",
   "pick-list/objects": "<div class=\"docs-stack\">\n  <star-pick-list\n    [(source)]=\"people\"\n    [(target)]=\"team\"\n    optionLabel=\"name\"\n    sourceHeader=\"Available people\"\n    targetHeader=\"Project team\"\n  />\n  <p class=\"docs-output\" role=\"status\">Team size: {{ team().length }}</p>\n</div>",
+  "pick-list/slots": "<star-pick-list [(source)]=\"crates\" [(target)]=\"loaded\">\n  <ng-template starPickListHeader let-list let-count=\"count\">\n    {{ list === 'source' ? 'In the warehouse' : 'On the truck' }} ({{ count }} crates)\n  </ng-template>\n  <ng-template starEmpty let-list=\"list\">\n    {{ list === 'source' ? 'The warehouse is empty.' : 'Nothing loaded yet.' }}\n  </ng-template>\n</star-pick-list>",
   "pivot-grid/configurator": "<star-pivot-grid\n  [data]=\"sales\"\n  [(config)]=\"openConfig\"\n  [fields]=\"fields\"\n  showConfigurator\n  height=\"22rem\"\n  ariaLabel=\"Sales by product\"\n  locale=\"en-IE\"\n/>",
   "pivot-grid/csv": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"showCsv()\"\n    >\n      Show CSV\n    </button>\n  </div>\n  <star-pivot-grid\n    #csvGrid\n    [data]=\"sales\"\n    [(config)]=\"csvConfig\"\n    height=\"16rem\"\n    ariaLabel=\"Units by product and region\"\n    locale=\"en-IE\"\n  />\n  <pre class=\"docs-output\">{{ csv() }}</pre>\n</div>",
   "pivot-grid/sales": "<div class=\"docs-stack\">\n  <star-pivot-grid\n    [data]=\"sales\"\n    [(config)]=\"salesConfig\"\n    height=\"24rem\"\n    ariaLabel=\"Sales by region and quarter\"\n    locale=\"en-IE\"\n    (cellClick)=\"onCell($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ drill() }}</p>\n</div>",
@@ -20998,10 +22373,12 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "sparkline/types": "<div class=\"docs-stack\">\n  <span\n    >Line <star-sparkline [data]=\"sales\" [width]=\"120\" [height]=\"28\" ariaLabel=\"Line\"\n  /></span>\n  <span\n    >Area\n    <star-sparkline\n      type=\"area\"\n      [data]=\"sales\"\n      [color]=\"3\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Area\"\n  /></span>\n  <span\n    >Bar\n    <star-sparkline\n      type=\"bar\"\n      [data]=\"change\"\n      [color]=\"7\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Bar\"\n  /></span>\n  <span\n    >Win-loss <star-sparkline type=\"win-loss\" [data]=\"change\" [width]=\"120\" [height]=\"28\"\n  /></span>\n</div>",
   "speed-dial/basic": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    [items]=\"actions\"\n    direction=\"right\"\n    ariaLabel=\"Quick actions\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "speed-dial/choice": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    size=\"sm\"\n    direction=\"down\"\n    icon=\"ph-bold ph-sort-ascending\"\n    [items]=\"sortItems\"\n    [activeIndex]=\"sortIndex()\"\n    ariaLabel=\"Sort\"\n  />\n  <p class=\"docs-output\" role=\"status\">Sorted by: {{ sortItems[sortIndex()].label }}</p>\n</div>",
+  "speed-dial/circle": "<div class=\"docs-stack\">\n  <div class=\"docs-row docs-dial-area docs-dial-area--center\">\n    <star-speed-dial\n      [items]=\"actions\"\n      type=\"semi-circle\"\n      direction=\"up\"\n      [radius]=\"72\"\n      ariaLabel=\"Actions on a half circle\"\n      hideIcon=\"ph-bold ph-x\"\n      (show)=\"dialLog.set('open')\"\n      (hide)=\"dialLog.set('closed')\"\n    />\n    <star-speed-dial\n      [items]=\"actions\"\n      type=\"quarter-circle\"\n      direction=\"up-right\"\n      [radius]=\"72\"\n      mask\n      ariaLabel=\"Actions on a quarter circle\"\n    />\n  </div>\n  <p class=\"docs-output\" role=\"status\">Half circle: {{ dialLog() }}</p>\n</div>",
   "speed-dial/directions": "<div class=\"docs-row docs-dial-area docs-dial-area--wide\">\n  <star-speed-dial [items]=\"actions\" direction=\"up\" ariaLabel=\"Actions up\" />\n  <star-speed-dial [items]=\"actions\" direction=\"down\" ariaLabel=\"Actions down\" />\n  <star-speed-dial [items]=\"actions\" direction=\"left\" ariaLabel=\"Actions left\" />\n  <star-speed-dial [items]=\"actions\" direction=\"right\" ariaLabel=\"Actions right\" />\n</div>",
   "speed-dial/logical": "<div class=\"docs-row docs-dial-area docs-dial-area--center\">\n  <star-speed-dial [items]=\"actions\" direction=\"start\" ariaLabel=\"Actions at the start\" />\n  <star-speed-dial [items]=\"actions\" direction=\"end\" ariaLabel=\"Actions at the end\" />\n</div>",
   "spinner/label": "<star-spinner ariaLabel=\"Loading orders\" />",
   "spinner/sizes": "<star-spinner size=\"1.25rem\" [strokeWidth]=\"6\" />\n<star-spinner />\n<star-spinner size=\"4rem\" [strokeWidth]=\"3\" />",
+  "split-button/appearance": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-split-button\n      label=\"Export\"\n      icon=\"ph-bold ph-download-simple\"\n      iconPos=\"end\"\n      appearance=\"outlined\"\n      expandAriaLabel=\"More export formats\"\n      [items]=\"orderOptions\"\n      (menuShow)=\"menuLog.set('menu open')\"\n      (menuHide)=\"menuLog.set('menu closed')\"\n    />\n    <star-split-button label=\"Archive\" variant=\"secondary\" raised [items]=\"orderOptions\" />\n    <star-split-button\n      label=\"Publish\"\n      buttonDisabled\n      dropdownIcon=\"ph-bold ph-dots-three\"\n      expandAriaLabel=\"Publish options\"\n      [items]=\"orderOptions\"\n    />\n  </div>\n  <p class=\"docs-output\" role=\"status\">Menu: {{ menuLog() }}</p>\n</div>",
   "split-button/basic": "<div class=\"docs-stack\">\n  <star-split-button\n    label=\"Place order\"\n    icon=\"ph-bold ph-paper-plane-tilt\"\n    [items]=\"orderOptions\"\n    (pressed)=\"last.set('Place order')\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "split-button/disabled": "<star-split-button label=\"Place order\" disabled [items]=\"orderOptions\" />",
   "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",

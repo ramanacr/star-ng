@@ -257,6 +257,35 @@ test.describe('order list', () => {
   });
 });
 
+test.describe('order list depth', () => {
+  test('selects a range with Shift and moves the selected items together', async ({ page }) => {
+    await openPage(page, '/controls/order-list', 'Order list');
+    const live = example(page, 'Several selected items');
+    const list = live.getByRole('listbox', { name: 'Batch order' });
+    await list.getByRole('option', { name: 'Pack' }).click();
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect(live.getByRole('status')).toHaveText('Selected: Pack, Label');
+    await list.getByRole('option', { name: 'Load' }).click({ modifiers: ['ControlOrMeta'] });
+    await expect(live.getByRole('status')).toHaveText('Selected: Pack, Label, Load');
+    await live.getByRole('button', { name: 'Move to bottom' }).click();
+    await expect(list.getByRole('option')).toHaveText(['Weigh', 'Ship', 'Pack', 'Label', 'Load']);
+  });
+
+  test('filters, names the list by its header and reorders by drag', async ({ page }) => {
+    await openPage(page, '/controls/order-list', 'Order list');
+    const live = example(page, 'Header, filter and drag and drop');
+    const list = live.getByRole('listbox', { name: 'Delivery queue' });
+    await expect(list.getByRole('option')).toHaveCount(5);
+    await list
+      .getByRole('option', { name: 'Order 1045' })
+      .dragTo(list.getByRole('option', { name: 'Order 1041' }));
+    await expect(list.getByRole('option').first()).toHaveText('Order 1045');
+    await expect(live.getByRole('status')).toContainText('Last moved: Order 1045');
+    await live.getByRole('searchbox').fill('1043');
+    await expect(list.getByRole('option')).toHaveText(['Order 1043']);
+  });
+});
+
 test.describe('pick list', () => {
   test('moves selected items with the buttons and shows the counts', async ({ page }) => {
     await openPage(page, '/controls/pick-list', 'Pick list');
@@ -336,6 +365,33 @@ test.describe('pick list', () => {
     await page.keyboard.press('Enter');
     await expect(target.getByRole('option')).toHaveText(['Dan Moss', 'Ben Hale']);
     await expect(live.getByRole('status')).toHaveText('Team size: 2');
+  });
+
+  test('filters, moves by keyboard and by drag, and reorders the target', async ({ page }) => {
+    await openPage(page, '/controls/pick-list', 'Pick list');
+    const live = example(page, 'Filter, drag and drop and reorder');
+    const source = live.getByRole('listbox', { name: /Cities/ });
+    const target = live.getByRole('listbox', { name: /Route/ });
+
+    await live.getByRole('searchbox', { name: 'Find a city' }).fill('l');
+    await expect(source.getByRole('option')).toHaveText(['Lisbon', 'Lyon', 'Leeds']);
+    await source.getByRole('option', { name: 'Lyon' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(target.getByRole('option')).toHaveText(['Berlin', 'Lyon']);
+    await expect(live.getByRole('status')).toHaveText('Last move: to the route: Lyon');
+
+    await source
+      .getByRole('option', { name: 'Leeds' })
+      .dragTo(target.getByRole('option', { name: 'Berlin' }));
+    await expect(target.getByRole('option')).toHaveText(['Leeds', 'Berlin', 'Lyon']);
+
+    await target.getByRole('option', { name: 'Lyon' }).click();
+    await live
+      .getByRole('group', { name: 'Move selected item' })
+      .getByRole('button', { name: 'Move to top' })
+      .click();
+    await expect(target.getByRole('option')).toHaveText(['Lyon', 'Leeds', 'Berlin']);
+    await expect(live.getByRole('status')).toHaveText('Last move: route reordered: Lyon');
   });
 });
 

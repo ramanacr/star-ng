@@ -131,10 +131,157 @@
   color: var(--star-on-scrim);
   font: var(--star-type-body-sm);
 }
+.star-galleria__body {
+  display: grid;
+  gap: 0.75rem;
+
+  &[data-thumbs='top'] .star-galleria__thumbs {
+    order: -1;
+  }
+  &[data-thumbs='left'],
+  &[data-thumbs='right'] {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+
+    .star-galleria__header,
+    .star-galleria__footer {
+      grid-column: 1 / -1;
+    }
+    .star-galleria__thumbs {
+      flex-direction: column;
+      overflow: hidden auto;
+    }
+    .star-galleria__thumb-list {
+      flex-direction: column;
+      overflow: hidden auto;
+    }
+  }
+  &[data-thumbs='left'] .star-galleria__thumbs {
+    grid-row: 2;
+    grid-column: 1;
+  }
+  &[data-thumbs='right'] {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+// The previous and next buttons show on hover and focus only (`showItemNavigatorsOnHover`).
+.star-galleria__body--nav-hover .star-galleria__nav {
+  opacity: 0;
+  transition: opacity var(--star-duration-fast) ease;
+}
+.star-galleria__body--nav-hover .star-galleria__stage:hover .star-galleria__nav,
+.star-galleria__body--nav-hover .star-galleria__stage:focus-within .star-galleria__nav {
+  opacity: 1;
+}
+.star-galleria__nav:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.star-galleria__main {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+
+  &[data-indicators='top'] > .star-galleria__indicators {
+    order: -1;
+  }
+  &[data-indicators='left'],
+  &[data-indicators='right'] {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+
+    > .star-galleria__indicators {
+      flex-direction: column;
+    }
+  }
+  &[data-indicators='left'] > .star-galleria__indicators {
+    order: -1;
+  }
+  &[data-indicators='left'] {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+.star-galleria__indicators {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.star-galleria__indicators--on-item {
+  position: absolute;
+  inset: auto 0 3.25rem;
+}
+// The button is 24px (WCAG 2.5.8 target size); the visible dot is drawn inside it.
+.star-galleria__indicator {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.25rem;
+  border: 0;
+  border-radius: var(--star-radius-pill);
+  background: none;
+  color: var(--star-text);
+  font: var(--star-type-body-sm);
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0.3125rem;
+    z-index: -1;
+    border-radius: var(--star-radius-pill);
+    background: var(--star-border-strong);
+  }
+  &[aria-current='true'] {
+    color: var(--star-on-tone);
+
+    &::before {
+      background: var(--star-primary);
+    }
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+}
+.star-galleria__play {
+  position: absolute;
+  top: 0.75rem;
+  inset-inline-start: 0.75rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--star-media-control);
+  color: var(--star-media-control-text);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+  }
+}
+.star-galleria__icon {
+  display: inline-flex;
+}
 .star-galleria__thumbs {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   overflow-x: auto;
+}
+.star-galleria__thumb-list {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+.star-galleria__thumb-nav {
+  flex: none;
 }
 .star-galleria__thumb {
   flex: none;
@@ -178,6 +325,9 @@
     outline: 2px solid var(--star-accent);
     outline-offset: 2px;
   }
+}
+.star-image__icon {
+  display: inline-flex;
 }
 .star-image__hint {
   position: absolute;

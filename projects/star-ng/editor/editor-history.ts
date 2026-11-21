@@ -2,6 +2,9 @@
  * The undo history of `star-editor`. The browser history does not know the changes that the
  * editor makes to the DOM itself (colors, lists, tables …), so the editor keeps its own: a
  * snapshot of the HTML and the selection after each change. Typing in a row is one step.
+ *
+ * Ported from Aurora RTE `packages/editor/src/commands.ts` (undo and redo), MIT
+ * (https://github.com/ramanacr/aurora-rte, see THIRD_PARTY_NOTICES.md).
  */
 
 /** A selection as child index paths from the area, so it survives a new `innerHTML`. */

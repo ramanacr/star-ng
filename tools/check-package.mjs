@@ -51,6 +51,7 @@ if (pkg.exports === undefined) fail('package.json: missing "exports".');
 const REQUIRED = [
   'README.md',
   'LICENSE',
+  'THIRD_PARTY_NOTICES.md',
   'styles/star-ng.css',
   'styles/star-ng.min.css',
   'styles/star-ng.scss',
@@ -161,7 +162,7 @@ if (packed) {
   for (const file of packed.files.map((entry) => entry.path)) {
     if (/\.spec\./.test(file)) fail(`spec file in the tarball: ${file}`);
   }
-  for (const file of ['README.md', 'LICENSE', 'package.json']) {
+  for (const file of ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'package.json']) {
     if (!packed.files.some((entry) => entry.path === file)) fail(`${file} is not in the tarball.`);
   }
 }

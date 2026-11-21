@@ -74,6 +74,13 @@
 .star-listbox__option--add {
   color: var(--star-primary-text);
 }
+.star-cascade--fluid {
+  display: flex;
+  width: 100%;
+}
+.star-cascade__icon {
+  display: inline-flex;
+}
 .star-cascade__trigger {
   border: 0;
   background: none;

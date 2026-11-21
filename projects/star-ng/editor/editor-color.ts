@@ -1,3 +1,5 @@
+// Ported from Aurora RTE `packages/ui/src/toolbar.ts` (text color and highlight), MIT
+// (https://github.com/ramanacr/aurora-rte, see THIRD_PARTY_NOTICES.md).
 import {
   afterNextRender,
   ChangeDetectionStrategy,

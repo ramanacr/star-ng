@@ -1,7 +1,5 @@
-import { _IdGenerator } from '@angular/cdk/a11y';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -11,20 +9,17 @@ import {
   ElementRef,
   inject,
   input,
-  model,
   signal,
   TemplateRef,
   viewChild,
 } from '@angular/core';
 import {
   STAR_UI_TEXT,
-  starInlineKey,
   starIsRtl,
   starPrefersReducedMotion,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
-import { StarDialog } from '@star-ng/ui/dialog';
 
 // ---------------------------------------------------------------- Carousel
 
@@ -222,222 +217,6 @@ export class StarCarousel<T = unknown> {
 
 // ---------------------------------------------------------------- Galleria and image
 
-export interface StarGalleryImage {
-  readonly src: string;
-  readonly thumbnail?: string;
-  readonly alt: string;
-  readonly caption?: string;
-}
+export * from './galleria';
 
-/**
- * Image gallery (PrimeNG `p-galleria`): main image with caption, previous / next, Arrow keys,
- * and a thumbnail strip (`aria-current` on the active one).
- * `<star-galleria [images]="photos" [(activeIndex)]="current" />`
- */
-@Component({
-  selector: 'star-galleria',
-  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
-  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    class: 'star-galleria',
-    role: 'region',
-    'aria-roledescription': 'gallery',
-    '[attr.aria-label]': 'ariaLabel() ?? text.galleryLabel',
-  },
-  template: `
-    @if (current(); as image) {
-      <figure
-        data-star-part="stagePanel"
-        class="star-galleria__stage"
-        tabindex="0"
-        (keydown)="onKeydown($event)"
-      >
-        <img data-star-part="picture" [src]="image.src" [alt]="image.alt" loading="lazy" />
-        @if (image.caption) {
-          <figcaption data-star-part="caption" class="star-galleria__caption">
-            {{ image.caption }}
-          </figcaption>
-        }
-        <button
-          data-star-part="navigation"
-          type="button"
-          class="star-galleria__nav star-galleria__nav--prev"
-          [attr.aria-label]="text.previousImage"
-          (click)="step(-1)"
-        >
-          <i
-            data-star-part="previousIcon"
-            class="ph-bold ph-caret-left star-icon-mirror"
-            aria-hidden="true"
-          ></i>
-        </button>
-        <button
-          data-star-part="navigation"
-          type="button"
-          class="star-galleria__nav star-galleria__nav--next"
-          [attr.aria-label]="text.nextImage"
-          (click)="step(1)"
-        >
-          <i
-            data-star-part="nextIcon"
-            class="ph-bold ph-caret-right star-icon-mirror"
-            aria-hidden="true"
-          ></i>
-        </button>
-        <span data-star-part="countText" class="star-galleria__count" aria-live="polite"
-          >{{ activeIndex() + 1 }} / {{ images().length }}</span
-        >
-      </figure>
-    }
-    <div data-star-part="thumbsPanel" class="star-galleria__thumbs">
-      @for (image of images(); track $index; let i = $index) {
-        <button
-          data-star-part="thumbnailButton"
-          type="button"
-          class="star-galleria__thumb"
-          [attr.aria-current]="i === activeIndex() || null"
-          [attr.aria-label]="text.showImage(image.alt)"
-          (click)="activeIndex.set(i)"
-        >
-          <img
-            data-star-part="thumbnail"
-            [src]="image.thumbnail ?? image.src"
-            alt=""
-            loading="lazy"
-          />
-        </button>
-      }
-    </div>
-  `,
-})
-export class StarGalleria {
-  protected readonly text = inject(STAR_UI_TEXT);
-  /** The images: `src`, `alt`, and optional `thumbnail` and `caption`. */
-  readonly images = input<readonly StarGalleryImage[]>([]);
-  /** Index of the image on show. */
-  readonly activeIndex = model(0);
-  /** Accessible name of the gallery region (default: the `galleryLabel` text). */
-  readonly ariaLabel = input<string | null>(null);
-  protected readonly current = computed(() => this.images()[this.activeIndex()] ?? null);
-
-  step(delta: number): void {
-    const count = this.images().length;
-    if (count) this.activeIndex.set((this.activeIndex() + delta + count) % count);
-  }
-
-  protected onKeydown(event: KeyboardEvent): void {
-    // Arrow right is the next image in reading order: the left arrow in right-to-left.
-    const key = starInlineKey(event);
-    if (key === 'ArrowLeft' || key === 'ArrowRight') {
-      event.preventDefault();
-      this.step(key === 'ArrowLeft' ? -1 : 1);
-    }
-  }
-}
-
-/**
- * Image with preview (PrimeNG `p-image [preview]`): lazy-loaded thumbnail; click opens the
- * full image in a modal `star-dialog` with zoom in / out.
- * `<star-image src="label.png" alt="Product label" width="160" preview />`
- */
-@Component({
-  selector: 'star-image',
-  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
-  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarDialog],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-image' },
-  template: `
-    @if (preview()) {
-      <button
-        data-star-part="triggerButton"
-        type="button"
-        class="star-image__trigger"
-        [attr.aria-label]="text.previewImage(alt())"
-        (click)="open.set(true)"
-      >
-        <img
-          data-star-part="previewPanel"
-          [src]="src()"
-          [alt]="alt()"
-          [attr.width]="width()"
-          loading="lazy"
-        />
-        <span data-star-part="hintPanel" class="star-image__hint" aria-hidden="true"
-          ><i data-star-part="hintIcon" class="ph-bold ph-magnifying-glass-plus"></i
-        ></span>
-      </button>
-      <star-dialog [(visible)]="open" [header]="alt()" size="xl" dismissableMask>
-        <div data-star-part="zoomPanel" class="star-image__zoom-bar">
-          <button
-            data-star-part="controlButton"
-            type="button"
-            class="star-select__icon-btn"
-            [attr.aria-label]="text.zoomOut"
-            [disabled]="zoom() <= 0.5"
-            (click)="zoom.set(zoom() - 0.25)"
-          >
-            <i
-              data-star-part="zoomIcon"
-              class="ph-bold ph-magnifying-glass-minus"
-              aria-hidden="true"
-            ></i>
-          </button>
-          <span data-star-part="zoomBarText" aria-live="polite">{{ zoom() * 100 }}%</span>
-          <button
-            data-star-part="controlButton"
-            type="button"
-            class="star-select__icon-btn"
-            [attr.aria-label]="text.zoomIn"
-            [disabled]="zoom() >= 3"
-            (click)="zoom.set(zoom() + 0.25)"
-          >
-            <i
-              data-star-part="zoomIcon"
-              class="ph-bold ph-magnifying-glass-plus"
-              aria-hidden="true"
-            ></i>
-          </button>
-        </div>
-        <!-- Focusable, so the arrow keys scroll a zoomed image. -->
-        <div
-          data-star-part="stagePanel"
-          class="star-image__stage"
-          role="group"
-          tabindex="0"
-          [attr.aria-label]="alt()"
-        >
-          <img
-            data-star-part="picture"
-            [src]="src()"
-            [alt]="alt()"
-            [style.transform]="'scale(' + zoom() + ')'"
-          />
-        </div>
-      </star-dialog>
-    } @else {
-      <img
-        data-star-part="picture"
-        [src]="src()"
-        [alt]="alt()"
-        [attr.width]="width()"
-        loading="lazy"
-      />
-    }
-  `,
-})
-export class StarImage {
-  protected readonly text = inject(STAR_UI_TEXT);
-  /** Image address. */
-  readonly src = input.required<string>();
-  /** Alternative text. It is also the title of the preview dialog. */
-  readonly alt = input.required<string>();
-  /** Width attribute of the thumbnail. */
-  readonly width = input<string | number | null>(null);
-  /** The image opens in a dialog with zoom buttons when the user activates it. */
-  readonly preview = input(false, { transform: booleanAttribute });
-  protected readonly open = signal(false);
-  protected readonly zoom = signal(1);
-  protected readonly id = inject(_IdGenerator).getId('star-image-');
-}
+export * from './image';

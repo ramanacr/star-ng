@@ -252,7 +252,7 @@ const CAPITALS: readonly Capital[] = [
         heading="Tile layer (off by default)"
         source="map/tiles"
         [script]="tilesScript"
-        note="A tile layer requests only the address you give, for the visible tiles, in the browser. It needs an attribution text. This example loads OpenStreetMap tiles only after you switch them on; the docs and their tests never use the network."
+        note="A tile layer requests only the address you give, for the visible tiles, in the browser. It needs an attribution text. This example loads OpenStreetMap tiles only after you switch them on; the docs and their tests never use the network. The OpenStreetMap tile usage policy does not allow heavy use of its public tile servers: in production, use your own tile server or a commercial tile provider."
       >
         <div class="docs-stack">
           <label class="docs-row">
@@ -268,6 +268,12 @@ const CAPITALS: readonly Capital[] = [
         Lakeland, its regions, the river and the towns are fictional; they were drawn for these docs
         and are in the public domain (CC0). For real borders, Natural Earth (naturalearthdata.com)
         offers public domain GeoJSON. The library loads no map data and no tiles by itself.
+      </p>
+      <p>
+        Tiles in production: the public OpenStreetMap tile servers are for light use only, under the
+        OpenStreetMap tile usage policy (operations.osmfoundation.org/policies/tiles). For an
+        application with real traffic, run your own tile server or use a commercial tile provider,
+        and show the attribution text that its licence asks for.
       </p>
 
       <h2>Known limits</h2>

@@ -31,6 +31,21 @@
     opacity: 0.6;
   }
 }
+.star-upload__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.star-upload__header:empty {
+  display: none;
+}
+.star-upload__button-icon {
+  display: inline-flex;
+}
+.star-upload__choose--disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
 .star-upload__icon {
   font-size: 1.75rem;
   color: var(--star-primary-text);

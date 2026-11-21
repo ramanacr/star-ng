@@ -61,7 +61,7 @@ interface Product {
         heading="Sorting by the page"
         source="data-view/sorting"
         [script]="sortingScript"
-        note="The data view does not sort. Sort the items before you pass them in. The header slot (starDataViewHeader) is a good place for the sort control."
+        note="You can sort the items before you pass them in, as here, or set sortField and sortOrder (next example). The header slot (starDataViewHeader) is a good place for the sort control."
       >
         <star-data-view [items]="sorted()">
           <div starDataViewHeader>
@@ -93,7 +93,7 @@ interface Product {
         heading="Header, footer and empty slots"
         source="data-view/slots"
         [script]="slotsScript"
-        note="starHeader and starFooter add content above the layout switch and below the items. starEmpty replaces the empty message and gets an empty text, because the data view has no filter. Use the slots for content that is not interactive, or for your own controls with their own labels. They do not change the item template."
+        note="starHeader and starFooter add content above the layout switch and below the items. starEmpty replaces the empty message and gets the filter text (empty without filter()). Use the slots for content that is not interactive, or for your own controls with their own labels. They do not change the item template."
       >
         <div class="docs-stack">
           <star-data-view [items]="products.slice(0, 3)">
@@ -116,6 +116,65 @@ interface Product {
           </star-data-view>
         </div>
       </docs-example>
+
+      <docs-example
+        heading="Sort field, filter, paginator options and loading"
+        source="data-view/options"
+        [script]="optionsScript"
+        note="sortField and sortOrder (1 or -1) sort the items. filter(text) keeps the items whose filterBy fields contain the text (case and accents ignored) and goes back to the first page. paginatorPosition puts the paginator at the top, the bottom or both (paginatorAriaLabel names the navigation; with both, the two names end with top and bottom, and only the lower report is a live region); rowsPerPageOptions, pageLinks, currentPageReportTemplate, showJumpToPageDropdown, showFirstLastIcon and showPageLinks go to the paginator; alwaysShowPaginator shows it on one page too. loading shows an indicator and sets aria-busy (starLoading replaces it). In lazy mode, items is the current page, totalRecords the count, and lazyLoad asks for a page."
+      >
+        <star-data-view
+          #catalog
+          [items]="products"
+          paginator
+          [rows]="3"
+          [rowsPerPageOptions]="[3, 6]"
+          paginatorPosition="both"
+          paginatorAriaLabel="Catalog pages"
+          sortField="price"
+          [sortOrder]="priceOrder()"
+          filterBy="name"
+          [loading]="busy()"
+        >
+          <div starDataViewHeader class="docs-row">
+            <label class="docs-row">
+              Find
+              <input
+                class="star-input star-input--sm"
+                type="search"
+                (input)="catalog.filter($any($event.target).value)"
+              />
+            </label>
+            <star-button
+              size="sm"
+              variant="secondary"
+              (click)="priceOrder.set(priceOrder() === 1 ? -1 : 1)"
+            >
+              Price {{ priceOrder() === 1 ? 'low to high' : 'high to low' }}
+            </star-button>
+            <star-button size="sm" variant="secondary" (click)="busy.set(!busy())">
+              {{ busy() ? 'Stop loading' : 'Show loading' }}
+            </star-button>
+          </div>
+          <ng-template starDataViewItem [starDataViewItemOf]="products" let-p>
+            <strong>{{ p.name }}</strong>
+            <div>{{ '$' + p.price }}</div>
+          </ng-template>
+        </star-data-view>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The PrimeNG p-dataview names that StarNG gives in another way: value is items;
+        onChangeLayout is layoutChange; onPage is pageChange; the list and grid templates are the
+        one starDataViewItem template (it gets layout); emptymessage is starEmpty; paginatorleft and
+        paginatorright are starPaginatorTemplate with start and end; loadingicon, listicon and
+        gridicon are starIcon with loading, list and grid; paginatorStyleClass and gridStyleClass
+        are the pass-through pt. Not needed: trackBy (the items are tracked by index),
+        paginatorDropdownAppendTo and paginatorDropdownScrollHeight (the paginator selects are
+        popups in the top layer) and onSort (you set sortField and sortOrder, so you know the
+        change).
+      </p>
 
       <docs-api
         [of]="['StarDataView', 'StarDataViewItem']"
@@ -143,6 +202,11 @@ export class DataViewPage {
   protected readonly layout = signal<'list' | 'grid'>('list');
   protected readonly first = signal(0);
   protected readonly sortBy = signal<'name' | 'price'>('name');
+  protected readonly priceOrder = signal<1 | -1>(1);
+  protected readonly busy = signal(false);
+  protected readonly optionsScript = `readonly priceOrder = signal<1 | -1>(1);
+readonly busy = signal(false);
+// products as above; #catalog is a template reference to the data view.`;
   protected readonly sorted = computed(() =>
     [...this.products.slice(0, 5)].sort((a, b) =>
       this.sortBy() === 'name' ? a.name.localeCompare(b.name) : a.price - b.price,
@@ -187,7 +251,21 @@ readonly products: readonly Product[] = [ /* as above */ ];`;
     {
       name: 'ng-template[starEmpty]',
       description:
-        'Content child. Replaces the empty message (emptyMessage and the default text). $implicit is an empty text, because the data view has no filter.',
+        'Content child. Replaces the empty message (emptyMessage and the default text). $implicit is the filter text (empty without filter()).',
+    },
+    {
+      name: 'ng-template[starLoading]',
+      description: 'Content child. Replaces the loading indicator. PrimeNG loadingicon.',
+    },
+    {
+      name: 'ng-template[starPaginatorTemplate]',
+      description:
+        'Content child. "start" or "end" adds content next to the paginator; it gets the page state. PrimeNG paginatorleft and paginatorright.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. "list", "grid" or "loading" replaces that icon. PrimeNG listicon, gridicon and loadingicon.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

@@ -34,6 +34,40 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Header toggle, icon position and events"
+        source="panel/toggler"
+        [script]="togglerScript"
+        note="toggler header makes the title the toggle button (the icon comes before the text). iconPos start puts the toggle button before the title. beforeToggle emits the state before a toggle, afterToggle the new state after the render. showHeader false hides the header (the region keeps the header text as its name). starHeader replaces the title and starIcon toggle the toggle icon (it gets expanded)."
+      >
+        <div class="docs-stack">
+          <star-panel
+            header="Delivery address"
+            toggleable
+            toggler="header"
+            (beforeToggle)="toggleLog.set('before: ' + ($event.collapsed ? 'collapsed' : 'open'))"
+            (afterToggle)="
+              toggleLog.set(toggleLog() + ', after: ' + ($event.collapsed ? 'collapsed' : 'open'))
+            "
+          >
+            12 Harbor Road, Lakeside.
+          </star-panel>
+          <star-panel header="Invoice notes" toggleable iconPos="start">
+            Send the invoice at the end of the month.
+          </star-panel>
+          <p class="docs-output" role="status">{{ toggleLog() || 'No toggle yet' }}</p>
+        </div>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The PrimeNG p-panel names that StarNG gives in another way: the content template is the
+        default content, headericons is [starPanelActions], footer is [starPanelFooter], the header
+        template is starHeader and the icon template is starIcon with toggle; toggleButtonProps is
+        the pass-through pt (part toggleButton). Not needed: motionOptions (the motion comes from
+        the theme tokens and stops with reduced motion).
+      </p>
+
+      <docs-example
         heading="Fieldset"
         source="panel/fieldset"
         note="The legend is the accessible name of the group of controls. With toggleable, the legend is a button."
@@ -63,6 +97,8 @@ export class PanelPage {
   protected readonly collapsed = signal(false);
 
   protected readonly basicScript = `readonly collapsed = signal(false);`;
+  protected readonly toggleLog = signal('');
+  protected readonly togglerScript = `readonly toggleLog = signal('');`;
 
   protected readonly slots: readonly DocsRow[] = [
     { name: '(default)', description: 'The body of the panel or the fieldset.' },
@@ -71,6 +107,15 @@ export class PanelPage {
       description: 'Panel only: actions in the header, before the collapse button.',
     },
     { name: '[starPanelFooter]', description: 'Panel only: a footer under the body.' },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Panel only. Replaces the title content. PrimeNG header template.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Panel only. "toggle" replaces the toggle icon; $implicit is true while open. PrimeNG icon template.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-surface', description: 'Background of the panel.' },
