@@ -151,3 +151,18 @@
     cursor: not-allowed;
   }
 }
+// Icon slots in the handle and the state text (`onLabel` / `offLabel`) of the switch.
+.star-switch__thumb {
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.75rem;
+  color: var(--star-text-muted);
+}
+.star-switch__state {
+  font-size: 0.875rem;
+  color: var(--star-text-muted);
+}
+.star-toggle-btn__icon {
+  display: inline-flex;
+  align-items: center;
+}

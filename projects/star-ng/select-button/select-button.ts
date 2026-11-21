@@ -1,9 +1,13 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
+  Directive,
   ElementRef,
+  forwardRef,
   inject,
   input,
   model,
@@ -13,8 +17,13 @@ import type { FormCheckboxControl, FormValueControl } from '@angular/forms/signa
 import {
   optionText,
   readOption,
+  STAR_SLOT_HOST,
+  StarIconContext,
   starInlineKey,
   StarOptionKey,
+  StarSlot,
+  starSlot,
+  starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -37,6 +46,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'fieldDescribedBy()',
+    '[attr.aria-required]': '(!multiple() && required()) || null',
     '[attr.aria-disabled]': 'disabled() || null',
     '[class.star-segmented--invalid]': 'invalid() && touched()',
     '[class.star-segmented--sm]': "size() === 'sm'",
@@ -83,12 +93,21 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
   readonly allowEmpty = input(true, { transform: booleanAttribute });
   readonly size = input<'sm' | 'md'>('md');
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
+  /**
+   * A choice is needed: `aria-required` on the radio group (single mode); also bound from Signal
+   * Forms `required()`.
+   */
+  readonly required = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly invalid = input(false, { transform: booleanAttribute });
   readonly touched = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
 
-  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly labelledBy = computed(() =>
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   /** Focuses the button in the tab order (the chosen one, else the first). */
@@ -165,15 +184,46 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
   }
 }
 
+/** Context of the content slot of `star-toggle-button`. */
+export interface StarToggleButtonContentContext {
+  /** The button is on. */
+  readonly $implicit: boolean;
+}
+
+/**
+ * Replaces the icon and the label of `star-toggle-button`:
+ * `<ng-template starToggleButtonContent let-checked>…</ng-template>`. PrimeNG `#content`. The button
+ * and its `aria-pressed` stay; do not add focusable elements.
+ */
+@Directive({
+  selector: 'ng-template[starToggleButtonContent]',
+  providers: [{ provide: StarSlot, useExisting: StarToggleButtonContentTemplate }],
+})
+export class StarToggleButtonContentTemplate extends StarSlot<StarToggleButtonContentContext> {
+  readonly name = 'toggleButtonContent';
+
+  static ngTemplateContextGuard(
+    _dir: StarToggleButtonContentTemplate,
+    _ctx: unknown,
+  ): _ctx is StarToggleButtonContentContext {
+    return true;
+  }
+}
+
 /**
  * Two-state button (PrimeNG `p-togglebutton`): `aria-pressed`, on / off labels and icons.
+ * `iconPos` puts the icon before or after the label. Slots: `<ng-template starIcon="on">` and
+ * `starIcon="off"` replace the icons (PrimeNG `#icon`), `starToggleButtonContent` the whole
+ * content (PrimeNG `#content`). `required` feeds the forms only: a button takes no
+ * `aria-required`.
  * `<star-toggle-button [(checked)]="starred" onLabel="Starred" offLabel="Star" onIcon="ph-fill ph-star" offIcon="ph-bold ph-star" />`
  */
 @Component({
   selector: 'star-toggle-button',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarToggleButton) }],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-toggle-btn-host' },
   template: `
@@ -184,15 +234,32 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
       [class.star-segmented__item--on]="checked()"
       [attr.aria-pressed]="checked()"
       [attr.aria-label]="ariaLabel()"
+      [attr.aria-labelledby]="ariaLabelledBy()"
       [disabled]="disabled()"
       (click)="!readonly() && checked.set(!checked())"
       (blur)="touch.emit()"
     >
-      @if (checked() ? onIcon() : offIcon(); as icon) {
-        <i data-star-part="itemIcon" [class]="icon" aria-hidden="true"></i>
+      @if (contentSlot(); as content) {
+        <ng-container *ngTemplateOutlet="content; context: { $implicit: checked() }" />
+      } @else {
+        @if (iconPos() === 'start') {
+          <ng-container *ngTemplateOutlet="iconTemplate" />
+        }
+        <span data-star-part="itemText">{{ checked() ? onLabel() : offLabel() }}</span>
+        @if (iconPos() === 'end') {
+          <ng-container *ngTemplateOutlet="iconTemplate" />
+        }
       }
-      <span data-star-part="itemText">{{ checked() ? onLabel() : offLabel() }}</span>
     </button>
+    <ng-template #iconTemplate>
+      @if (icons().get(checked() ? 'on' : 'off'); as icon) {
+        <span starPart="itemIcon" class="star-toggle-btn__icon" aria-hidden="true">
+          <ng-container *ngTemplateOutlet="icon; context: { $implicit: checked() }" />
+        </span>
+      } @else if (checked() ? onIcon() : offIcon(); as icon) {
+        <i starPart="itemIcon" [class]="icon" aria-hidden="true"></i>
+      }
+    </ng-template>
   `,
 })
 export class StarToggleButton implements FormCheckboxControl {
@@ -201,7 +268,20 @@ export class StarToggleButton implements FormCheckboxControl {
   readonly offLabel = input('Off');
   readonly onIcon = input<string | null>(null);
   readonly offIcon = input<string | null>(null);
+  /** Icon before (`'start'`) or after (`'end'`) the label. PrimeNG `iconPos` (logical sides). */
+  readonly iconPos = input<'start' | 'end'>('start');
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
+  /** The button must be on; feeds Signal Forms `required()` (a button takes no `aria-required`). */
+  readonly required = input(false, { transform: booleanAttribute });
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly contentSlot = starSlot<StarToggleButtonContentContext>(
+    this.slots,
+    this,
+    'toggleButtonContent',
+  );
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
