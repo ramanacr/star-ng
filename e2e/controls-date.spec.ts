@@ -983,14 +983,16 @@ test.describe('popups with time columns fit a small window', () => {
       async (root, wanted) => {
         const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
         const find = (target: string): Element => {
-          if (target === ':scope') return root;
-          if (target.startsWith('button:')) {
+          let found: Element | null | undefined;
+          if (target === ':scope') found = root;
+          else if (target.startsWith('button:')) {
             const text = target.slice('button:'.length);
-            return [...root.querySelectorAll('button')].find(
+            found = [...root.querySelectorAll('button')].find(
               (b) => b.textContent?.trim() === text,
-            )!;
-          }
-          return root.querySelector(target)!;
+            );
+          } else found = root.querySelector(target);
+          if (!found) throw new Error(`settledBoxes: target not found: ${target}`);
+          return found;
         };
         const read = () =>
           Object.fromEntries(
