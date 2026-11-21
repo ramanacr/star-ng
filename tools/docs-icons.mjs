@@ -14,7 +14,9 @@
 //      (`'ph-fill ph-funnel'`); a name without a weight next to it counts for the default weight.
 //   2. The `name` of every `<star-icon>` with its `weight` (`StarIcon` builds `ph-${name}` at run
 //      time; default weight bold).
-//   3. `EXTRA`: names that are built from data the scan cannot see (none today).
+//   3. `[class.ph-<name>]` bindings, with the weight class of the same element.
+//   4. `EXTRA`: bound names that are built from data the scan cannot see (none today); a bound
+//      `<star-icon [name]>` that is not a literal and has no entry fails the tool.
 // A name that the package does not have is an error (a typo in a source file).
 //
 //   node tools/docs-icons.mjs           writes the subset stylesheet
@@ -37,10 +39,13 @@ export const WEIGHTS = ['thin', 'light', 'regular', 'bold', 'fill', 'duotone'];
 /** The weight of a name that has no weight class next to it (the default of `StarIcon`). */
 export const DEFAULT_WEIGHT = 'bold';
 /**
- * Icons that render from data the scan cannot see, as `weight: [names]`. Add a name here, with a
- * comment, only when a page builds the icon name at run time from data (none today).
+ * Bound icon names that the scan cannot read (`<star-icon [name]="icon">`), with the names they
+ * can take: `{ file, expression, weight, names }`, `file` relative to the repository, and
+ * `expression` as the scan reports it (`[name]="icon"`). Add an entry, with a comment, only
+ * when a page builds the icon name at run time from data (none today). A bound name that has no
+ * entry fails the tool.
  */
-export const EXTRA = {};
+export const EXTRA = [];
 
 const posix = (path) => path.split('\\').join('/');
 const WEIGHT_CLASS = new Map(WEIGHTS.map((w) => [w === 'regular' ? 'ph' : `ph-${w}`, w]));
@@ -73,17 +78,72 @@ function add(used, weight, name, where) {
   if (!names.has(name)) names.set(name, where);
 }
 
+/** A start tag: its name and attributes (a `>` inside a quoted value does not end it). */
+const TAG = /<([a-z][a-z0-9-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
+/** An attribute with a quoted value: `name="v"`, `name='v'`, `[name]="expr"`, `[class.x]="e"`. */
+const ATTR = /(^|\s)([[(]?[\w.:@-]+[\])]?)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
+
+/** The string of a bound expression that is a plain literal (`'truck'`), else `null`. */
+function literalOf(expression) {
+  return /^\s*(['"])([^'"]*)\1\s*$/.exec(expression)?.[2] ?? null;
+}
+
+/** The attributes of a tag, by name (`name`, `[name]`, `[class.ph-x]`), with their raw text. */
+function attributesOf(text) {
+  const out = [];
+  for (const m of text.matchAll(ATTR)) {
+    out.push({ key: m[2], value: m[3] ?? m[4] ?? '', raw: m[0] });
+  }
+  return out;
+}
+
 /**
- * The icons of one string, as `[weight, name]` pairs. A string is split at its quotes, so every
- * attribute value and every quoted class string in a template is one unit: `ph-fill` and
- * `ph-funnel` in `'ph-fill ph-funnel'` belong together, and not to the `ph-bold` of the next
- * attribute.
+ * The icons of one string, as `[weight, name]` pairs, and the bound icon names that are not
+ * literals (`unresolved`: `{ expression }`). Three passes:
+ *   1. `<star-icon>` tags (exactly that element, not `<star-icon-field>`): `name` and `weight`,
+ *      static (`name="truck"`, `name='truck'`) or bound to a literal (`[name]="'truck'"`). A bound
+ *      name or weight that is not a literal is unresolved.
+ *   2. Class bindings `[class.ph-<name>]` on any tag: the weight is the weight class of the
+ *      static `class` attribute of the same tag (`class="ph-bold"`, `class="ph"` for regular).
+ *   3. Every other text: the string is split at its quotes, so every attribute value and every
+ *      quoted class string in a template is one unit; `ph-fill` and `ph-funnel` in
+ *      `'ph-fill ph-funnel'` belong together, and not to the `ph-bold` of the next attribute.
+ *      This pass reads `icon="ph-bold ph-envelope-simple"` on any control.
+ * A name without a weight next to it counts for the default weight.
  */
-export function iconsOfString(string) {
+export function scanString(string) {
   const pairs = [];
-  // A `<star-icon>` tag counts below, with its own weight attribute.
-  const STAR_ICON = /<star-icon\b([^>]*)>/g;
-  for (const unit of string.replace(STAR_ICON, '').split(/["'`]/)) {
+  const unresolved = [];
+  const rest = string.replace(TAG, (tag, element, text) => {
+    const attrs = attributesOf(text);
+    if (element === 'star-icon') {
+      const read = (key) => {
+        const plain = attrs.find((a) => a.key === key);
+        if (plain) return plain.value;
+        const bound = attrs.find((a) => a.key === `[${key}]`);
+        if (!bound) return undefined;
+        const value = literalOf(bound.value);
+        if (value === null) unresolved.push({ expression: `[${key}]="${bound.value}"` });
+        return value;
+      };
+      const name = read('name');
+      const weight = read('weight') ?? DEFAULT_WEIGHT;
+      if (name && weight) pairs.push([weight, name.trim().replace(/^ph-/, '')]);
+      return '';
+    }
+    const bindings = attrs.filter((a) => /^\[class\.ph-[a-z0-9-]+\]$/.test(a.key));
+    if (!bindings.length) return tag;
+    const classes = (attrs.find((a) => a.key === 'class')?.value ?? '').split(/\s+/);
+    const weights = classes.filter((c) => WEIGHT_CLASS.has(c)).map((c) => WEIGHT_CLASS.get(c));
+    for (const binding of bindings) {
+      const name = binding.key.slice('[class.ph-'.length, -1);
+      for (const weight of weights.length ? weights : [DEFAULT_WEIGHT]) pairs.push([weight, name]);
+    }
+    let kept = tag;
+    for (const binding of bindings) kept = kept.replace(binding.raw, ' ');
+    return kept;
+  });
+  for (const unit of rest.split(/["'`]/)) {
     const tokens = unit.match(/(?<![\w-])ph(?:-[a-z0-9]+)*(?![\w-])/g) ?? [];
     const weights = tokens.filter((t) => WEIGHT_CLASS.has(t)).map((t) => WEIGHT_CLASS.get(t));
     const names = tokens.filter((t) => !WEIGHT_CLASS.has(t)).map((t) => t.slice(3));
@@ -91,15 +151,12 @@ export function iconsOfString(string) {
       for (const weight of weights.length ? weights : [DEFAULT_WEIGHT]) pairs.push([weight, name]);
     }
   }
-  // `<star-icon name="truck" weight="fill" />`: the name has no `ph-` prefix.
-  for (const m of string.matchAll(STAR_ICON)) {
-    const attrs = m[1];
-    const name = /(?:^|\s)name="([^"]+)"/.exec(attrs)?.[1];
-    if (!name) continue;
-    const weight = /(?:^|\s)weight="([^"]+)"/.exec(attrs)?.[1] ?? DEFAULT_WEIGHT;
-    pairs.push([weight, name.trim().replace(/^ph-/, '')]);
-  }
-  return pairs;
+  return { pairs, unresolved };
+}
+
+/** The `[weight, name]` pairs of one string (see `scanString`). */
+export function iconsOfString(string) {
+  return scanString(string).pairs;
 }
 
 /** Source files of a folder: `.ts` and `.html`, without spec files. */
@@ -122,16 +179,20 @@ export function sourceFiles(dir) {
  */
 export function usedIcons(dirs = sourceDirs, extra = EXTRA) {
   const used = new Map();
+  const unresolved = [];
   for (const dir of dirs) {
     for (const file of sourceFiles(dir)) {
       const where = posix(relative(root, file));
       for (const string of stringsOf(file, readFileSync(file, 'utf8'))) {
-        for (const [weight, name] of iconsOfString(string)) add(used, weight, name, where);
+        const found = scanString(string);
+        for (const [weight, name] of found.pairs) add(used, weight, name, where);
+        for (const { expression } of found.unresolved) {
+          const entry = extra.find((e) => e.file === where && e.expression === expression);
+          if (!entry) unresolved.push(`${where}: ${expression}`);
+          else for (const name of entry.names) add(used, entry.weight, name, `${where} (EXTRA)`);
+        }
       }
     }
-  }
-  for (const [weight, names] of Object.entries(extra)) {
-    for (const name of names) add(used, weight, name, 'tools/docs-icons.mjs (EXTRA)');
   }
   const sorted = new Map();
   for (const weight of WEIGHTS.filter((w) => used.has(w))) {
@@ -140,11 +201,10 @@ export function usedIcons(dirs = sourceDirs, extra = EXTRA) {
   for (const weight of used.keys()) {
     if (!WEIGHTS.includes(weight)) throw new Error(`unknown Phosphor weight: ${weight}`);
   }
+  /** Bound icon names that are no literal and have no `EXTRA` entry. */
+  sorted.unresolved = unresolved;
   return sorted;
 }
-
-/** Title case of a weight, as in the package file names (`Phosphor-Bold`). */
-const title = (weight) => weight[0].toUpperCase() + weight.slice(1);
 
 /**
  * The package stylesheet of a weight, parsed: its `@font-face` rule, the base rule of the weight
@@ -187,13 +247,11 @@ export function unknownIcons(used = usedIcons()) {
  * font file per weight instead of four.
  */
 function fontFaceRule(weight, fontFace) {
-  const font = posix(
-    relative(dirname(outFile), join(packageDir, weight, `Phosphor-${title(weight)}.woff2`)),
-  );
   const src = /src:[^;]*;/.exec(fontFace)?.[0];
-  if (!src || !src.includes(`Phosphor-${title(weight)}.woff2`)) {
-    throw new Error(`@font-face of ${weight} has no WOFF2 source`);
-  }
+  // The file name comes from the package rule (`Phosphor-Bold.woff2`, `Phosphor.woff2` for regular).
+  const file = src && /url\("\.\/([^"]+\.woff2)"\)/.exec(src)?.[1];
+  if (!file) throw new Error(`@font-face of ${weight} has no WOFF2 source`);
+  const font = posix(relative(dirname(outFile), join(packageDir, weight, file)));
   return fontFace.replace(src, `src: url("${font}") format("woff2");`);
 }
 
@@ -201,6 +259,11 @@ function fontFaceRule(weight, fontFace) {
 export function subsetText(used = usedIcons()) {
   const unknown = unknownIcons(used);
   if (unknown.length) throw new Error(`Phosphor has no icon:\n  ${unknown.join('\n  ')}`);
+  if (used.unresolved?.length) {
+    throw new Error(
+      `Bound icon names that are no literal (add them to EXTRA):\n  ${used.unresolved.join('\n  ')}`,
+    );
+  }
   const out = [
     '/*',
     ' * Phosphor icon subset of the docs. Generated by tools/docs-icons.mjs: do not edit; run',
