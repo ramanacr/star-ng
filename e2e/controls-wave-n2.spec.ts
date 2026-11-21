@@ -37,7 +37,9 @@ test.describe('wave N2 depth', () => {
     await expect(menu.getByRole('menuitem', { name: 'Import orders' })).toBeVisible();
     await expect(live.getByText('Workspace: Orders')).toBeVisible();
     await expect(menu.getByText('Workspace: Orders')).toHaveCount(0);
-    await menu.getByRole('menuitem', { name: 'Search' }).focus();
+    // The menu gives the focus to its first item; the arrow keys go on into the groups.
+    await menu.focus();
+    await expect(menu.getByRole('menuitem', { name: 'Search' })).toBeFocused();
     await page.keyboard.press('ArrowDown');
     await expect(menu.getByRole('menuitem', { name: 'New order' })).toBeFocused();
   });
