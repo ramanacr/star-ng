@@ -74,6 +74,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Tabs: `dynamicHeight` (the panel area animates its height on a tab change) and `animationDuration` (the new panel fades in; both off with reduced motion) (Material `dynamicHeight`, `animationDuration`). New `star-tab-nav` with `a[starTabLink]` and `star-tab-nav-panel`: router links as tabs, active from `routerLinkActive` (or `active`), the WAI-ARIA tabs pattern with a panel (tablist, roving tabindex, Arrow keys, Home, End, Space) and a `navigation` of `aria-current` links without one (Material `mat-tab-nav-bar`, `mat-tab-link`, `mat-tab-nav-panel`).
 
+#### Table and tree table
+
+- Tree table: the types `StarTreeTableRowContext` and `StarTreeTableFooterRowContext` (the `starRow` and `starFooterRow` contexts with `StarTreeTableColumn` columns). `StarRowSlotContext` and `StarFooterRowContext` take the column type as an optional second type parameter (default `StarColumn<T>`), so the tree table no longer casts its columns.
+
 #### Tree
 
 - Tree: node templates per node type: `StarTreeNode.type` and `<ng-template starNode="folder">`; the template without a type draws the other nodes. `star-tree-select` passes its typed templates on (PrimeNG `type` with `pTemplate`).
@@ -98,6 +102,9 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 ### Fixed
 
 - Header and footer slots (`starHeader`, `starFooter`) of select, multi-select, autocomplete, multi-column combobox, tree select, cascade select, date picker, listbox and tree, and the popover header: the content sat flush against the edge of the panel, with no padding and no line between it and the list. It now sits in a padded region inside the panel, lined up with the options, with a thin divider to the list and small muted text like the group headings. The header stays above the scrolling list and the footer stays below it. The regions are the new parts `headerSlotPanel` and `footerSlotPanel` (the popover keeps its part `headerPanel`), with pass-through `pt` and unstyled mode, and work in right-to-left pages and in dark mode. Other panels can use the same classes `star-panel__header` and `star-panel__footer`.
+- Table: a `td[starTableCell]` of a `starRow` template in a pinned column now gets the sticky offset and pin classes of the column, so it stays under its header. `starRow` does not support `virtualColumns` (documented; dev mode logs a warning).
+- Table: in lazy mode the row objects of pinned rows are now a pure derivation (`linkedSignal`) instead of a cache written inside a `computed`; a key that the owner unpins through `pinnedRows` no longer comes back with an old row object.
+- Tree table: a `td[starTableCell]` of a `starRow` template in a frozen column now gets the sticky offset of the column. The docs and the JSDoc now name both parts of the toggle icon (`expandIcon` for the default icon, `toggleIcon` for the wrapper of a `starIcon="toggle"` template); the names do not change.
 
 ## [0.4.0] - 2026-11-21
 

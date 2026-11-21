@@ -116,7 +116,7 @@ class Host {
 })
 class RowHost {
   readonly nodes = NODES;
-  readonly columns = COLUMNS;
+  columns: readonly StarTreeTableColumn[] = COLUMNS;
 }
 
 const text = (root: Element, selector: string) =>
@@ -188,6 +188,25 @@ describe('StarTreeTable slots (N1)', () => {
     expect(cells[1].getAttribute('data-col')).toBe('1');
     expect(cells[2].getAttribute('data-col')).toBe('2');
     expect(cells[1].getAttribute('tabindex')).toBe('-1');
+    expect(cells[1].classList).not.toContain('star-table__cell--frozen');
+  });
+
+  it('a starTableCell of a frozen column gets the sticky offset of the column', async () => {
+    const fixture = TestBed.createComponent(RowHost);
+    fixture.componentInstance.columns = [
+      { ...COLUMNS[0], frozen: true },
+      { ...COLUMNS[1], frozen: true },
+      COLUMNS[2],
+    ];
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const cells = root.querySelectorAll<HTMLElement>('tbody tr[data-key="eng"] td');
+    const header = root.querySelector<HTMLElement>('th[data-field="staff"]')!;
+    expect(cells[1].classList).toContain('star-table__cell--frozen');
+    expect(cells[1].style.insetInlineStart).toBe(header.style.insetInlineStart);
+    expect(cells[1].style.insetInlineStart).not.toBe('');
+    expect(cells[2].classList).not.toContain('star-table__cell--frozen');
+    expect(cells[2].style.insetInlineStart).toBe('');
   });
 });
 

@@ -81,8 +81,11 @@ export class StarRowEditActionsTemplate<T = unknown> extends StarSlot<
   }
 }
 
-/** Context of the `starRow` slot. */
-export interface StarRowSlotContext<T = unknown> {
+/**
+ * Context of the `starRow` slot. `C` is the column type: `StarColumn<T>` in `star-table`,
+ * `StarTreeTableColumn` in `star-tree-table` (see `StarTreeTableRowContext`).
+ */
+export interface StarRowSlotContext<T = unknown, C = StarColumn<T>> {
   /** The row. */
   readonly $implicit: T;
   /** The row. */
@@ -90,7 +93,7 @@ export interface StarRowSlotContext<T = unknown> {
   /** Index of the row in the rows of the page; a negative number for a pinned row. */
   readonly index: number;
   /** The rendered data columns, in display order. Write one `<td starTableCell>` per column. */
-  readonly columns: readonly StarColumn<T>[];
+  readonly columns: readonly C[];
   /** The row is selected. */
   readonly selected: boolean;
   /** The detail row of the row is open. */
@@ -108,6 +111,11 @@ export interface StarRowSlotContext<T = unknown> {
  * cell navigation stay. `starTableCell` gives each cell its grid attributes (`data-field`, the
  * roving `tabindex`, `aria-colindex`, `aria-selected`). The table does not draw the editors of
  * the cells in this template.
+ *
+ * Pinned columns work: `starTableCell` gives each cell the sticky offset of its column. Column
+ * virtualisation (`virtualColumns`) does not: the template cannot place the spacer cells of the
+ * column window, so the cells do not line up with the header. In dev mode the table logs a
+ * warning for `starRow` with `virtualColumns`.
  */
 @Directive({
   selector: 'ng-template[starRow]',
@@ -136,6 +144,15 @@ export interface ɵStarTableCellState {
   readonly label: string | null;
   /** Column index for the cell keys of the tree table (`data-col`), else `null`. */
   readonly col?: number | null;
+  /**
+   * Sticky placement of a pinned (table) or frozen (tree table) column: its side, its offset from
+   * that edge, and `edge` for the column that draws the separator shadow. `null`: not pinned.
+   */
+  readonly pin?: {
+    readonly side: 'start' | 'end';
+    readonly offset: string;
+    readonly edge: boolean;
+  } | null;
 }
 
 /** What `starTableCell` reads from its table. Internal. */
@@ -151,7 +168,8 @@ export const ɵSTAR_TABLE_CELL_HOST = new InjectionToken<ɵStarTableCellHost>(
 /**
  * A data cell of a `starRow` template: `<td [starTableCell]="column.field" [starTableCellRow]="row">`.
  * It sets the grid attributes that the built-in cells have, so cell navigation, cell selection,
- * the context menu and paste work in the custom row.
+ * the context menu and paste work in the custom row, and the sticky offset of a pinned (table) or
+ * frozen (tree table) column, so the cell stays under its header.
  */
 @Directive({
   selector: 'td[starTableCell]',
@@ -165,6 +183,11 @@ export const ɵSTAR_TABLE_CELL_HOST = new InjectionToken<ɵStarTableCellHost>(
     '[attr.data-col]': 'state().col ?? null',
     '[class.star-table__cell--selected]': 'state().selected === true',
     '[class.star-table__cell--col-selected]': 'state().columnSelected',
+    '[class.star-table__cell--frozen]': "state().pin?.side === 'start'",
+    '[class.star-table__cell--pinned-end]': "state().pin?.side === 'end'",
+    '[class.star-table__cell--pin-edge]': '!!state().pin?.edge',
+    '[style.inset-inline-start]': "state().pin?.side === 'start' ? state().pin?.offset : null",
+    '[style.inset-inline-end]': "state().pin?.side === 'end' ? state().pin?.offset : null",
   },
 })
 export class StarTableCell {
@@ -178,12 +201,15 @@ export class StarTableCell {
   );
 }
 
-/** Context of the `starFooterRow` slot. */
-export interface StarFooterRowContext<T = unknown> {
+/**
+ * Context of the `starFooterRow` slot. `C` is the column type: `StarColumn<T>` in `star-table`,
+ * `StarTreeTableColumn` in `star-tree-table` (see `StarTreeTableFooterRowContext`).
+ */
+export interface StarFooterRowContext<T = unknown, C = StarColumn<T>> {
   /** The rendered data columns, in display order. */
-  readonly $implicit: readonly StarColumn<T>[];
+  readonly $implicit: readonly C[];
   /** The rendered data columns. */
-  readonly columns: readonly StarColumn<T>[];
+  readonly columns: readonly C[];
   /** The filtered rows of all pages, in sort order (in lazy mode: the loaded rows). */
   readonly rows: readonly T[];
 }

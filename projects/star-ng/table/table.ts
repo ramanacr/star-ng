@@ -18,6 +18,7 @@ import {
   Injector,
   input,
   isDevMode,
+  linkedSignal,
   model,
   output,
   signal,
@@ -1269,24 +1270,43 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     return top.length || bottom.length ? [...top, ...rows, ...bottom] : rows;
   });
 
+  /** The loaded rows split into the pinned top rows, the other rows and the pinned bottom rows. */
+  private readonly loadedPinSplit = computed(() =>
+    splitPinnedRows(this.withAdded(), this.pinnedRows(), (row) => this.trackKey(row)),
+  );
+  /**
+   * Lazy mode: the row object of each pinned key, so a pinned row stays when its page is not
+   * loaded (the last object seen for it). A pure derivation from the previous value: the pinned
+   * rows of the loaded page give the current objects, and keys that are no longer pinned are
+   * dropped, so a later pin of the same key does not show an old object.
+   */
+  private readonly pinnedObjects = linkedSignal<
+    { readonly pins: StarRowPins; readonly loaded: readonly T[] },
+    ReadonlyMap<unknown, T>
+  >({
+    source: () => {
+      const split = this.loadedPinSplit();
+      return { pins: this.pinnedRows(), loaded: [...split.top, ...split.bottom] };
+    },
+    computation: ({ pins, loaded }, previous) => {
+      const objects = new Map<unknown, T>();
+      for (const key of [...(pins.top ?? []), ...(pins.bottom ?? [])]) {
+        if (previous?.value.has(key)) objects.set(key, previous.value.get(key) as T);
+      }
+      for (const row of loaded) objects.set(this.trackKey(row), row);
+      return objects;
+    },
+  });
   /** The rows split into the pinned top rows, the paged rows and the pinned bottom rows. */
   protected readonly pinSplit = computed(() => {
-    const pins = this.pinnedRows();
-    const split = splitPinnedRows(this.withAdded(), pins, (row) => this.trackKey(row));
+    const split = this.loadedPinSplit();
     if (!this.lazy()) return split;
-    // Lazy mode: a pinned row stays when its page is not loaded (the last object seen for it).
-    // A plain cache, not a signal: it only remembers row objects. Keys that are no longer pinned
-    // are dropped, so a later pin of the same key does not show an old object.
-    const seen = this.pinnedObjects;
-    const pinned = new Set([...(pins.top ?? []), ...(pins.bottom ?? [])]);
-    for (const key of [...seen.keys()]) if (!pinned.has(key)) seen.delete(key);
-    for (const row of [...split.top, ...split.bottom]) seen.set(this.trackKey(row), row);
+    const pins = this.pinnedRows();
+    const objects = this.pinnedObjects();
     const keep = (keys: readonly unknown[] | undefined) =>
-      (keys ?? []).flatMap((key) => (seen.has(key) ? [seen.get(key) as T] : []));
+      (keys ?? []).flatMap((key) => (objects.has(key) ? [objects.get(key) as T] : []));
     return { top: keep(pins.top), rest: split.rest, bottom: keep(pins.bottom) };
   });
-  /** Row objects of the pinned rows by key, for lazy mode. */
-  private readonly pinnedObjects = new Map<unknown, T>();
   protected readonly pinnedTop = computed(() => this.pinSplit().top);
   protected readonly pinnedBottom = computed(() => this.pinSplit().bottom);
 
@@ -1895,6 +1915,11 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
         if (this.virtualRowHeights() === 'variable' && !this.virtualScroll()) {
           console.warn('star-table: virtualRowHeights has no effect without virtualScroll.');
         }
+        if (this.rowSlot() && this.virtualColumns()) {
+          console.warn(
+            'star-table: a starRow template does not support virtualColumns; its cells do not line up with the header. Use the built-in cells (starCell) with virtualColumns.',
+          );
+        }
       });
     }
     // Saved state: restore once per key, then save every change.
@@ -2334,7 +2359,10 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
    */
   pinRow(row: T, side: StarRowPinSide): void {
     if (this.rowPinOf(row) === side) return;
-    this.pinnedObjects.set(this.trackKey(row), row);
+    // Lazy mode: remember the object now, before the page can change. The next value of
+    // `pinnedObjects` keeps it while the key stays pinned.
+    if (this.lazy())
+      this.pinnedObjects.update((objects) => new Map(objects).set(this.trackKey(row), row));
     this.pinnedRows.set(withRowPin(this.pinnedRows(), this.trackKey(row), side));
     this.rowPin.emit({ row, side });
   }
@@ -2343,7 +2371,6 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   unpinRow(row: T): void {
     if (!this.rowPinOf(row)) return;
     this.pinnedRows.set(withRowPin(this.pinnedRows(), this.trackKey(row), null));
-    this.pinnedObjects.delete(this.trackKey(row));
     this.rowPin.emit({ row, side: null });
   }
 
@@ -2386,6 +2413,7 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
         this.cellMode() && this.cellSelectionMode() ? this.isCellSelected(item, column) : null,
       columnSelected: this.isColumnSelected(column),
       label: column.header,
+      pin: this.pinOf(column),
     };
   }
 

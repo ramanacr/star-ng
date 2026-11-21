@@ -20714,7 +20714,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "td[starTableCell]",
     "entry": "@star-ng/ui/table",
-    "description": "A data cell of a `starRow` template: `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">`. It sets the grid attributes that the built-in cells have, so cell navigation, cell selection, the context menu and paste work in the custom row.",
+    "description": "A data cell of a `starRow` template: `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">`. It sets the grid attributes that the built-in cells have, so cell navigation, cell selection, the context menu and paste work in the custom row, and the sticky offset of a pinned (table) or frozen (tree table) column, so the cell stays under its header.",
     "inputs": [
       {
         "name": "starTableCell",

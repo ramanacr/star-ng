@@ -138,6 +138,15 @@ export interface StarTreeTableColumn {
   readonly editor?: 'text' | 'number';
 }
 
+/** Context of the `starRow` slot of the tree table: the columns are tree table columns. */
+export type StarTreeTableRowContext = StarRowSlotContext<StarTreeTableNode, StarTreeTableColumn>;
+
+/** Context of the `starFooterRow` slot of the tree table: the columns are tree table columns. */
+export type StarTreeTableFooterRowContext = StarFooterRowContext<
+  StarTreeTableNode,
+  StarTreeTableColumn
+>;
+
 /** Payload of `nodeSelect`, `nodeUnselect`, `nodeExpand` and `nodeCollapse`. */
 export interface StarTreeTableNodeEvent {
   /** The node, as it is in `nodes`. */
@@ -215,9 +224,13 @@ const LOADING_KEY = '\u0000loading';
  * text while a filter is on), `starHeader` and `starFooter` (content above and below the table;
  * content with `starTableCaption` / `starTableSummary` goes there too). The slots of
  * `star-table` work here as well: `starHeaderCell`, `starCell`, `starRow` (with `starTableCell`:
- * the cells after the tree column, which stays), `starFooterRow`, `starLoading` (the `loading`
- * row, and the loading row of lazy children), `starPaginatorStart` and `starPaginatorEnd`;
- * `starIcon` replaces the `toggle`, `check`, `sort` and `filter` icons.
+ * the cells after the tree column, which stays; context `StarTreeTableRowContext`, and a cell of
+ * a frozen column gets its sticky offset), `starFooterRow` (`StarTreeTableFooterRowContext`),
+ * `starLoading` (the `loading` row, and the loading row of lazy children), `starPaginatorStart`
+ * and `starPaginatorEnd`; `starIcon` replaces the `toggle`, `check`, `sort` and `filter` icons.
+ * Parts of the toggle icon: the default icon is `expandIcon` (as in the table and the tree), the
+ * wrapper of a `starIcon="toggle"` template is `toggleIcon`. Style both in `pt` to style the
+ * toggle icon in both cases (the column move button also uses `expandIcon`).
  * Do not put focusable elements (buttons, links, inputs) in these templates: the table owns the
  * keyboard model and the ARIA attributes of its rows.
  *
@@ -876,8 +889,8 @@ export class StarTreeTable implements ɵStarTableCellHost {
     this,
     'headerCell',
   );
-  protected readonly rowSlot = starSlot<StarRowSlotContext<TreeTableNode>>(this.slots, this, 'row');
-  protected readonly footerRowSlot = starSlot<StarFooterRowContext<TreeTableNode>>(
+  protected readonly rowSlot = starSlot<StarTreeTableRowContext>(this.slots, this, 'row');
+  protected readonly footerRowSlot = starSlot<StarTreeTableFooterRowContext>(
     this.slots,
     this,
     'footerRow',
@@ -1210,14 +1223,12 @@ export class StarTreeTable implements ɵStarTableCellHost {
   }
 
   /** Context of the `starRow` slot: the columns after the first one (the tree column stays). */
-  protected rowSlotContext(row: TreeTableRow): StarRowSlotContext<TreeTableNode> {
+  protected rowSlotContext(row: TreeTableRow): StarTreeTableRowContext {
     return {
       $implicit: row.node,
       row: row.node,
       index: this.rowPosition().get(row) ?? -1,
-      columns: this.visibleColumns().slice(
-        1,
-      ) as unknown as StarRowSlotContext<TreeTableNode>['columns'],
+      columns: this.visibleColumns().slice(1),
       selected: this.isSelected(row.node.key),
       expanded: this.isOpen(row.node.key),
       editing: false,
@@ -1226,9 +1237,8 @@ export class StarTreeTable implements ɵStarTableCellHost {
   }
 
   /** Context of the `starFooterRow` slot: the columns and the top-level rows (all pages). */
-  protected readonly footerRowContext = computed<StarFooterRowContext<TreeTableNode>>(() => {
-    const columns =
-      this.visibleColumns() as unknown as StarFooterRowContext<TreeTableNode>['columns'];
+  protected readonly footerRowContext = computed<StarTreeTableFooterRowContext>(() => {
+    const columns = this.visibleColumns();
     return { $implicit: columns, columns, rows: this.sortedNodes() };
   });
 
@@ -1244,6 +1254,14 @@ export class StarTreeTable implements ɵStarTableCellHost {
       columnSelected: false,
       label: null,
       col: ci < 0 ? null : ci,
+      pin:
+        ci >= 0 && this.visibleColumns()[ci].frozen
+          ? {
+              side: 'start',
+              offset: this.frozenOffset(this.visibleColumns()[ci]) ?? '0px',
+              edge: false,
+            }
+          : null,
     };
   }
 
