@@ -221,7 +221,9 @@ function parts(text: string): readonly { readonly code: boolean; readonly text: 
         each release; the table shows how the code is written, not a promise of exact counts.
       </p>
 
-      <div class="docs-table-wrap">
+      <!-- The wide table can scroll sideways: the region takes the focus, so a keyboard user can
+           scroll it too. -->
+      <div class="docs-table-wrap" tabindex="0" role="region" aria-label="Angular features table">
         <table class="docs-table">
           <caption>
             Angular features in StarNG
