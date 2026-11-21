@@ -10,6 +10,9 @@
   font: var(--star-type-body-sm);
   font-weight: 600;
 }
+.star-chip--disabled {
+  opacity: 0.6;
+}
 .star-chip--sm {
   padding: 0.125rem 0.5rem;
 }

@@ -75,6 +75,7 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem, StarMenuItemContex
       class="star-menubar__bar"
       cdkMenuBar
       [attr.aria-label]="ariaLabel()"
+      [attr.aria-labelledby]="ariaLabel() ? null : ariaLabelledBy()"
     >
       @for (item of items(); track $index) {
         @if (item.items?.length) {
@@ -243,6 +244,8 @@ export class StarMegaMenu {
   private readonly directionSync = inject(StarDirectionService);
   readonly items = input<readonly StarMenuItem[]>([]);
   readonly ariaLabel = input<string | null>(null);
+  /** Id of an element that names the bar, when there is no `ariaLabel`. PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
   readonly itemClick = output<StarMenuItem>();
 
   protected readonly positions = STAR_MENU_POSITIONS;

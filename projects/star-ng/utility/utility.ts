@@ -82,6 +82,7 @@ export class StarSplitterGutter extends StarSlot<object> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-splitter star-splitter--' + layout()",
+    '[class.star-splitter--disabled]': 'disabled()',
     '[style.--star-split]': "size() + '%'",
   },
   template: `
@@ -92,7 +93,8 @@ export class StarSplitterGutter extends StarSlot<object> {
       data-star-part="gutterPanel"
       class="star-splitter__gutter"
       role="separator"
-      tabindex="0"
+      [attr.tabindex]="disabled() ? -1 : 0"
+      [attr.aria-disabled]="disabled() || null"
       [attr.aria-orientation]="layout() === 'horizontal' ? 'vertical' : 'horizontal'"
       [attr.aria-valuenow]="size()"
       [attr.aria-valuemin]="minSize()"
@@ -123,6 +125,8 @@ export class StarSplitter {
   readonly size = model(50);
   readonly minSize = input(15);
   readonly ariaLabel = input<string | null>(null);
+  /** The gutter does not move (pointer and keyboard). PrimeNG `disabled`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
   /** Percent that one arrow key moves the gutter (default `2`). PrimeNG `step`. */
   readonly step = input(2);
   /**
@@ -174,6 +178,7 @@ export class StarSplitter {
   }
 
   protected startDrag(event: PointerEvent): void {
+    if (this.disabled()) return;
     const gutter = event.currentTarget as HTMLElement;
     gutter.setPointerCapture?.(event.pointerId);
     this.resizeStart.emit();
@@ -196,6 +201,7 @@ export class StarSplitter {
   }
 
   protected onKeydown(event: KeyboardEvent): void {
+    if (this.disabled()) return;
     const horizontal = this.layout() === 'horizontal';
     // The arrow keys follow the visual direction: the gutter moves left on Arrow left, and the
     // first pane is on the right in right-to-left, so the sign turns.

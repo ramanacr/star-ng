@@ -81,7 +81,8 @@ export class StarMessageContainer extends StarSlot<StarMessageContainerContext> 
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarMessage) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class]': "'star-message star-message--' + severity() + ' star-message--' + variant()",
+    '[class]':
+      "'star-message star-message--' + severity() + ' star-message--' + variant() + (size() === 'md' ? '' : ' star-message--' + size())",
     '[attr.role]': "severity() === 'error' ? 'alert' : 'status'",
     '[hidden]': '!visible()',
   },
@@ -128,6 +129,8 @@ export class StarMessage implements OnInit {
 
   readonly severity = input<StarMessageSeverity>('info');
   readonly variant = input<'soft' | 'outlined'>('soft');
+  /** `'sm'`, `'md'` (default) or `'lg'`: text size and padding. PrimeNG `size`. */
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
   readonly icon = input<string | null>(null);
   readonly closable = input(false, { transform: booleanAttribute });
   /** Milliseconds before the message hides itself (0 = stays). */

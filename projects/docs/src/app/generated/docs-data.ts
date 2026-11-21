@@ -3711,6 +3711,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The chip looks inactive and its remove button does not work. PrimeNG `disabled`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -11729,6 +11736,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of an element that names the bar, when there is no `ariaLabel`. PrimeNG `ariaLabelledBy`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -12158,6 +12172,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'soft'",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "default": "'md'",
+        "required": false,
+        "description": "`'sm'`, `'md'` (default) or `'lg'`: text size and padding. PrimeNG `size`."
       },
       {
         "name": "icon",
@@ -18812,6 +18833,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The gutter does not move (pointer and keyboard). PrimeNG `disabled`."
       },
       {
         "name": "step",

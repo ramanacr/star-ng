@@ -80,6 +80,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Chips area (`star-chips-area`, `StarChipsAreaItem`, in `@star-ng/ui/layout`): chips that move by drag and drop or with Control+Shift and an arrow key, and are removed with Delete (`removable`), one tab stop with the arrow keys, announcements through `StarAnnouncer`, `[(items)]`, `optionLabel`, the outputs `reorder` and `removed`. UI texts `chipsMoveHint` and `chipsMoveRemoveHint` (English, German, Spanish) (Ignite UI `igx-chips-area`).
 
+- Chip: `disabled` (PrimeNG `disabled`).
+
 #### Color picker
 
 - Eye dropper button in `star-color-picker` (`@star-ng/ui/knob`): picks a color from the screen with the `EyeDropper` API of the browser; hidden when the browser has no such API (PrimeNG `p-inputcolor-eyedropper`). New output `changed` emits the color that the user chose. UI text `eyeDropper` (English, German, Spanish).
@@ -246,9 +248,13 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Menus: the slot `starMenuTemplate` (`item`, `itemIcon`, `submenuHeader`, `start`, `end`) and `starIcon="submenu"` on `star-menu`, `star-menubar` (also passed to its submenus), `star-mega-menu` (`submenuHeader` for the column headings) and `star-panel-menu` (`item`, `itemIcon`; the `submenu` icon gets `let-expanded`). `star-menu`: items with `group` show in place under a heading (a `group` with `aria-labelledby`, PrimeNG `p-menu` submenu headers), `ariaLabelledBy`, and the outputs `show`, `hide`, `submenuShow` and `submenuHide`. `star-menubar`: `autoDisplay` (open on hover), `ariaLabelledBy`, `submenuShow` and `submenuHide`. `StarMenuItemContext` gets `level` and `hasSubmenu` (PrimeNG `p-menu`, `p-tieredmenu`, `p-menubar`, `p-megamenu`, `p-panelmenu`).
 
+- Mega menu: `ariaLabelledBy`.
+
 #### Message
 
 - Message: the slots `starMessageContainer` (the whole content, with `close`) and `starIcon` (`icon`, `close`) (PrimeNG `#container`, `#icon`, `#closeicon`).
+
+- Message: `size` (`sm`, `md`, `lg`) (PrimeNG `size`).
 
 #### Multi-column combobox
 
@@ -420,6 +426,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Key filter `starKeyFilter` (`@star-ng/ui/utility`, PrimeNG `pKeyFilter`): presets `int`, `num`, `money`, `hex`, `alpha`, `alphanum`, `email` or a `RegExp`; blocks keys and filters paste and drop (up to `maxlength`, also on `type="email"` and `type="number"`), never interrupts IME composition; `validateOnly` sets an error instead (`valid()`, `validChange`, native validation message, forms error `starKeyFilter`). UI text `keyFilterInvalid` (English, German, Spanish).
 
 - Meter group: `orientation`, `labelPosition`, `labelOrientation`, `min`, the legend icon of an item, and the slot `starMeterGroupTemplate` (`label`, `meter`, `start`, `end`, `icon`). Splitter: `step`, `stateKey` and `stateStorage` (the size survives a reload), the outputs `resizeStart` and `resizeEnd`, and the slot `starSplitterGutter`. Scroll top: `target` also takes `parent` and `window`, `ariaLabel`, `behavior`, and `starIcon="icon"`. Block UI: the slot `starLoading` replaces the spinner and the message (PrimeNG `p-metergroup`, `p-splitter`, `p-scrolltop`, `p-blockui`).
+
+- Splitter: `disabled` (the gutter does not move and leaves the tab order) (PrimeNG `disabled`).
 
 #### Virtual scroller
 

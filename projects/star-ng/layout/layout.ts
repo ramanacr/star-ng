@@ -227,7 +227,7 @@ export class StarTimeline {
   imports: [NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarChip) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-chip' },
+  host: { class: 'star-chip', '[class.star-chip--disabled]': 'disabled()' },
   template: `
     @if (image()) {
       <img data-star-part="picture" class="star-chip__image" [src]="image()" alt="" />
@@ -240,6 +240,7 @@ export class StarTimeline {
         data-star-part="removeButton"
         type="button"
         class="star-chip__remove"
+        [disabled]="disabled()"
         [attr.aria-label]="text.removeItem(label())"
         (click)="removed.emit()"
       >
@@ -263,5 +264,7 @@ export class StarChip {
   readonly icon = input<string | null>(null);
   readonly image = input<string | null>(null);
   readonly removable = input(false, { transform: booleanAttribute });
+  /** The chip looks inactive and its remove button does not work. PrimeNG `disabled`. */
+  readonly disabled = input(false, { transform: booleanAttribute });
   readonly removed = output<void>();
 }
