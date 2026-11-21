@@ -36,9 +36,10 @@ export default defineConfig({
       // An absolute limit, not a ratio. A ratio grows with the slice: 0.2 percent of a
       // 1024 x 3015 slice is 6175 pixels. Two new sentences in the scheduler API table changed
       // 6464 pixels of the dark slice (it failed by a hair) and fewer of the light slice (it
-      // passed with stale content). Two local runs of the whole suite differ by 0 pixels
-      // (pixelmatch already ignores anti-aliased pixels and color steps under `threshold`), so
-      // 100 pixels leave a margin for rendering noise, and one changed word fails.
+      // passed with stale content). Two runs of the whole suite on one Windows machine differed
+      // by 0 pixels (pixelmatch already ignores anti-aliased pixels and color steps under
+      // `threshold`); the noise between CI runners is not measured yet. 100 pixels leave a
+      // margin for it. A changed sentence fails; a single changed glyph may not.
       maxDiffPixels: 100,
     },
   },

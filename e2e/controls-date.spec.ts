@@ -941,9 +941,9 @@ test.describe('popups with time columns fit a small window', () => {
    * of it shows), and the chosen option of each time column is in view.
    */
   async function expectInWindow(popup: Locator): Promise<void> {
-    const done = popup.getByRole('button', { name: 'Done' });
-    await expect(done).toBeVisible();
-    for (const box of [(await popup.boundingBox())!, (await done.boundingBox())!]) {
+    await expect(popup.getByRole('button', { name: 'Done' })).toBeVisible();
+    const boxes = await settledBoxes(popup, { popup: ':scope', done: 'button:Done' });
+    for (const box of [boxes.popup, boxes.done]) {
       expect(box.y).toBeGreaterThanOrEqual(0);
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.y + box.height).toBeLessThanOrEqual(HEIGHT);
@@ -968,34 +968,60 @@ test.describe('popups with time columns fit a small window', () => {
   }
 
   /**
-   * The boxes of the calendar and of the time part, read together once the popup has settled:
-   * the overlay can still move the popup for a frame or two after it opens, so the read repeats
-   * (two frames apart) until two reads in a row are the same.
+   * Boxes of elements of a popup, read together once the popup has settled: the overlay can still
+   * move the popup for a frame or two after it opens, and two separate `boundingBox()` reads can
+   * see two positions. The read repeats (two frames apart) until two reads in a row are the same.
+   * A target is a CSS selector inside the popup, `:scope` for the popup itself, or
+   * `button:<text>` for the button with that text.
    */
-  async function settledBoxes(popup: Locator): Promise<{ calendar: DOMRect; time: DOMRect }> {
+  async function settledBoxes<K extends string>(
+    popup: Locator,
+    targets: Record<K, string>,
+  ): Promise<Record<K, DOMRect>> {
     await expect(popup).toBeVisible();
-    return popup.evaluate(async (root) => {
-      const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      const read = () => ({
-        calendar: root.querySelector('star-calendar')!.getBoundingClientRect().toJSON(),
-        time: root.querySelector('.star-date__time')!.getBoundingClientRect().toJSON(),
-      });
-      let last = '';
-      for (let tries = 0; tries < 30; tries++) {
-        await frame();
-        await frame();
-        const boxes = read();
-        const key = JSON.stringify(boxes);
-        if (key === last) return boxes;
-        last = key;
-      }
-      return read();
-    });
+    return popup.evaluate(
+      async (root, wanted) => {
+        const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        const find = (target: string): Element => {
+          if (target === ':scope') return root;
+          if (target.startsWith('button:')) {
+            const text = target.slice('button:'.length);
+            return [...root.querySelectorAll('button')].find(
+              (b) => b.textContent?.trim() === text,
+            )!;
+          }
+          return root.querySelector(target)!;
+        };
+        const read = () =>
+          Object.fromEntries(
+            Object.entries(wanted).map(([key, target]) => [
+              key,
+              find(target as string)
+                .getBoundingClientRect()
+                .toJSON(),
+            ]),
+          );
+        let last = '';
+        for (let tries = 0; tries < 30; tries++) {
+          await frame();
+          await frame();
+          const boxes = read();
+          const key = JSON.stringify(boxes);
+          if (key === last) return boxes;
+          last = key;
+        }
+        return read();
+      },
+      targets as Record<string, string>,
+    ) as Promise<Record<K, DOMRect>>;
   }
+
+  /** The calendar and the time part of a date picker popup. */
+  const CALENDAR_AND_TIME = { calendar: 'star-calendar', time: '.star-date__time' };
 
   /** The time part is at the inline end of the calendar (on the right in ltr), in the same row. */
   async function expectTimeBesideCalendar(popup: Locator): Promise<void> {
-    const { calendar, time } = await settledBoxes(popup);
+    const { calendar, time } = await settledBoxes(popup, CALENDAR_AND_TIME);
     expect(time.x).toBeGreaterThanOrEqual(calendar.x + calendar.width - 1);
     expect(Math.abs(time.y - calendar.y)).toBeLessThan(3);
     // The calendar sets the height of the row: the time part is not higher.
@@ -1028,8 +1054,10 @@ test.describe('popups with time columns fit a small window', () => {
       await expect(panel(page)).toBeVisible();
       await expectTimeBesideCalendar(panel(page));
       // The start time is above the end time, in one column.
-      const start = (await panel(page).getByRole('group', { name: 'Start time' }).boundingBox())!;
-      const end = (await panel(page).getByRole('group', { name: 'End time' }).boundingBox())!;
+      const { start, end } = await settledBoxes(panel(page), {
+        start: '[role="group"][aria-label="Start time"]',
+        end: '[role="group"][aria-label="End time"]',
+      });
       expect(end.y).toBeGreaterThanOrEqual(start.y + start.height - 1);
       expect(Math.abs(end.x - start.x)).toBeLessThan(2);
       await expectInWindow(panel(page));
@@ -1054,10 +1082,15 @@ test.describe('popups with time columns fit a small window', () => {
     const live = example(page, 'Date and time');
     await live.evaluate((element) => element.scrollIntoView({ block: 'start' }));
     await live.getByRole('button', { name: 'Choose date' }).click();
-    const calendar = (await panel(page).locator('star-calendar').boundingBox())!;
-    const time = (await panel(page).locator('.star-date__time').boundingBox())!;
+    const {
+      calendar,
+      time,
+      popup: box,
+    } = await settledBoxes(panel(page), {
+      ...CALENDAR_AND_TIME,
+      popup: ':scope',
+    });
     expect(time.y).toBeGreaterThanOrEqual(calendar.y + calendar.height - 1);
-    const box = (await panel(page).boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(375);
     expect(box.y + box.height).toBeLessThanOrEqual(812);
@@ -1072,7 +1105,7 @@ test.describe('popups with time columns fit a small window', () => {
     await live.getByRole('button', { name: 'Choose date' }).click();
     // One read of both boxes after the popup has settled (a read while the overlay still
     // placed the popup was once off by a fraction of a pixel).
-    const { calendar, time } = await settledBoxes(panel(page));
+    const { calendar, time } = await settledBoxes(panel(page), CALENDAR_AND_TIME);
     expect(time.x + time.width).toBeLessThanOrEqual(calendar.x + 1);
     expect(Math.abs(time.y - calendar.y)).toBeLessThan(3);
     await expectInWindow(panel(page));

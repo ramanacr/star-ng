@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { openPage } from './support';
+import { example, openPage } from './support';
 
 /**
  * Page changes of the docs with motion on: the router cross-fades the pages with a view
@@ -24,9 +24,6 @@ interface Moment {
 interface TransitionRecord {
   shown: Moment | null;
   ended: Moment | null;
-  pressed: boolean;
-  /** Whether the transition was still active right after the press. */
-  activeAfterPress: boolean | null;
 }
 
 declare global {
@@ -35,8 +32,8 @@ declare global {
     __transitions: TransitionRecord[];
     /** CSS selectors of the elements to measure. */
     __targets: string[];
-    /** When true, a press (`pointerdown`) is sent when the next fade starts. */
-    __pressOnFade: boolean;
+    /** The node name of the target of each `pointerdown`, oldest first. */
+    __pressTargets: string[];
   }
 }
 
@@ -46,7 +43,12 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     window.__transitions = [];
     window.__targets = ['h1'];
-    window.__pressOnFade = false;
+    window.__pressTargets = [];
+    window.addEventListener(
+      'pointerdown',
+      (event) => window.__pressTargets.push((event.target as Node).nodeName),
+      true,
+    );
     const start = Document.prototype.startViewTransition;
     if (!start) return;
     const active = () =>
@@ -65,25 +67,10 @@ test.beforeEach(async ({ page }) => {
       ...args: Parameters<Document['startViewTransition']>
     ) {
       const transition = start.apply(this, args);
-      const record: TransitionRecord = {
-        shown: null,
-        ended: null,
-        pressed: false,
-        activeAfterPress: null,
-      };
+      const record: TransitionRecord = { shown: null, ended: null };
       window.__transitions.push(record);
       transition.ready.then(
-        () => {
-          record.shown = moment();
-          if (window.__pressOnFade) {
-            window.__pressOnFade = false;
-            record.pressed = true;
-            document.documentElement.dispatchEvent(
-              new PointerEvent('pointerdown', { bubbles: true, composed: true }),
-            );
-            record.activeAfterPress = active();
-          }
-        },
+        () => (record.shown = moment()),
         () => undefined,
       );
       transition.finished.then(
@@ -178,14 +165,49 @@ test.describe('page changes with a view transition', () => {
     expect(shown.scrollY).toBeGreaterThan(0);
   });
 
-  test('a press during the fade ends it, so the next press reaches the page', async ({ page }) => {
+  test('a press during the fade ends it, and the next press reaches the page', async ({ page }) => {
     await openPage(page, '/controls/button', 'Button');
-    await page.evaluate(() => (window.__pressOnFade = true));
+    // A long fade (this test only), so that the real presses below land inside it for sure.
+    await page.addStyleTag({
+      content:
+        '::view-transition-group(root), ::view-transition-old(root), ::view-transition-new(root)' +
+        ' { animation-duration: 20s !important; }',
+    });
     await openSchedulerFromNav(page);
-    const record = await transitionAt(page, 0);
-    expect(record.pressed).toBe(true);
-    expect(record.shown!.url).toBe('/controls/scheduler');
-    // The press ended the transition at once (the fade itself lasts a quarter of a second).
-    expect(record.activeAfterPress).toBe(false);
+    const active = () =>
+      page.evaluate(
+        () => !!(document as Document & { activeViewTransition?: unknown }).activeViewTransition,
+      );
+    expect(await active()).toBe(true);
+
+    const booking = example(page, 'Rooms on a timeline, with the editor').getByRole('button', {
+      name: /^Team meeting, /,
+    });
+    await booking.scrollIntoViewIfNeeded();
+    const box = (await booking.boundingBox())!;
+    const point = { x: box.x + Math.min(box.width / 2, 20), y: box.y + box.height / 2 };
+    const hitsBooking = () =>
+      booking.evaluate(
+        (element, at) => element.contains(document.elementFromPoint(at.x, at.y)),
+        point,
+      );
+    // During the fade the browser hit-tests to the document element, not to the booking.
+    expect(await active()).toBe(true);
+    expect(await hitsBooking()).toBe(false);
+
+    // A real press during the fade goes to <html> and ends the fade at once.
+    await page.mouse.move(point.x, point.y);
+    await page.mouse.down();
+    await page.mouse.up();
+    expect(await page.evaluate(() => window.__pressTargets.at(-1))).toBe('HTML');
+    expect(await active()).toBe(false);
+    expect(await hitsBooking()).toBe(true);
+
+    // The next press reaches the page: a held press on the booking opens the editor.
+    await page.mouse.down();
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+    expect(await page.evaluate(() => window.__pressTargets.at(-1))).not.toBe('HTML');
+    await expect(page.getByRole('dialog', { name: 'Edit event' })).toBeVisible();
   });
 });

@@ -44,6 +44,12 @@ export async function openPage(page: Page, path: string, heading: string | RegEx
  * it waits until the element receives the pointer events.
  */
 export async function pageTransitionDone(page: Page): Promise<void> {
+  // Without `document.activeViewTransition` the wait below would end at once and hide the cause
+  // of a missed press, so the helper fails instead.
+  expect(
+    await page.evaluate(() => 'activeViewTransition' in document),
+    'document.activeViewTransition is supported by this browser',
+  ).toBe(true);
   await page.waitForFunction(
     () => !(document as Document & { activeViewTransition?: unknown }).activeViewTransition,
   );
