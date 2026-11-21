@@ -470,6 +470,65 @@ describe('StarTable depth (N1)', () => {
     });
   });
 
+  describe('Excel-style filter with many values', () => {
+    @Component({
+      imports: [StarTable],
+      template: `<star-table
+        [value]="rows"
+        [columns]="columns"
+        dataKey="id"
+        ariaLabel="Many"
+        paginator
+        [rows]="10"
+      />`,
+    })
+    class ManyHost {
+      readonly table = viewChild.required<StarTable<Order>>(StarTable);
+      readonly rows: Order[] = Array.from({ length: 100_000 }, (_, i) => ({
+        id: `ORD-${i}`,
+        customer: `Customer ${String(i).padStart(6, '0')}`,
+        status: 'Open',
+        total: i,
+      }));
+      readonly columns: StarColumn<Order>[] = [
+        { field: 'id', header: 'Order' },
+        { field: 'customer', header: 'Customer', filter: 'multiselect', excelFilter: true },
+      ];
+    }
+
+    it('computes the values once and renders at most 1,000 with a note', async () => {
+      const fixture = TestBed.createComponent(ManyHost);
+      await fixture.whenStable();
+      const table = fixture.componentInstance.table() as unknown as {
+        filterChoices(column: StarColumn<Order>): readonly string[];
+      };
+      const column = fixture.componentInstance.columns[1];
+      const first = table.filterChoices(column);
+      expect(first.length).toBe(100_000);
+      expect(table.filterChoices(column)).toBe(first);
+      const root = fixture.nativeElement as HTMLElement;
+      root
+        .querySelector<HTMLButtonElement>(
+          'th[data-field="customer"] [data-star-part="filterButton"]',
+        )!
+        .click();
+      await fixture.whenStable();
+      const panel = document.querySelector<HTMLElement>('[data-star-part="filterPanel"]')!;
+      expect(panel.querySelectorAll('[data-star-part="choiceInput"]').length).toBe(1000);
+      const note = panel.querySelector('[data-star-part="moreText"]')!;
+      expect(note.textContent?.trim()).toBe(
+        'Showing 1000 of 100000 values. Refine the search to see more.',
+      );
+      expect(note.getAttribute('aria-live')).toBe('polite');
+      const search = panel.querySelector<HTMLInputElement>('[data-star-part="valueSearchInput"]')!;
+      search.value = 'r 0999';
+      search.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+      expect(panel.querySelectorAll('[data-star-part="choiceInput"]').length).toBe(100);
+      expect(panel.querySelector('[data-star-part="moreText"]')).toBeNull();
+    });
+  });
+
   describe('advanced filter', () => {
     it('applies advancedQuery to the rows', async () => {
       const fixture = TestBed.createComponent(FeatureHost);

@@ -150,6 +150,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   unpinRow: 'Soltar fila',
   advancedFilter: 'Filtro avanzado',
   selectColumn: (column) => `Seleccionar columna ${column}`,
+  moreChoices: (shown, total) =>
+    `Se muestran ${shown} de ${total} valores. Refine la búsqueda para ver más.`,
   summarySum: 'Suma',
   summaryAverage: 'Promedio',
   summaryMinimum: 'Mínimo',

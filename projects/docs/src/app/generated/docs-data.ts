@@ -10640,7 +10640,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number | null",
         "default": "null",
         "required": false,
-        "description": "Width of the track and the value arc, in units of the 100 × 100 view box. PrimeNG `strokeWidth`."
+        "description": "Width of the track and the value arc, in units of the 100 × 100 view box (1 to 20; the arc radius is 40). Default: the stylesheet width (10). PrimeNG `strokeWidth`."
       },
       {
         "name": "showValue",
@@ -20032,6 +20032,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "choicesPanel",
       "choiceLabel",
       "choiceInput",
+      "moreText",
       "rangePanel",
       "removeButton",
       "removeIcon",

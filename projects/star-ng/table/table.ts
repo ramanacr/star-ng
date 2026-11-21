@@ -3071,11 +3071,28 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   }
 
   protected filterChoices(column: StarColumn<T>): readonly string[] {
-    if (column.filterOptions) return column.filterOptions;
-    const texts = new Set(this.value().map((row) => this.cellText(row, column)));
-    texts.delete('');
-    return [...texts].sort((a, b) => compareValues(a, b));
+    return column.filterOptions ?? this.filterChoiceMap().get(column.field) ?? [];
   }
+
+  /**
+   * The distinct display texts of each select / multiselect filter column without
+   * `filterOptions`, sorted. Computed once per `value` and `columns`, not on every check.
+   */
+  private readonly filterChoiceMap = computed(() => {
+    const rows = this.value();
+    const map = new Map<string, readonly string[]>();
+    for (const column of this.columns()) {
+      if (column.filterOptions) continue;
+      if (column.filter !== 'select' && column.filter !== 'multiselect') continue;
+      const texts = new Set(rows.map((row) => this.cellText(row, column)));
+      texts.delete('');
+      map.set(
+        column.field,
+        [...texts].sort((a, b) => compareValues(a, b)),
+      );
+    }
+    return map;
+  });
 
   protected setFilter(field: string, value: StarFilterValue): void {
     const timer = this.filterTimers.get(field);

@@ -35,6 +35,9 @@ import {
   StarTableMatchMode,
 } from './table-filter';
 
+/** Most choices that a check list draws (a column with more values needs the search). */
+const MAX_CHOICES = 1000;
+
 /** UI text of each built-in match mode. */
 const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
   contains: 'matchContains',
@@ -180,7 +183,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
                 role="group"
                 [attr.aria-label]="text.filterBy(header())"
               >
-                @for (choice of shownChoices(); track choice) {
+                @for (choice of renderedChoices(); track choice) {
                   <label data-star-part="choiceLabel" class="star-table-filter__choice">
                     <input
                       data-star-part="choiceInput"
@@ -192,6 +195,11 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
                   </label>
                 }
               </div>
+              @if (shownChoices().length > renderedChoices().length) {
+                <p data-star-part="moreText" class="star-table-filter__more" aria-live="polite">
+                  {{ text.moreChoices(renderedChoices().length, shownChoices().length) }}
+                </p>
+              }
             } @else if (rule.matchMode === 'between') {
               <span data-star-part="rangePanel" class="star-table-filter__range">
                 <input
@@ -343,6 +351,12 @@ export class StarTableFilterMenu {
   }
 
   /** Copies the current value into the draft rules of the menu. */
+  /** The choices that the list draws: at most `MAX_CHOICES`; the search finds the others. */
+  protected readonly renderedChoices = computed(() => {
+    const shown = this.shownChoices();
+    return shown.length > MAX_CHOICES ? shown.slice(0, MAX_CHOICES) : shown;
+  });
+
   private load(): void {
     this.search.set('');
     const value = this.value();

@@ -858,6 +858,11 @@ star-select.star-table__editor {
   gap: 0.5rem;
   cursor: pointer;
 }
+.star-table-filter__more {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--star-text-muted);
+}
 .star-table-filter__list-buttons {
   display: flex;
   gap: 0.25rem;

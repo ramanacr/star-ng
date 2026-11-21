@@ -176,6 +176,8 @@ export interface StarUiText {
   readonly advancedFilter: string;
   /** Table `selectionMode="column"`: select button of a column header. */
   readonly selectColumn: (column: string) => string;
+  /** Table filter check list: only the first values show. */
+  readonly moreChoices: (shown: number, total: number) => string;
   /** Table summary labels. */
   readonly summarySum: string;
   readonly summaryAverage: string;
@@ -1060,6 +1062,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   unpinRow: 'Unpin row',
   advancedFilter: 'Advanced filter',
   selectColumn: (column) => `Select column ${column}`,
+  moreChoices: (shown, total) =>
+    `Showing ${shown} of ${total} values. Refine the search to see more.`,
   summarySum: 'Sum',
   summaryAverage: 'Average',
   summaryMinimum: 'Minimum',
@@ -1709,6 +1713,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   pinColumnEnd: ['column'],
   unpinColumn: ['column'],
   selectColumn: ['column'],
+  moreChoices: ['shown', 'total'],
   hideColumn: ['column'],
   skippedCells: ['count'],
   copiedCells: ['count'],

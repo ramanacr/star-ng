@@ -148,6 +148,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   unpinRow: 'Fixierung der Zeile lösen',
   advancedFilter: 'Erweiterter Filter',
   selectColumn: (column) => `Spalte ${column} auswählen`,
+  moreChoices: (shown, total) =>
+    `${shown} von ${total} Werten sichtbar. Grenzen Sie die Suche ein, um mehr zu sehen.`,
   summarySum: 'Summe',
   summaryAverage: 'Durchschnitt',
   summaryMinimum: 'Minimum',
