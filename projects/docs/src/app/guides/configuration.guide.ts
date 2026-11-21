@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { StarClock } from '@star-ng/ui/core';
+import { StarClock, StarFluid } from '@star-ng/ui/core';
 import { StarField, StarInput } from '@star-ng/ui/field';
-import { provideStarSelectDefaults, StarSelect } from '@star-ng/ui/select';
+import { StarInputNumber } from '@star-ng/ui/input-number';
+import { provideStarSelectDefaults, StarCascadeSelect, StarSelect } from '@star-ng/ui/select';
+import { StarSelectButton } from '@star-ng/ui/select-button';
 import { STAR_PIPES, StarCopy, StarKeyFilter } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -34,6 +36,10 @@ export class DocsCompactSelect {
     StarCopy,
     StarKeyFilter,
     STAR_PIPES,
+    StarFluid,
+    StarCascadeSelect,
+    StarInputNumber,
+    StarSelectButton,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -182,13 +188,53 @@ export class DocsCompactSelect {
 
       <h2>Fluid layout</h2>
       <p>
-        Most StarNG form controls fill the width of their container already (PrimeNG needs
-        <code>p-fluid</code> or <code>fluid</code> for that). For the compact ones, put the
-        <code>starFluid</code> directive (from <code>@star-ng/ui/core</code>) on a container, for
-        example <code>&lt;form starFluid&gt;</code>, or set <code>fluid: true</code> in
-        <code>provideStarNg</code> for the whole application. The global setting is also the default
-        of the <code>fluid</code> input of the controls that have one (the cascade select).
+        Under a fluid root, the form controls fill the inline size of their container (PrimeNG
+        <code>p-fluid</code> and <code>fluid</code>). A fluid root is an element with the
+        <code>starFluid</code> directive (from <code>@star-ng/ui/core</code>), or the whole page
+        with <code>fluid: true</code> in <code>provideStarNg</code> (the attribute
+        <code>data-star-fluid</code> on <code>&lt;html&gt;</code>). One shared style rule applies it
+        to:
       </p>
+      <ul>
+        <li>
+          the input fields (<code>starInput</code>), the select family (select, multi-select,
+          autocomplete, cascade select, tree select, multi-column combobox, listbox), the date and
+          time pickers, the color picker, input number, input mask, input tags and password;
+        </li>
+        <li>
+          inside a <code>form</code> only: <code>star-button</code>,
+          <code>star-select-button</code> and <code>star-toggle-button</code> (their items share the
+          line).
+        </li>
+      </ul>
+      <p>
+        <code>starFluid="false"</code> (or <code>data-star-fluid="false"</code>) on a nearer element
+        turns it off for all content below that element. Most field controls are block controls and
+        fill their container also without a fluid root; the fluid root changes the compact ones,
+        such as the cascade select and the buttons. <code>fluid: true</code> is also the default of
+        the <code>fluid</code> input of the cascade select.
+      </p>
+
+      <docs-example
+        heading="Fluid form"
+        source="configuration/fluid"
+        note='The form has starFluid: the cascade select, the input number, the select button and the button fill the line. The last row has starFluid="false": its button keeps its own width.'
+      >
+        <form
+          starFluid
+          class="docs-stack"
+          aria-label="Fluid form"
+          (submit)="$event.preventDefault()"
+        >
+          <star-cascade-select ariaLabel="Region" [options]="regions" optionLabel="name" />
+          <star-input-number ariaLabel="Quantity" [value]="3" />
+          <star-select-button ariaLabel="Delivery" [options]="deliveries" [value]="'Standard'" />
+          <star-button type="submit">Save order</star-button>
+          <div starFluid="false">
+            <star-button variant="secondary" type="button">Cancel</star-button>
+          </div>
+        </form>
+      </docs-example>
 
       <h2>Copy to the clipboard</h2>
       <p>
@@ -309,6 +355,11 @@ export class DocsCompactSelect {
   `,
 })
 export class ConfigurationGuide {
+  protected readonly regions = [
+    { name: 'North', children: [{ name: 'Harbour' }, { name: 'Hills' }] },
+    { name: 'South', children: [{ name: 'Coast' }] },
+  ];
+  protected readonly deliveries = ['Standard', 'Express'];
   protected readonly clock = inject(StarClock);
   protected readonly copied = signal('none');
   protected readonly referenceValid = signal(true);

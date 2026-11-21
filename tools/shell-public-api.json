@@ -155,8 +155,12 @@
     "StarSplitButton",
     "keepMenuInsideDialog"
   ],
-  "popover": ["StarPopover"],
-  "spinner": ["StarSpinner"],
+  "popover": [
+    "StarPopover"
+  ],
+  "spinner": [
+    "StarSpinner"
+  ],
   "theme": [
     "STAR_THEME_DEFAULT_STORAGE_KEY",
     "STAR_THEME_FIRST_PAINT_HASH",
@@ -168,7 +172,9 @@
     "starThemeFirstPaintHash",
     "starThemeFirstPaintScript"
   ],
-  "theme-switch": ["StarThemeSwitch"],
+  "theme-switch": [
+    "StarThemeSwitch"
+  ],
   "toast": [
     "STAR_TOAST_DEFAULTS",
     "StarToast",

@@ -62,6 +62,23 @@ test.describe('wave N2 depth', () => {
     await expect(chip('Total')).toBeFocused();
   });
 
+  test('fluid: the controls of a fluid form fill the line, an opt-out keeps its width', async ({
+    page,
+  }) => {
+    await openPage(page, '/guides/configuration', 'Configuration');
+    await hydrated(page);
+    const form = example(page, 'Fluid form').locator('form');
+    const formWidth = (await form.boundingBox())!.width;
+    const width = async (selector: string, index = 0) =>
+      (await form.locator(selector).nth(index).boundingBox())!.width;
+    for (const selector of ['star-input-number', 'star-select-button', 'star-button']) {
+      expect(Math.abs((await width(selector)) - formWidth), selector).toBeLessThan(2);
+    }
+    expect(Math.abs((await width('star-cascade-select')) - formWidth)).toBeLessThan(2);
+    // The second button is under starFluid="false".
+    expect(await width('star-button', 1)).toBeLessThan(formWidth / 2);
+  });
+
   test('icon: decorative and named icons', async ({ page }) => {
     await openPage(page, '/controls/icon', 'Icon');
     await hydrated(page);

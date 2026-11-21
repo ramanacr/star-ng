@@ -186,12 +186,13 @@ describe('Fluid layout', () => {
     const fixture = TestBed.createComponent(FluidHost);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('#box')!.classList).toContain('star-fluid');
+    expect(el.querySelector('#box')!.getAttribute('data-star-fluid')).toBe('');
     expect(document.documentElement.hasAttribute('data-star-fluid')).toBe(true);
     expect(el.querySelector('star-cascade-select')!.classList).toContain('star-cascade--fluid');
     fixture.componentInstance.on.set(false);
     await fixture.whenStable();
-    expect(el.querySelector('#box')!.classList).not.toContain('star-fluid');
+    // Off: a nearer data-star-fluid="false" turns the fluid layout off for its content.
+    expect(el.querySelector('#box')!.getAttribute('data-star-fluid')).toBe('false');
     fixture.destroy();
     document.documentElement.removeAttribute('data-star-fluid');
   });
