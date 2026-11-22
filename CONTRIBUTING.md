@@ -58,6 +58,10 @@ This file explains how to work on the StarNG repository: set up, run the checks,
 | `corepack pnpm check:package`     | Checks `dist/star-ng`: files, exports, size, names, README links. Run `build:lib` first.         |
 | `corepack pnpm smoke:consumer`    | Installs the packed package in a temporary Angular app and builds it (about 2 minutes).          |
 
+### AI coding agents
+
+`.mcp.json` registers the Angular CLI MCP server (`ng mcp`) for agents that read it, such as Claude Code. It runs the Angular CLI version installed in `node_modules`, so run `corepack pnpm install` first. The server gives an agent the current Angular best practices, a search of the Angular documentation and example code. Use it when you write or review Angular code, in place of what the agent remembers from its training.
+
 ## Rules for the library
 
 - **Tokens only.** Colors, radius, spacing and fonts come from `--star-*` tokens. Do not write a color value in a control style.
