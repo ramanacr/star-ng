@@ -5,6 +5,8 @@
   --star-tone: var(--star-accent);
   --star-tone-soft: var(--star-accent-soft);
   display: block;
+  // The host keeps its box while the content leaves (`animate.leave`), then hides.
+  transition: display var(--star-duration-base) allow-discrete;
 
   &[hidden] {
     display: none;
@@ -59,6 +61,16 @@
 
 @keyframes star-banner-in {
   from {
+    opacity: 0;
+    translate: 0 -0.5rem;
+  }
+}
+.star-banner__inner--leaving {
+  pointer-events: none;
+  animation: star-banner-out var(--star-duration-base) $ease forwards;
+}
+@keyframes star-banner-out {
+  to {
     opacity: 0;
     translate: 0 -0.5rem;
   }

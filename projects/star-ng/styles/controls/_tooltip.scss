@@ -1,4 +1,7 @@
 // Tooltip: small dark label shown by the tooltip directive.
+@use '../shared' as *;
+@use '../panel-motion';
+
 .star-tooltip {
   display: block;
   max-width: 18rem;
@@ -11,4 +14,8 @@
   box-shadow: var(--star-shadow-md);
   pointer-events: none;
   animation: star-panel-in var(--star-duration-fast) ease-out;
+}
+// Leave motion (`animate.leave`); the keyframes are in `_panel-motion.scss`.
+.star-tooltip--leaving {
+  animation: star-panel-out var(--star-duration-fast) $ease forwards;
 }

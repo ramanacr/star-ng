@@ -1,5 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
-import { DOCUMENT, isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -8,6 +8,7 @@ import {
   computed,
   contentChildren,
   Directive,
+  DOCUMENT,
   effect,
   ElementRef,
   forwardRef,

@@ -26,6 +26,7 @@ import {
   starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarKeyed,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink } from '@star-ng/ui/field';
 
@@ -98,8 +99,13 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
           [attr.aria-label]="ariaLabel()"
           [attr.aria-disabled]="disabled() || null"
         >
-          @for (tag of value(); track tag; let i = $index) {
-            <li data-star-part="chipItem" class="star-chip star-chip--sm">
+          @for (entry of tagEntries(); track entry.key; let i = $index) {
+            @let tag = entry.item;
+            <li
+              data-star-part="chipItem"
+              class="star-chip star-chip--sm"
+              animate.leave="star-chip--leaving"
+            >
               @if (tagSlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: { $implicit: tag, index: i }" />
               } @else {
@@ -222,6 +228,8 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
   protected readonly describedBy = computed(() =>
     [this.hintId, this.field?.describedBy()].filter(Boolean).join(' '),
   );
+  /** `@for` entries: a repeated tag (`allowDuplicates`) gets its own key. */
+  protected readonly tagEntries = computed(() => ɵstarKeyed(this.value()));
   protected readonly draft = signal('');
   protected readonly rejection = signal<{ tag: string; reason: StarTagRejection } | null>(null);
   protected readonly announcement = signal('');

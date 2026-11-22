@@ -1,7 +1,8 @@
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import {
   ApplicationConfig,
   ApplicationRef,
+  DOCUMENT,
   EnvironmentInjector,
   inject,
   PLATFORM_ID,

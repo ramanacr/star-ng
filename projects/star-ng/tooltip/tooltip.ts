@@ -23,7 +23,12 @@ import {
   numberAttribute,
   signal,
 } from '@angular/core';
-import { StarDirectionService, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  StarDirectionService,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
+} from '@star-ng/ui/core';
 
 /**
  * Side of the host. `left` and `right` are the physical sides of the screen, as in CSS;
@@ -81,10 +86,17 @@ function positionsFor(position: StarTooltipPosition, rtl: boolean): ConnectedPos
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-tooltip', role: 'tooltip', '[id]': 'id()' },
+  host: {
+    class: 'star-tooltip',
+    role: 'tooltip',
+    '[id]': 'id()',
+    '(animate.leave)': 'leave($event)',
+  },
   template: `{{ text() }}`,
 })
 export class StarTooltipPanel {
+  /** Leave motion (`animate.leave`); a new tooltip in the same pane ends it at once. */
+  protected readonly leave = ɵstarLeaveWithClass('star-tooltip--leaving');
   readonly text = signal('');
   readonly id = signal('');
 }

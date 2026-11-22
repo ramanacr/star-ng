@@ -1,5 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
-import { email, form, FormField, required } from '@angular/forms/signals';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  resource,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
+import { email, form, FormField, required, validateAsync } from '@angular/forms/signals';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -32,6 +38,19 @@ import { DOCS, DocsRow } from '../shared/docs';
         <div class="docs-stack">
           <star-field label="Email" [state]="contact.email()">
             <input starInput type="email" [formField]="contact.email" />
+          </star-field>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Async validation"
+        source="field/async"
+        [script]="asyncScript"
+        note="While an async validator runs, pending() of the field state is true: the field is aria-busy and the hint row shows a busy icon. Try admin, taken by another account."
+      >
+        <div class="docs-stack">
+          <star-field label="User name" hint="Letters and digits." [state]="account.userName()">
+            <input starInput [formField]="account.userName" autocomplete="off" />
           </star-field>
         </div>
       </docs-example>
@@ -84,6 +103,38 @@ readonly contact = form(this.model, (path) => {
   email(path.email, { message: 'Enter a valid email address.' });
 });`;
 
+  protected readonly accountModel = signal({ userName: '' });
+  protected readonly account = form(this.accountModel, (path) => {
+    validateAsync(path.userName, {
+      params: ({ value }) => value() || undefined,
+      factory: (name) =>
+        resource({
+          params: name,
+          // A stand-in for a server call (an httpResource in an application).
+          loader: ({ params }) =>
+            new Promise<boolean>((resolve) => setTimeout(() => resolve(params === 'admin'), 800)),
+        }),
+      onSuccess: (taken) =>
+        taken ? { kind: 'taken', message: 'This user name is taken.' } : undefined,
+      onError: () => undefined,
+    });
+  });
+
+  protected readonly asyncScript = `readonly model = signal({ userName: '' });
+readonly account = form(this.model, (path) => {
+  validateAsync(path.userName, {
+    params: ({ value }) => value() || undefined,
+    factory: (name) =>
+      resource({
+        params: name,
+        loader: ({ params }) => this.users.isTaken(params), // Promise<boolean>
+      }),
+    onSuccess: (taken) =>
+      taken ? { kind: 'taken', message: 'This user name is taken.' } : undefined,
+    onError: () => undefined,
+  });
+});`;
+
   protected readonly slots: readonly DocsRow[] = [
     { name: '(default)', description: 'The control: an input with starInput or a StarNG control.' },
   ];
@@ -95,5 +146,9 @@ readonly contact = form(this.model, (path) => {
     { name: '--star-label-letter-spacing', description: 'Letter spacing of the label.' },
     { name: '--star-accent', description: 'Border color on focus.' },
     { name: '--star-danger', description: 'Border and message color of an invalid field.' },
+    {
+      name: '--star-field-pending-color',
+      description: 'Color of the busy icon while an async validator runs. Default: --star-accent.',
+    },
   ];
 }

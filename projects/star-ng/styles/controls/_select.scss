@@ -1,5 +1,6 @@
 // Select and multi-select: control shell and floating panel.
 @use '../shared' as *;
+@use '../panel-motion';
 
 .star-select {
   display: block;
@@ -152,11 +153,10 @@
     min-width: 0;
   }
 }
-@keyframes star-panel-in {
-  from {
-    opacity: 0;
-    translate: 0 -4px;
-  }
+// Leave motion of an overlay panel (`animate.leave`). The CDK keeps the overlay until the panel
+// leaves the pane; the CDK has already turned off the pointer events of the pane.
+.star-panel--leaving {
+  animation: star-panel-out var(--star-duration-fast) $ease forwards;
 }
 .star-panel__filter {
   display: flex;

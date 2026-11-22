@@ -94,3 +94,41 @@ describe('StarInputTags', () => {
     expect(host.f.terms().touched()).toBe(true);
   });
 });
+
+@Component({
+  imports: [StarInputTags],
+  template: `<star-input-tags [(value)]="tags" allowDuplicates ariaLabel="Labels" />`,
+})
+class DuplicatesHost {
+  readonly tags = signal<readonly string[]>(['red', 'blue', 'red']);
+}
+
+describe('StarInputTags with allowDuplicates', () => {
+  it('renders repeated tags without a duplicate key warning and removes the right one', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(DuplicatesHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const chips = () => [...el.querySelectorAll('li')].map((li) => li.textContent?.trim());
+    expect(chips()).toEqual(['red', 'blue', 'red']);
+
+    const input = el.querySelector<HTMLInputElement>('input')!;
+    type(input, 'red');
+    key(input, 'Enter');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.tags()).toEqual(['red', 'blue', 'red', 'red']);
+    expect(chips()).toEqual(['red', 'blue', 'red', 'red']);
+    const blue = el.querySelectorAll('li')[1];
+
+    el.querySelectorAll<HTMLButtonElement>('li button')[0].click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.tags()).toEqual(['blue', 'red', 'red']);
+    expect(chips()).toEqual(['blue', 'red', 'red']);
+    // The row of "blue" is the same element: the keys follow the items, not the positions.
+    expect(el.querySelectorAll('li')[0]).toBe(blue);
+
+    const messages = warn.mock.calls.map((call) => String(call[0]));
+    expect(messages.filter((message) => message.includes('NG0955'))).toEqual([]);
+    warn.mockRestore();
+  });
+});

@@ -27,6 +27,7 @@ import {
   StarRangeFilter,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵStarItemKeys,
 } from '@star-ng/ui/core';
 import { StarDatePicker } from '@star-ng/ui/date-picker';
 import { StarInput } from '@star-ng/ui/field';
@@ -107,15 +108,18 @@ function updateGroup(
   root: StarQueryGroup,
   path: string,
   change: (group: StarQueryGroup) => StarQueryGroup,
+  keys?: ɵStarItemKeys,
 ): StarQueryGroup {
+  // Each replaced group keeps the `@for` key of the group it replaces.
   const walk = (group: StarQueryGroup, steps: number[]): StarQueryGroup => {
-    if (!steps.length) return change(group);
+    if (!steps.length) return keys ? keys.carry(group, change(group)) : change(group);
     const [index, ...rest] = steps;
     const child = group.rules[index];
     if (!child || !starIsQueryGroup(child)) return group;
     const rules = [...group.rules];
     rules[index] = walk(child, rest);
-    return { ...group, rules };
+    const next = { ...group, rules };
+    return keys ? keys.carry(group, next) : next;
   };
   return walk(root, parsePath(path));
 }
@@ -241,7 +245,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
           }
         </div>
         <div data-star-part="rulesPanel" class="star-query__rules">
-          @for (item of group.rules; track $index; let i = $index) {
+          @for (item of group.rules; track keys.keyOf(item); let i = $index) {
             @if (isGroup(item)) {
               <ng-container
                 [ngTemplateOutlet]="groupTpl"
@@ -441,6 +445,8 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
 
   /** The query. The builder writes a new object on every change. */
   readonly value = model<StarQueryGroup>({ operator: 'and', rules: [] });
+  /** `@for` keys of the rules and groups: an edited item keeps its row (and the focus in it). */
+  protected readonly keys = new ɵStarItemKeys();
   /** Fields that a rule can test. */
   readonly fields = input<readonly StarQueryField<never>[]>([]);
   /** Most levels of groups, the root group included. */
@@ -606,13 +612,18 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
     return number;
   }
 
+  /** `updateGroup` on the value; every replaced rule and group keeps its `@for` key. */
+  private updateGroup(path: string, change: (group: StarQueryGroup) => StarQueryGroup) {
+    return updateGroup(this.value(), path, change, this.keys);
+  }
+
   private updateRule(path: string, index: number, change: (rule: StarQueryRule) => StarQueryRule) {
     this.commit(
-      updateGroup(this.value(), path, (group) => {
+      this.updateGroup(path, (group) => {
         const item = group.rules[index];
         if (!item || starIsQueryGroup(item)) return group;
         const rules = [...group.rules];
-        rules[index] = change(item);
+        rules[index] = this.keys.carry(item, change(item));
         return { ...group, rules };
       }),
     );
@@ -621,7 +632,7 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
   /** Sets the operator of the group at `path` (`''` is the root). */
   setOperator(path: string, operator: 'and' | 'or'): void {
     if (operator !== 'and' && operator !== 'or') return;
-    this.commit(updateGroup(this.value(), path, (group) => ({ ...group, operator })));
+    this.commit(this.updateGroup(path, (group) => ({ ...group, operator })));
   }
 
   /** Adds a rule for the first field at the end of the group at `path`. */
@@ -630,7 +641,7 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
     const group = groupAt(this.value(), path);
     if (!group) return;
     const index = group.rules.length;
-    this.commit(updateGroup(this.value(), path, (g) => ({ ...g, rules: [...g.rules, rule] })));
+    this.commit(this.updateGroup(path, (g) => ({ ...g, rules: [...g.rules, rule] })));
     this.focusItem(path, index);
   }
 
@@ -641,7 +652,7 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
     if (!group) return;
     const index = group.rules.length;
     const child: StarQueryGroup = { operator: 'and', rules: [starQueryNewRule(this.fields()[0])] };
-    this.commit(updateGroup(this.value(), path, (g) => ({ ...g, rules: [...g.rules, child] })));
+    this.commit(this.updateGroup(path, (g) => ({ ...g, rules: [...g.rules, child] })));
     this.focusItem(childPath(path, index), 0);
   }
 
@@ -664,7 +675,7 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
         : this.text.queryGroupAll
       : this.text.filterRule(this.ruleNumber(group, index));
     this.commit(
-      updateGroup(this.value(), path, (g) => ({
+      this.updateGroup(path, (g) => ({
         ...g,
         rules: g.rules.filter((_, i) => i !== index),
       })),
@@ -687,7 +698,7 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
     if (!group) return false;
     const index = Math.min(removed.index, group.rules.length);
     this.commit(
-      updateGroup(this.value(), removed.group, (g) => {
+      this.updateGroup(removed.group, (g) => {
         const rules = [...g.rules];
         rules.splice(index, 0, removed.item);
         return { ...g, rules };
@@ -705,7 +716,7 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
     const to = index + delta;
     if (to < 0 || to >= group.rules.length || to === index) return;
     this.commit(
-      updateGroup(this.value(), path, (g) => {
+      this.updateGroup(path, (g) => {
         const rules = [...g.rules];
         const [item] = rules.splice(index, 1);
         rules.splice(to, 0, item);

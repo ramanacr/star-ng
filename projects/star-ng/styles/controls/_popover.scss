@@ -1,5 +1,6 @@
 // Popover and the confirm popup.
 @use '../shared' as *;
+@use '../panel-motion';
 
 .star-popover {
   max-width: min(24rem, calc(100vw - 2rem));
@@ -12,6 +13,10 @@
   font: var(--star-type-body-lg);
   outline: none;
   animation: star-panel-in var(--star-duration-base) $ease;
+}
+// Leave motion (`animate.leave`); the keyframes are in `_panel-motion.scss`.
+.star-popover--leaving {
+  animation: star-panel-out var(--star-duration-fast) $ease forwards;
 }
 .star-confirm--popup {
   gap: 0.75rem;

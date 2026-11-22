@@ -14,7 +14,7 @@ import {
   signal,
   Type,
 } from '@angular/core';
-import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { StarStyled, ɵSTAR_PART_HOST, ɵstarAfterExit } from '@star-ng/ui/core';
 import { StarDialog, StarDialogPosition } from './dialog';
 import { StarDialogSize } from './dialog-base';
 import { STAR_DIALOG_DEFAULTS } from './dialog-defaults';
@@ -162,7 +162,8 @@ export class StarDialogService {
     host.setInput('contentInjector', contentInjector);
     host.instance.hidden = () => {
       ref.settle();
-      this.destroy(host!);
+      // The close transition (`allow-discrete`) needs the element in the DOM: destroy after it.
+      ɵstarAfterExit(host!.location.nativeElement, () => this.destroy(host!));
     };
     document.body.appendChild(host.location.nativeElement);
     this.appRef.attachView(host.hostView);
@@ -177,6 +178,8 @@ export class StarDialogService {
 
   private destroy(host: ComponentRef<StarDialogContainer>): void {
     if (!this.openRefs.delete(host)) return;
+    // Called after the exit motion: the application may have destroyed the view meanwhile.
+    if (host.hostView.destroyed) return;
     this.appRef.detachView(host.hostView);
     host.destroy();
   }

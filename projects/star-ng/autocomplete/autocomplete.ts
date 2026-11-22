@@ -26,6 +26,8 @@ import {
   StarPart,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarKeyed,
+  ɵstarLeaveWithClass,
   type StarEmptyContext,
 } from '@star-ng/ui/core';
 import {
@@ -63,6 +65,8 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   TOption,
   TValue
 > {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   /** Server results. When set, the control shows these instead of filtering `options`. */
   readonly suggestions = input<readonly TOption[] | null>(null);
   readonly minQueryLength = input(1);
@@ -316,14 +320,23 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   protected chips(): readonly Chip<TValue>[] {
     return [];
   }
+  /** `@for` entries of the chips, keyed by the value, or its occurrence when it repeats. */
+  protected readonly chipEntries = computed(() => {
+    const chips = this.chips();
+    return ɵstarKeyed(chips.map((chip) => chip.value)).map((entry, i) => ({
+      key: entry.key,
+      item: chips[i],
+    }));
+  });
 }
 
 const TEMPLATE = `
   <div data-star-part="controlPanel" #control class="star-select__control star-ac__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
     <div data-star-part="mainPanel" class="star-ac__main">
       @if (isMultiple) {
-        @for (chip of chips(); track $index) {
-          <span data-star-part="chipPanel" class="star-chip star-chip--sm">
+        @for (entry of chipEntries(); track entry.key) {
+          @let chip = entry.item;
+          <span data-star-part="chipPanel" class="star-chip star-chip--sm" animate.leave="star-chip--leaving">
             {{ chip.label }}
             @if (interactive()) {
               <button data-star-part="removeButton"
@@ -403,6 +416,7 @@ const TEMPLATE = `
     <div starPart="panel"
       class="star-panel"
       [class]="panelClasses()"
+      (animate.leave)="leavePanel($event)"
       [style]="panelStyle()"
       (mousedown)="onPanelMousedown($event)"
       (keydown)="onPanelKeydown($event)"

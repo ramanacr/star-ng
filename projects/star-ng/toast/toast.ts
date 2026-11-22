@@ -239,6 +239,7 @@ const ICONS: Record<StarToastSeverity, string> = {
         data-star-part="surface"
         class="star-toast"
         [class]="'star-toast star-toast--' + message.severity"
+        animate.leave="star-toast--leaving"
         [attr.role]="message.severity === 'error' ? 'alert' : 'status'"
         (mouseenter)="toasts.pause(message.id)"
         (mouseleave)="toasts.resume(message.id)"
@@ -331,7 +332,10 @@ export class StarToast {
 
   constructor() {
     const unregister = this.toasts.registerOutlet(this);
-    inject(DestroyRef).onDestroy(unregister);
+    inject(DestroyRef).onDestroy(() => {
+      unregister();
+      this.emptyWatch?.disconnect();
+    });
     this.toasts.closed.pipe(takeUntilDestroyed()).subscribe((event) => {
       if (event.message.key === this.key()) this.closed.emit(event);
     });
@@ -340,11 +344,38 @@ export class StarToast {
         const element = this.host.nativeElement;
         const count = this.visible().length;
         if (typeof element.showPopover !== 'function') return;
+        this.emptyWatch?.disconnect();
+        if (count === 0) {
+          this.hideWhenEmpty(element);
+          return;
+        }
         // Re-open to move the stack above any dialog opened after it.
         if (element.matches(':popover-open')) element.hidePopover();
-        if (count > 0) element.showPopover();
+        element.showPopover();
       },
     });
+  }
+
+  /** Watches the stack while the last toasts leave (`animate.leave`). */
+  private emptyWatch: MutationObserver | null = null;
+
+  /**
+   * Hides the stack once no toast element is left in it. A closed toast stays in the DOM for
+   * its leave motion, and the stack must stay open until it is gone.
+   */
+  private hideWhenEmpty(element: HTMLElement): void {
+    const settled = (): boolean => {
+      if (this.visible().length || !element.matches(':popover-open')) return true;
+      if (element.querySelector('.star-toast')) return false;
+      element.hidePopover();
+      return true;
+    };
+    if (settled() || typeof MutationObserver === 'undefined') return;
+    const watch = new MutationObserver(() => {
+      if (settled()) watch.disconnect();
+    });
+    watch.observe(element, { childList: true });
+    this.emptyWatch = watch;
   }
 
   protected messageContext(message: StarToastMessage): StarToastMessageContext {

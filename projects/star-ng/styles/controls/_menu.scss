@@ -1,5 +1,6 @@
 // Menus: popup menu, mega menu, panel menu, split button and menubar.
 @use '../shared' as *;
+@use '../panel-motion';
 
 // Menu (CDK menu)
 .star-menu-host {
@@ -48,6 +49,19 @@
     box-shadow: none;
     animation: none;
   }
+}
+// Leave motion of a popup menu (`animate.leave` on the frame). The frame has no box unless it is
+// framed, so the list inside moves then. A menu inline in the page (`.star-menu-host`) leaves at
+// once.
+.star-menu-frame--leaving,
+.star-menu-frame--leaving > .star-menu,
+.star-menu--leaving {
+  animation: star-panel-out var(--star-duration-fast) $ease forwards;
+}
+.star-menu-frame--framed.star-menu-frame--leaving > .star-menu,
+.star-menu-host .star-menu-frame--leaving,
+.star-menu-host .star-menu-frame--leaving > .star-menu {
+  animation: none;
 }
 .star-menu__start,
 .star-menu__end {

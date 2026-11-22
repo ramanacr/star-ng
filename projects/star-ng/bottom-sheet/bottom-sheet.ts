@@ -1,4 +1,4 @@
-import { DOCUMENT, NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   ApplicationRef,
@@ -6,6 +6,7 @@ import {
   Component,
   ComponentRef,
   createComponent,
+  DOCUMENT,
   ElementRef,
   EnvironmentInjector,
   inject,
@@ -16,7 +17,7 @@ import {
   Type,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST, ɵstarAfterExit } from '@star-ng/ui/core';
 import { StarActionSheet, StarActionSheetItem } from './action-sheet';
 import {
   STAR_BOTTOM_SHEET_DATA,
@@ -216,7 +217,9 @@ export class StarBottomSheet {
     host.instance.dismiss = () => ref.dismiss();
     host.instance.hidden = () => {
       ref.settle();
-      this.destroy(host!);
+      if (this.current?.host === host) this.current = null;
+      // The slide down (`allow-discrete`) needs the element in the DOM: destroy after it.
+      ɵstarAfterExit(host!.location.nativeElement, () => this.destroy(host!));
       // Chromium restores the focus of a closed modal dialog; jsdom and other hosts may not.
       if (opener?.isConnected && !opener.contains(this.document.activeElement)) opener.focus();
     };
@@ -246,7 +249,8 @@ export class StarBottomSheet {
   }
 
   private destroy(host: ComponentRef<StarBottomSheetContainer>): void {
-    if (this.current?.host === host) this.current = null;
+    // Called after the exit motion: the application may have destroyed the view meanwhile.
+    if (host.hostView.destroyed) return;
     this.appRef.detachView(host.hostView);
     host.destroy();
   }

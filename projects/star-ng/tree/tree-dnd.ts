@@ -1,7 +1,7 @@
 // Drag and drop of tree nodes: the pure drop rules (position under the pointer, scopes, the
 // targets of the keyboard moves) and the shared drag state that lets one tree drop a node from
 // another. The tree never changes `nodes`: it emits `nodeDrop` and the owner moves the node.
-import { computed, DestroyRef, effect, inject, Injectable, signal, untracked } from '@angular/core';
+import { computed, DestroyRef, effect, inject, Service, signal, untracked } from '@angular/core';
 import type { StarTree, StarTreeNode } from './tree';
 import { BranchLike, parentsOf } from './tree-model';
 
@@ -45,7 +45,7 @@ export interface StarTreeActiveDrag {
 }
 
 /** The drag in progress. Trees read it to accept drops from another tree. @internal */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class StarTreeDragState {
   readonly active = signal<StarTreeActiveDrag | null>(null);
 }

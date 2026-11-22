@@ -49,6 +49,7 @@ import {
   starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
 } from '@star-ng/ui/core';
 
 /** One menu entry (PrimeNG `MenuItem`). `items` makes a submenu (tiered menu). */
@@ -247,6 +248,7 @@ class StarMenuLife implements OnInit, OnDestroy {
       <div
         data-star-part="framePanel"
         class="star-menu-frame"
+        (animate.leave)="leaveFrame($event)"
         [class.star-menu-frame--framed]="ends"
         [starMenuLife]="parent ?? null"
       >
@@ -409,6 +411,10 @@ class StarMenuLife implements OnInit, OnDestroy {
 export class StarMenu {
   /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
   private readonly directionSync = inject(StarDirectionService);
+  /** Leave motion of a popup menu; the focus leaves the menu first. */
+  protected readonly leaveFrame = ɵstarLeaveWithClass('star-menu-frame--leaving', {
+    blurFocus: true,
+  });
   private readonly ids = inject(_IdGenerator);
   private readonly groupIds = new WeakMap<StarMenuItem, string>();
   readonly items = input<readonly StarMenuItem[]>([]);

@@ -110,6 +110,8 @@ test.describe('tree table features', () => {
     );
     await expect(row('website').locator('td').nth(2)).toBeFocused();
     await page.keyboard.press('Enter');
+    // The editor takes the focus after the next render; Escape before that reaches the cell.
+    await expect(editor).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(live.getByRole('spinbutton')).toHaveCount(0);
   });

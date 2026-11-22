@@ -1,4 +1,4 @@
-import { DOCUMENT, isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -8,6 +8,7 @@ import {
   contentChildren,
   DestroyRef,
   Directive,
+  DOCUMENT,
   ElementRef,
   forwardRef,
   inject,

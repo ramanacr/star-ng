@@ -1,6 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { ConnectedPosition } from '@angular/cdk/overlay';
-import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -9,6 +8,7 @@ import {
   contentChildren,
   DestroyRef,
   Directive,
+  DOCUMENT,
   effect,
   ElementRef,
   inject,

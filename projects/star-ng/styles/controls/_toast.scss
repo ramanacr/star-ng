@@ -96,6 +96,17 @@
     translate: 0 -0.5rem;
   }
 }
+// Leave motion (`animate.leave`): Angular keeps the closed toast in the DOM until it ends.
+.star-toast--leaving {
+  pointer-events: none;
+  animation: star-toast-out var(--star-duration-base) $ease forwards;
+}
+@keyframes star-toast-out {
+  to {
+    opacity: 0;
+    translate: 0 -0.5rem;
+  }
+}
 .star-toast--success {
   --star-tone: var(--star-success);
 }

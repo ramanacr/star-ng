@@ -1,12 +1,13 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
   ElementRef,
   inject,
   Injector,
@@ -25,6 +26,7 @@ import {
   StarPart,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
@@ -498,6 +500,7 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
       <div
         starPart="panel"
         class="star-panel star-date__panel star-color__panel"
+        (animate.leave)="leavePanel($event)"
         role="dialog"
         [id]="panelId"
         [attr.dir]="rtl() ? 'rtl' : 'ltr'"
@@ -582,6 +585,8 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
   `,
 })
 export class StarColorPicker implements FormValueControl<string> {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   /** Keeps the CDK direction (overlays) in step with `<html dir>`. */
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);

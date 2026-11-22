@@ -28,4 +28,6 @@ export * from './options';
 export * from './pass-through';
 export * from './reactive-forms';
 export * from './slots';
+// `@for` track keys: shared by the entry points, not public API.
+export * from './track-keys';
 export * from './ui-text';

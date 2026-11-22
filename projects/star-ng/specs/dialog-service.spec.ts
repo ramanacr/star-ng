@@ -58,6 +58,28 @@ describe('StarDialogService', () => {
     expect(document.querySelector('star-dialog-container')).toBeNull();
   });
 
+  it('keeps the dialog in the DOM until its close transition ends, then removes it', async () => {
+    const service = TestBed.inject(StarDialogService);
+    const ref = service.open<Content, { name: string }, string>(Content, { data: { name: 'Ada' } });
+    await settle();
+    const host = document.querySelector<HTMLElement>('star-dialog-container')!;
+    let finish!: () => void;
+    const finished = new Promise<void>((resolve) => (finish = resolve));
+    const transition = { finished, effect: { getComputedTiming: () => ({ iterations: 1 }) } };
+    (host as unknown as { getAnimations: () => unknown[] }).getAnimations = () => [transition];
+
+    host.querySelector<HTMLButtonElement>('#ok')!.click();
+    await settle();
+    // The result comes at once; only the element waits for the exit motion.
+    await expect(ref.closed).resolves.toBe('saved');
+    expect(host.isConnected).toBe(true);
+    expect(host.querySelector('dialog')!.hasAttribute('open')).toBe(false);
+
+    finish();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(host.isConnected).toBe(false);
+  });
+
   it('passes the position, drag, resize and maximize options to the dialog', async () => {
     const service = TestBed.inject(StarDialogService);
     service.open(Content, {

@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 
 /**
  * A custom filter match mode: `true` when the cell `value` matches the `filter` value of a rule.
@@ -26,7 +26,7 @@ export interface StarFilterMode {
  * inject(StarFilterService).register('within7Days', (value) => isWithinDays(value, 7), 'Within 7 days');
  * ```
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class StarFilterService {
   private readonly modes = signal<ReadonlyMap<string, StarFilterMode>>(new Map());
 

@@ -1,5 +1,5 @@
 import { CdkContextMenuTrigger } from '@angular/cdk/menu';
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -8,6 +8,7 @@ import {
   computed,
   DestroyRef,
   Directive,
+  DOCUMENT,
   effect,
   ElementRef,
   inject,

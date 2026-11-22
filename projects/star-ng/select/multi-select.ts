@@ -11,7 +11,15 @@ import {
   output,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_SLOT_HOST, StarPart, starSlot, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  StarPart,
+  starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+  ɵstarKeyed,
+  ɵstarLeaveWithClass,
+} from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
 import { StarChipContext } from './select-slots';
 import { starSelectionChanging, StarSelectionChangingEvent } from './selection-changing';
@@ -22,6 +30,10 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
  * as `star-select`; Enter / Space toggle the active option and keep the panel open.
  *
  * `<star-multi-select [options]="tags" optionLabel="name" optionValue="id" [(value)]="ids" display="chip" filter />`
+ *
+ * Chips are keyed by the chosen value. If the application replaces `value` with equal object
+ * copies (a form reset, a reload), the chips are rebuilt and each plays its leave motion. Use
+ * `optionValue` with primitive values, or keep the identities of the values, to avoid it.
  */
 @Component({
   selector: 'star-multi-select',
@@ -76,7 +88,8 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           }}</span>
         } @else if (display() === 'chip') {
           <span data-star-part="chipsPanel" class="star-select__chips">
-            @for (option of selectedOptions(); track $index) {
+            @for (entry of optionEntries(); track entry.key) {
+              @let option = entry.item;
               @if (chipSlot(); as custom) {
                 <!-- The slot owns its buttons: a click on one must not toggle the panel. -->
                 <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
@@ -84,7 +97,11 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                   <ng-container *ngTemplateOutlet="custom; context: chipContext(option)" />
                 </span>
               } @else {
-                <span data-star-part="chipPanel" class="star-chip star-chip--sm">
+                <span
+                  data-star-part="chipPanel"
+                  class="star-chip star-chip--sm"
+                  animate.leave="star-chip--leaving"
+                >
                   {{ labelOf(option) }}
                   @if (interactive()) {
                     <button
@@ -101,8 +118,13 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                 </span>
               }
             }
-            @for (custom of customValues(); track $index) {
-              <span data-star-part="chipPanel" class="star-chip star-chip--sm">
+            @for (entry of customEntries(); track entry.key) {
+              @let custom = entry.item;
+              <span
+                data-star-part="chipPanel"
+                class="star-chip star-chip--sm"
+                animate.leave="star-chip--leaving"
+              >
                 {{ custom }}
                 @if (interactive()) {
                   <button
@@ -179,6 +201,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         starPart="panel"
         class="star-panel"
         [class]="panelClasses()"
+        (animate.leave)="leavePanel($event)"
         [style]="panelStyle()"
         (mousedown)="onPanelMousedown($event)"
         (keydown)="onPanelKeydown($event)"
@@ -387,6 +410,8 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   extends StarOptionListBase<TOption, TValue>
   implements FormValueControl<readonly TValue[]>
 {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   readonly value = model<readonly TValue[]>([]);
   /** `comma`: "A, B, C". `chip`: removable chips. */
   readonly display = input<'comma' | 'chip'>('comma');
@@ -445,6 +470,21 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
     const known = this.selectedOptions().map((option) => this.valueOf(option));
     return this.value().filter((value) => !known.some((v) => this.equals(v, value)));
   });
+  /**
+   * `@for` entries of the chips, keyed by the chosen value (the entry of `value` that the option
+   * matches with `compareWith`), not by the option object: new option objects with the same
+   * values (a reload, a language switch) keep the chip rows, so no chip leaves and comes back.
+   */
+  protected readonly optionEntries = computed(() => {
+    const options = this.selectedOptions();
+    const chosen = this.value();
+    const values = options.map((option) => {
+      const value = this.valueOf(option);
+      return chosen.find((item) => this.equals(item, value)) ?? value;
+    });
+    return ɵstarKeyed(values).map((entry, i) => ({ key: entry.key, item: options[i] }));
+  });
+  protected readonly customEntries = computed(() => ɵstarKeyed(this.customValues()));
   protected readonly selectedCount = computed(
     () => this.selectedOptions().length + this.customValues().length,
   );

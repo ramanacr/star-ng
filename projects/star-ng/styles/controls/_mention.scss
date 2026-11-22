@@ -1,8 +1,13 @@
 // Mention (StarMention): the suggestion panel at the caret, on the select panel surface.
+@use '../shared' as *;
+@use '../panel-motion';
 
 .star-mention__panel {
   min-inline-size: 12rem;
   max-inline-size: min(22rem, calc(100vw - 1rem));
+}
+.star-mention-panel--leaving > .star-panel {
+  animation: star-panel-out var(--star-duration-fast) $ease forwards;
 }
 .star-mention__list {
   max-block-size: 14rem;

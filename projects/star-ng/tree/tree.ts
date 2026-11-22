@@ -6,7 +6,7 @@ import {
   CdkVirtualForOf,
   CdkVirtualScrollViewport,
 } from '@angular/cdk/scrolling';
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterEveryRender,
   afterNextRender,
@@ -17,6 +17,7 @@ import {
   computed,
   contentChildren,
   DestroyRef,
+  DOCUMENT,
   effect,
   ElementRef,
   forwardRef,
@@ -48,6 +49,7 @@ import {
   starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { StarContextMenu, StarMenu, StarMenuItem } from '@star-ng/ui/menu';
@@ -1199,7 +1201,11 @@ const POSITIONS: ConnectedPosition[] = [
       (overlayOutsideClick)="onOutside($event)"
       (overlayKeydown)="$event.key === 'Escape' && close(true)"
     >
-      <div starPart="panel" class="star-panel star-tree-select__panel">
+      <div
+        starPart="panel"
+        class="star-panel star-tree-select__panel"
+        (animate.leave)="leavePanel($event)"
+      >
         @if (headerSlot(); as header) {
           <div data-star-part="headerSlotPanel" class="star-panel__header">
             <ng-container *ngTemplateOutlet="header" />
@@ -1240,6 +1246,8 @@ const POSITIONS: ConnectedPosition[] = [
   `,
 })
 export class StarTreeSelect implements FormValueControl<readonly string[]> {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);

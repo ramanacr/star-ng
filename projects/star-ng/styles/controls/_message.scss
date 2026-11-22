@@ -1,4 +1,6 @@
 // Inline message.
+@use '../shared' as *;
+
 .star-message {
   --star-tone: var(--star-accent);
   --star-tone-soft: var(--star-accent-soft);
@@ -10,9 +12,15 @@
   background: var(--star-tone-soft);
   color: var(--star-text);
   font: var(--star-type-body-lg);
+  // A close fades out: `display` flips to `none` at the end (`allow-discrete`). A message shows
+  // at once, so the page paints without motion.
+  transition:
+    opacity var(--star-duration-base) $ease,
+    display var(--star-duration-base) allow-discrete;
 
   &[hidden] {
     display: none;
+    opacity: 0;
   }
 }
 .star-message--sm {

@@ -29,6 +29,7 @@ import {
   starSlot,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import type { StarTimeCellContext } from './date-slots';
@@ -130,6 +131,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
       <div
         starPart="panel"
         class="star-panel star-date__panel star-time__panel"
+        (animate.leave)="leavePanel($event)"
         role="dialog"
         [id]="panelId"
         [attr.aria-label]="text.chooseTime"
@@ -167,6 +169,8 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
   `,
 })
 export class StarTimePicker implements FormValueControl<string | null> {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   /** Keeps the CDK direction (overlays) in step with `<html dir>`. */
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
