@@ -77,7 +77,7 @@ const FEATURES: readonly FeatureRow[] = [
     feature: '`debounced()`',
     since: '22.0 (experimental)',
     library:
-      'Not adopted ({lib:debounced} uses): `@experimental` in 22.2, and the package uses only stable Angular APIs. The autocomplete debounce stays a timer that also sets when `completeMethod` fires.',
+      'Not adopted ({lib:debounced} uses): the package uses only stable Angular APIs, and `debounced()` is still `@experimental 22.0` in 22.2.6 and in 22.3.0, the latest release (checked 2026-11-22). The debounces stay timers (table `filterDelay`, autocomplete `delay`, editor source text, virtual scroller `delay`). Issue #127 lists the places that can use `debounced()` when it is stable.',
     docs: 'Adopted, experimental: `debounced()` {docs:debounced} time in the shell. The page search filters the navigation at once; its live status ("3 pages match.") waits until typing pauses for 400 ms, so a screen reader reads the result once per pause, not once per key.',
   },
   {
