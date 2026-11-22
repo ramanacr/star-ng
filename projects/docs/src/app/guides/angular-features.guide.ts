@@ -77,14 +77,14 @@ const FEATURES: readonly FeatureRow[] = [
     feature: '`debounced()`',
     since: '22.0 (experimental)',
     library:
-      'Not adopted: `@experimental` in 22.2. The package uses only stable Angular APIs. The autocomplete debounce is a timer that also sets when `completeMethod` fires.',
-    docs: 'Not applicable.',
+      'Not adopted ({lib:debounced} uses): `@experimental` in 22.2, and the package uses only stable Angular APIs. The autocomplete debounce stays a timer that also sets when `completeMethod` fires.',
+    docs: 'Adopted, experimental: `debounced()` {docs:debounced} time in the shell. The page search filters the navigation at once; its live status ("3 pages match.") waits until typing pauses for 400 ms, so a screen reader reads the result once per pause, not once per key.',
   },
   {
     feature: 'Signal Forms: `FormValueControl`, `FormCheckboxControl`, `[field]`',
     since: '21 (experimental), 22.0 (public)',
     library:
-      'Used: `FormValueControl` {lib:formValueControl}, `FormCheckboxControl` {lib:formCheckboxControl}, imports of `@angular/forms/signals` {lib:signalForms}. No `ControlValueAccessor`. The field wrapper (`StarField`) reads `pending()` of a field state: while an async validator runs, the field is `aria-busy` and shows a busy icon.',
+      'Used: `FormValueControl` {lib:formValueControl}, `FormCheckboxControl` {lib:formCheckboxControl}, imports of `@angular/forms/signals` {lib:signalForms}. No `ControlValueAccessor`. The field wrapper (`StarField`) reads `pending()` of a field state: while an async validator runs, the field and the control linked to it (`starInput` and every StarNG form control) are `aria-busy`, and the field shows a busy icon.',
     docs: 'Used: {docs:signalForms} imports of `@angular/forms/signals`; the Forms guide shows Signal Forms and validation, and the Field page an async validator (`validateAsync`).',
   },
   {

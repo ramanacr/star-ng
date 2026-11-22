@@ -61,6 +61,9 @@ export type StarDialogPosition =
  * ```
  * Put `autofocus` (native elements) or `data-autofocus` (components) on the element that
  * should receive focus first.
+ *
+ * The exit motion must run on the dialog element itself (or its `::backdrop`): an animation
+ * on a child of the dialog does not hold the close.
  */
 @Component({
   selector: 'star-dialog',

@@ -55,6 +55,38 @@ export async function pageTransitionDone(page: Page): Promise<void> {
   );
 }
 
+/**
+ * Skips the rest of a test that needs `pageTransitionDone` in a browser without
+ * `document.activeViewTransition` (Chromium has it; the Firefox and WebKit projects of the
+ * `@cross-browser` run may not). Without it the end of the cross-fade cannot be awaited.
+ */
+export async function skipWithoutActiveViewTransition(page: Page): Promise<void> {
+  const supported = await page.evaluate(() => 'activeViewTransition' in document);
+  test.skip(
+    !supported,
+    'document.activeViewTransition is missing in this browser (Chromium-only API today)',
+  );
+}
+
+/**
+ * After a click outside an open menu, the menu is gone and the focus is not left on a removed
+ * menu item (the menus blur their item before they fade): the active element is in the document
+ * and outside the overlay container, and Tab still moves the focus to a control of the page.
+ */
+export async function expectFocusLeftMenu(page: Page): Promise<void> {
+  await expect(page.locator('.cdk-overlay-container').getByRole('menu')).toHaveCount(0);
+  const state = await page.evaluate(() => {
+    const active = document.activeElement;
+    return {
+      connected: !!active?.isConnected,
+      inOverlay: !!active?.closest('.cdk-overlay-container'),
+    };
+  });
+  expect(state).toEqual({ connected: true, inOverlay: false });
+  await page.keyboard.press('Tab');
+  expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true);
+}
+
 /** The live area of one example of the open page, found by the example heading. */
 export function example(page: Page, heading: string): Locator {
   return page

@@ -51,6 +51,17 @@ html:has(dialog.star-bottom-sheet--modal[open]) {
       opacity: 0;
     }
   }
+  // The closed look while the dialog is still open: browsers without CSS `overlay` (Firefox,
+  // WebKit) run the exit with `data-star-closing` before close() (see ɵstarCloseDialog). It takes
+  // no pointer input: a click during the exit goes nowhere, not to the fading dialog.
+  &[open][data-star-closing] {
+    pointer-events: none;
+    translate: 0 100%;
+  }
+  &[open][data-star-closing]::backdrop {
+    pointer-events: none;
+    opacity: 0;
+  }
 }
 // A non-modal sheet is not in the top layer: it stacks above the page, below the CDK overlay
 // container (z-index 1000), so a menu opened from the sheet stays on top. A border separates it.

@@ -245,6 +245,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
         [multiple]="multiple()"
         [disabled]="disabled() || readonly()"
         [attr.aria-describedby]="describedBy()"
+        [attr.aria-busy]="fieldBusy()"
         (change)="onPicked(input)"
         (blur)="touch.emit()"
       />
@@ -501,6 +502,8 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
   protected readonly hintId = this.ids.getId('star-upload-hint-');
   /** The parent `star-field` when it labels the file input: the label points at it. */
   private readonly field = injectStarFieldLink(() => this.inputId);
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   /** The hint of the control and the hint or error of the parent `star-field`. */
   protected readonly describedBy = computed(() =>
     starJoinIds(this.hint() ? this.hintId : null, this.field?.describedBy()),

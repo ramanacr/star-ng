@@ -112,6 +112,8 @@ export abstract class StarDateInputBase<TValue> {
    * the hint or error describes it.
    */
   protected readonly field = injectStarFieldLink(() => this.inputId());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
 
   abstract readonly value: ReturnType<typeof model<TValue>>;
 

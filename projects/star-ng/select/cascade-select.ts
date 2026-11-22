@@ -123,6 +123,7 @@ interface CascadeItem<TOption> extends StarMenuItem {
         [attr.aria-label]="triggerName()"
         [attr.aria-labelledby]="labelledBy()"
         [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-busy]="fieldBusy()"
         [attr.aria-invalid]="showInvalid() || null"
         [attr.tabindex]="tabindex()"
         (cdkMenuOpened)="beforeShow.emit()"
@@ -268,6 +269,8 @@ export class StarCascadeSelect<
    * label only focuses it.
    */
   protected readonly field = injectStarFieldLink(this.inputId, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
 
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });

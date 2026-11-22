@@ -68,10 +68,111 @@ async function left(page: Page, cls: string): Promise<LeaveEntry> {
   return (await leaves(page)).find((entry) => entry.cls === cls)!;
 }
 
+/** Native dialogs whose close motion the tests check: template drawer and two services. */
+const CLOSE_CASES = [
+  {
+    name: 'a dialog opened by the service',
+    path: '/controls/dialog',
+    button: 'Edit note',
+    dialog: 'star-dialog-container dialog',
+    host: 'star-dialog-container',
+  },
+  {
+    name: 'a bottom sheet',
+    path: '/controls/bottom-sheet',
+    button: 'Export invoice',
+    dialog: 'star-bottom-sheet-container dialog',
+    host: 'star-bottom-sheet-container',
+  },
+  {
+    name: 'a drawer',
+    path: '/controls/drawer',
+    button: 'Open details',
+    dialog: 'dialog.star-drawer[open]',
+    host: null,
+  },
+] as const;
+
+interface CloseState {
+  readonly overlaySupported: boolean;
+  readonly motion: 'none' | 'after-close' | 'before-close';
+  readonly running: number;
+  readonly connectedAtClose: boolean | null;
+  readonly motionEnd: number;
+  readonly closedAt: number;
+  readonly removedAt: number;
+}
+
+/**
+ * Watches the close of a native dialog. The contract: the close motion runs in every browser,
+ * and what waits for it (the native close() where the browser has no CSS `overlay`, the removal
+ * of a service container in every browser) comes when it has ended. Where the browser keeps a
+ * closing modal dialog in the top layer (`overlay`, Chromium) the motion is the transition after
+ * `dialog.close()`; elsewhere (Firefox, WebKit) it runs before close(), while the dialog has
+ * `data-star-closing`. The page reads the running animations of the dialog itself (its backdrop
+ * included) at the start of the motion, whichever form comes first, the same moment the library
+ * reads them, and the times of the motion end, the close and the removal.
+ */
+async function watchClose(page: Page, dialogSelector: string, hostSelector: string | null) {
+  await page.evaluate(
+    ([dialogSel, hostSel]) => {
+      const dialog = document.querySelector<HTMLDialogElement>(dialogSel)!;
+      const host = hostSel ? document.querySelector(hostSel)! : null;
+      const state = {
+        overlaySupported: CSS.supports('overlay', 'auto'),
+        motion: 'none',
+        running: -1,
+        connectedAtClose: null as boolean | null,
+        motionEnd: -1,
+        closedAt: -1,
+        removedAt: -1,
+      };
+      (window as unknown as { __close: typeof state }).__close = state;
+      const record = (motion: 'after-close' | 'before-close') => {
+        if (state.running >= 0) return;
+        const running = dialog
+          .getAnimations({ subtree: true })
+          .filter((animation) => (animation.effect as KeyframeEffect | null)?.target === dialog)
+          .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
+        state.running = running.length;
+        if (running.length) state.motion = motion;
+        const left = running.map((animation) => {
+          const timing = animation.effect!.getComputedTiming();
+          return Number(timing.endTime) - Number(timing.localTime ?? 0);
+        });
+        state.motionEnd = performance.now() + Math.max(0, ...left);
+      };
+      if (host) {
+        new MutationObserver(() => {
+          if (!host.isConnected && state.removedAt < 0) state.removedAt = performance.now();
+        }).observe(document.body, { childList: true });
+      }
+      new MutationObserver(() => {
+        if (dialog.hasAttribute('data-star-closing')) record('before-close');
+        if (!dialog.hasAttribute('open') && state.closedAt < 0) state.closedAt = performance.now();
+      }).observe(dialog, { attributes: true, attributeFilter: ['data-star-closing', 'open'] });
+      const close = dialog.close;
+      dialog.close = function (this: HTMLDialogElement, ...args: [string?]) {
+        close.apply(this, args);
+        if (state.closedAt < 0) state.closedAt = performance.now();
+        record('after-close');
+      };
+      dialog.addEventListener('close', () => {
+        if (host) state.connectedAtClose = host.isConnected;
+      });
+    },
+    [dialogSelector, hostSelector] as const,
+  );
+}
+
+async function closeState(page: Page): Promise<CloseState> {
+  return page.evaluate(() => (window as unknown as { __close: CloseState }).__close);
+}
+
 for (const reduced of [false, true]) {
   const motion = reduced ? 'reduced motion' : 'motion';
 
-  test.describe(`leave motion, ${motion}`, () => {
+  test.describe(`leave motion, ${motion} @cross-browser`, () => {
     test('a select panel leaves with its keyframes, then the overlay goes', async ({ page }) => {
       await open(page, '/controls/select', reduced);
       const live = example(page, 'Objects as options');
@@ -141,36 +242,46 @@ for (const reduced of [false, true]) {
       await expect(live.getByRole('listitem')).toHaveCount(1);
     });
 
-    test('a dialog opened by the service keeps its close transition', async ({ page }) => {
-      await open(page, '/controls/dialog', reduced);
-      await page.getByRole('button', { name: 'Edit note' }).click();
-      const dialog = page.getByRole('dialog', { name: 'Edit note' });
-      await expect(dialog).toBeVisible();
-      await page.evaluate(() => {
-        const host = document.querySelector('star-dialog-container')!;
-        const state = { connectedAtClose: null as boolean | null, transitions: -1 };
-        (window as unknown as { __close: typeof state }).__close = state;
-        host.querySelector('dialog')!.addEventListener('close', () => {
-          state.connectedAtClose = host.isConnected;
-          state.transitions = host.isConnected ? host.getAnimations({ subtree: true }).length : 0;
-        });
+    for (const control of CLOSE_CASES) {
+      test(`${control.name} keeps its close motion`, async ({ page }) => {
+        await open(page, control.path, reduced);
+        await page.getByRole('button', { name: control.button }).first().click();
+        await expect(page.locator(control.dialog)).toBeVisible();
+        // Close from the settled open state: an Escape during the enter motion has nothing (or
+        // a shortened reversal) to show.
+        await page.waitForFunction(
+          (selector) => document.querySelector(selector)?.getAnimations().length === 0,
+          control.dialog,
+        );
+        await watchClose(page, control.dialog, control.host);
+        await page.keyboard.press('Escape');
+        if (control.host) await expect(page.locator(control.host)).toHaveCount(0);
+        else await expect(page.locator(control.dialog)).toBeHidden();
+        const state = await closeState(page);
+        if (reduced) {
+          // No motion: the dialog closes at once (a service container goes before the close event).
+          expect(state.running).toBe(0);
+          if (control.host) expect(state.connectedAtClose).not.toBe(true);
+          return;
+        }
+        // The close motion runs in every browser, in the form the browser can show.
+        expect(state.running).toBeGreaterThan(0);
+        expect(state.motion).toBe(state.overlaySupported ? 'after-close' : 'before-close');
+        // What waits for the motion comes when it has ended (one frame of slack for the clock of
+        // the animation), and well before the 4 s fallback: the removal of a service container
+        // in every browser, and the native close() without `overlay`.
+        if (control.host) {
+          expect(state.removedAt).toBeGreaterThanOrEqual(state.motionEnd - 17);
+          expect(state.removedAt - state.motionEnd).toBeLessThan(1000);
+        }
+        if (!state.overlaySupported) {
+          expect(state.closedAt).toBeGreaterThanOrEqual(state.motionEnd - 17);
+          expect(state.closedAt - state.motionEnd).toBeLessThan(1000);
+        }
+        // With `overlay` the motion runs after close(): a container outlives the close event.
+        if (state.overlaySupported && control.host) expect(state.connectedAtClose).toBe(true);
       });
-      await page.keyboard.press('Escape');
-      await expect(page.locator('star-dialog-container')).toHaveCount(0);
-      const state = await page.evaluate(
-        () =>
-          (window as unknown as { __close: { connectedAtClose: boolean; transitions: number } })
-            .__close,
-      );
-      if (reduced) {
-        // No transition: the service removes the host at once. The native close event then
-        // finds it gone, or does not reach a listener at all.
-        expect(state.connectedAtClose).not.toBe(true);
-      } else {
-        expect(state.connectedAtClose).toBe(true);
-        expect(state.transitions).toBeGreaterThan(0);
-      }
-    });
+    }
   });
 }
 
@@ -180,7 +291,7 @@ for (const reduced of [false, true]) {
  * of the partials. The computed `animation-name` and `transition-duration` do not depend on timing.
  */
 for (const reduced of [false, true]) {
-  test(`enter motion of overlays, toasts and dialogs, ${reduced ? 'reduced motion' : 'motion'}`, async ({
+  test(`enter motion of overlays, toasts and dialogs, ${reduced ? 'reduced motion' : 'motion'} @cross-browser`, async ({
     page,
   }) => {
     const motion = async (selector: string) =>
@@ -237,7 +348,7 @@ for (const reduced of [false, true]) {
  * gone after it. Motion stays on (the fade is the thing under test), and the hydration markers
  * are gone before the first click.
  */
-test.describe('leave motion of the dropdown and mention panels', () => {
+test.describe('leave motion of the dropdown and mention panels @cross-browser', () => {
   test('the dropdown panel fades out, then goes', async ({ page }) => {
     await open(page, '/controls/dropdown', false);
     await example(page, 'Choose from a list').getByRole('button', { name: 'Export as' }).click();

@@ -87,6 +87,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         [attr.aria-label]="ariaLabel()"
         [attr.aria-labelledby]="ariaLabelledBy()"
         [attr.aria-describedby]="describedBy()"
+        [attr.aria-busy]="fieldBusy()"
         [attr.aria-invalid]="showInvalid() || null"
         (input)="value.set(input.value)"
         (blur)="touch.emit()"
@@ -161,6 +162,8 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
 export class StarPassword implements FormValueControl<string> {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly field = injectStarFieldLink(() => this.inputId());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   private readonly ids = inject(_IdGenerator);
 
   readonly value = model('');

@@ -48,17 +48,30 @@ export interface StarWindowConfig<D = unknown> {
  */
 export class StarWindowRef<R = unknown> {
   private resolve!: (result: R | undefined) => void;
-  /** Resolves when the window has closed: the result, or `undefined` (close button, Escape). */
+  /**
+   * Resolves when the window has closed: the result, or `undefined` (close button, Escape). When
+   * the host is destroyed first (for example at app teardown) it settles with the result given
+   * so far, which is `undefined` if `close()` was not called.
+   */
   readonly closed = new Promise<R | undefined>((resolve) => (this.resolve = resolve));
   private result: R | undefined;
   private done = false;
+  private requested = false;
 
   constructor(private readonly hide: () => void) {}
 
   close(result?: R): void {
-    if (this.done) return;
+    // The first call wins: a second one during the exit motion (the result comes after it where
+    // the browser has no CSS `overlay`) does not change the result.
+    if (this.done || this.requested) return;
+    this.requested = true;
     this.result = result;
     this.hide();
+  }
+
+  /** @internal The user closed the window (close button, Escape): a later `close(result)` is ignored. */
+  markRequested(): void {
+    this.requested = true;
   }
 
   /** @internal Called once the window has closed. */
@@ -92,6 +105,7 @@ export class StarWindowRef<R = unknown> {
       [closable]="c.closable ?? true"
       [minWidth]="c.minWidth ?? 240"
       [minHeight]="c.minHeight ?? 160"
+      (visibleChange)="!$event && userClosed()"
       (closed)="closed()"
     >
       <ng-container *ngComponentOutlet="component(); injector: contentInjector()" />
@@ -105,6 +119,8 @@ export class StarWindowContainer {
   readonly visible = signal(true);
   /** Set by the service; runs after the window closed. */
   closed: () => void = () => undefined;
+  /** Set by the service; runs when the user closes the window (close button, Escape). */
+  userClosed: () => void = () => undefined;
 }
 
 /**
@@ -142,6 +158,9 @@ export class StarWindowService {
     host.setInput('component', component);
     host.setInput('config', config);
     host.setInput('contentInjector', contentInjector);
+    // Destroyed before it closed (for example during the exit motion): the result still comes.
+    host.onDestroy(() => ref.settle());
+    host.instance.userClosed = () => ref.markRequested();
     host.instance.closed = () => {
       ref.settle();
       // The close transition (`allow-discrete`) needs the element in the DOM: destroy after it.

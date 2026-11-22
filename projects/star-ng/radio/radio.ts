@@ -37,6 +37,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'fieldDescribedBy()',
+    '[attr.aria-busy]': 'fieldBusy()',
     '[attr.aria-required]': 'required() || null',
     '[attr.aria-invalid]': 'showInvalid() || null',
     '[attr.aria-disabled]': 'disabled() || null',
@@ -62,6 +63,8 @@ export class StarRadioGroup<T = unknown> implements FormValueControl<T | null> {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   /** The parent `star-field` when it labels the group (a radio group is not labelable). */
   private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   /** Invalid after touch, or while the parent `star-field` shows an error. */
   protected readonly showInvalid = computed(
     () => (this.invalid() && this.touched()) || !!this.field?.errorText(),

@@ -171,6 +171,59 @@ import { DOCS } from '../shared/docs';
         </table>
       </div>
 
+      <h3>Busy fields: what a test checks and what needs a screen reader</h3>
+      <p>
+        While an async validator runs, a field is busy. The file
+        <code>e2e/field-busy-a11y.spec.ts</code> (tag <code>&#64;a11y</code>, Chromium) reads the
+        accessibility tree of the browser (<code>Accessibility.getFullAXTree</code>) for the example
+        <strong>Async validation</strong> of the Field page. It checks automatically that:
+      </p>
+      <ol>
+        <li>
+          While the validator runs, the text box itself has <code>aria-busy="true"</code>, not only
+          its wrapper (every control that links to a <code>star-field</code> does this on the
+          element with its role; a unit test checks all of them), and it stays valid and described
+          by the hint. The test reads this attribute from the element: the browser tree that the
+          test can read reports busy only for live regions.
+        </li>
+        <li>The busy icon is not in the accessibility tree (it is decoration and has no text).</li>
+        <li>
+          When the validator ends, busy is gone. For a taken name the text box is invalid, its
+          description is the error text, and the error is an <code>alert</code> (a live region; the
+          test reads this role with the ARIA snapshot of Playwright).
+        </li>
+        <li>For a free name the text box is valid again and the hint describes it again.</li>
+      </ol>
+      <p>
+        The test does not prove what a screen reader says. No screen-reader pass is claimed. Before
+        a release, do these steps with NVDA and JAWS (Windows, Chrome or Edge, and Firefox) and
+        VoiceOver (macOS and iOS, Safari):
+      </p>
+      <ol>
+        <li>Open the Field page and move to the field <strong>User name</strong> with Tab.</li>
+        <li>Make sure that the reader says the name, the hint "Letters and digits." and "edit".</li>
+        <li>
+          Type <code>admin</code> and press Tab. Go back with Shift+Tab during the 800 ms of the
+          check. Write down if the reader says "busy". Readers differ here: some say nothing.
+        </li>
+        <li>
+          Make sure that the reader says "This user name is taken." once, without a key press, and
+          then "invalid entry" or "invalid data" on the field.
+        </li>
+        <li>Type <code>ada</code> and make sure that the error goes and nothing else is said.</li>
+      </ol>
+
+      <h3>Other browsers</h3>
+      <p>
+        The CI job <code>e2e-cross-browser</code> runs the end-to-end tests tagged
+        <code>&#64;cross-browser</code> in Firefox and WebKit: focus return and outside clicks of
+        the menus, menubar, nested and context menus (also in the table and the tree table), select,
+        popover, dialog service and tooltip, the leave motion of the overlays, and the page
+        cross-fade of the docs (skipped where <code>document.activeViewTransition</code> is
+        missing). The job is part of the required <code>ci-gate</code> check. All other tests run in
+        Chromium.
+      </p>
+
       <h3>What an automated scan cannot find</h3>
       <p>
         An automated scan finds only a part of the accessibility problems. It does not replace

@@ -96,6 +96,7 @@ export function isoWeek(date: Date): number {
     '[attr.role]': "labelledBy() ? 'group' : null",
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'labelledBy() ? fieldDescribedBy() : null',
+    '[attr.aria-busy]': 'labelledBy() ? fieldBusy() : null',
   },
   template: `
     @if (headerSlot(); as header) {
@@ -353,6 +354,8 @@ export class StarCalendar {
    * the picker owns the label, so this is `null` there.
    */
   private readonly field = injectStarFieldLink(null, () => this.focusActive());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() => this.field?.labelledBy() ?? null);
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   protected readonly sameDay = sameDay;

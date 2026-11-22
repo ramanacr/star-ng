@@ -35,20 +35,28 @@ export interface StarBottomSheetContext<D = unknown, R = unknown> {
  */
 export class StarBottomSheetRef<R = unknown> {
   private resolve!: (result: R | undefined) => void;
-  /** Resolves when the sheet has closed: the result, or `undefined` (Escape, backdrop). */
+  /**
+   * Resolves when the sheet has closed: the result, or `undefined` (Escape, backdrop). When the
+   * host is destroyed first (for example at app teardown) it settles with the result given so
+   * far, which is `undefined` if `dismiss()` was not called.
+   */
   readonly closed = new Promise<R | undefined>((resolve) => (this.resolve = resolve));
   private result: R | undefined;
   private done = false;
+  private requested = false;
 
   constructor(private readonly hide: () => void) {}
 
-  /** Same promise as `closed` (Material name). */
+  /** Same promise as `closed` (Material name), with the same result when the host is destroyed. */
   afterDismissed(): Promise<R | undefined> {
     return this.closed;
   }
 
   dismiss(result?: R): void {
-    if (this.done) return;
+    // The first call wins: a second one during the exit motion (the result comes after it where
+    // the browser has no CSS `overlay`) does not change the result.
+    if (this.done || this.requested) return;
+    this.requested = true;
     this.result = result;
     this.hide();
   }

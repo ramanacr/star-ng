@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { example, openPage } from './support';
+import { example, expectFocusLeftMenu, openPage } from './support';
 
 // The tree table features on the docs page: sort, filter, paging, selection, lazy children,
 // columns, cell edit and the context menu.
@@ -116,7 +116,9 @@ test.describe('tree table features', () => {
     await expect(live.getByRole('spinbutton')).toHaveCount(0);
   });
 
-  test('opens the row context menu with Shift+F10 and with a right click', async ({ page }) => {
+  test('opens the row context menu with Shift+F10 and with a right click @cross-browser', async ({
+    page,
+  }) => {
     const { live, row } = await open(page, 'Context menu');
     await row('shop').focus();
     await page.keyboard.press('Shift+F10');
@@ -130,5 +132,17 @@ test.describe('tree table features', () => {
     await row('website-design').click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Open' }).click();
     await expect(live.getByRole('status')).toHaveText('Last action: Open: Page design');
+  });
+
+  test('the row context menu closes on a click outside and the focus leaves it @cross-browser', async ({
+    page,
+  }) => {
+    const { row } = await open(page, 'Context menu');
+    await row('shop').focus();
+    await page.keyboard.press('Shift+F10');
+    await expect(page.getByRole('menuitem', { name: 'Open' })).toBeFocused();
+
+    await page.getByRole('heading', { level: 1, name: 'Tree table' }).click();
+    await expectFocusLeftMenu(page);
   });
 });

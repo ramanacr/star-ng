@@ -52,6 +52,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     '[attr.aria-label]': 'labelledBy() ? null : (ariaLabel() ?? text.ratingLabel)',
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'fieldDescribedBy()',
+    '[attr.aria-busy]': 'fieldBusy()',
     '[attr.aria-required]': 'required() || null',
     '[attr.aria-invalid]': 'showInvalid() || null',
     '[class.star-rating--invalid]': 'showInvalid()',
@@ -173,6 +174,8 @@ export class StarRating implements FormValueControl<number | null> {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   /** The parent `star-field` when it labels the rating (a radio group is not labelable). */
   private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() =>
     starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
   );

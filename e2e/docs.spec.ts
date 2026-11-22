@@ -19,8 +19,11 @@ test.describe('docs application', () => {
     await nav.getByRole('searchbox').fill('wcag');
     await expect(nav.getByRole('link')).toHaveText(['Accessibility']);
 
+    // The visible "no match" text follows the list at once; the live region (read out by a
+    // screen reader) follows once typing pauses.
     await nav.getByRole('searchbox').fill('no-such-page');
-    await expect(nav.getByRole('status')).toContainText('No page matches');
+    await expect(nav.locator('.docs-nav__status')).toHaveText('No page matches “no-such-page”.');
+    await expect(nav.getByRole('status')).toHaveText('No page matches “no-such-page”.');
   });
 
   test('opens every page of the navigation without an error', async ({ page }) => {
@@ -123,7 +126,9 @@ test.describe('docs application', () => {
     await page.keyboard.press('/');
     await expect(search).toBeFocused();
     await search.fill('tree table');
-    await expect(page.locator('.docs-nav__status')).toHaveText('1 page matches.');
+    await expect(page.getByRole('navigation', { name: 'Pages' }).getByRole('status')).toHaveText(
+      '1 page matches.',
+    );
     await search.press('Enter');
     await expect(page.getByRole('heading', { level: 1, name: 'Tree table' })).toBeVisible();
   });

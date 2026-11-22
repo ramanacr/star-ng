@@ -128,6 +128,8 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
 
   /** The parent `star-field` when it labels the gauge: the host is not labelable. */
   private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() =>
     starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
   );
@@ -295,6 +297,7 @@ const GAUGE_HOST = {
   '[attr.aria-label]': 'labelledBy() ? null : ariaLabel()',
   '[attr.aria-labelledby]': 'labelledBy()',
   '[attr.aria-describedby]': 'describedBy()',
+  '[attr.aria-busy]': 'fieldBusy()',
   '[attr.aria-disabled]': '(interactive() && disabled()) || null',
   '[attr.aria-readonly]': '(interactive() && readonly()) || null',
   '[class.star-gauge--animate]': 'animate()',

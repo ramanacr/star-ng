@@ -30,6 +30,7 @@ export const PATTERNS = {
   computed: /=\s*computed(<[^=;]*?>)?\(/g,
   linkedSignal: /=\s*linkedSignal(<[^=;]*?>)?\(/g,
   resource: /=\s*resource(<[^=;]*?>)?\(/g,
+  debounced: /=\s*debounced(<[^=;]*?>)?\(/g,
   // Calls.
   untracked: /\buntracked\(/g,
   effect: /\beffect\(/g,

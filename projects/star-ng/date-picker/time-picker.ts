@@ -95,6 +95,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         [attr.aria-label]="ariaLabel()"
         [attr.aria-controls]="open() ? panelId : null"
         [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-busy]="fieldBusy()"
         [attr.aria-invalid]="showInvalid() || null"
         (change)="onChange(input.value)"
         (keydown)="onInputKeydown($event)"
@@ -179,6 +180,8 @@ export class StarTimePicker implements FormValueControl<string | null> {
   private readonly injector = inject(Injector);
   /** The parent `star-field` when it labels the input (with `for`); its hint or error describes it. */
   private readonly field = injectStarFieldLink(() => this.inputId());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
 
   /** `HH:mm` (or `HH:mm:ss` with `showSeconds`) in the 24-hour clock, or `null`. */
   readonly value = model<string | null>(null);

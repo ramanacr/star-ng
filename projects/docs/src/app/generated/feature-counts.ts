@@ -43,7 +43,7 @@ export const FEATURE_COUNTS = {
       "files": 88
     },
     "computed": {
-      "uses": 814,
+      "uses": 840,
       "files": 105
     },
     "linkedSignal": {
@@ -53,6 +53,10 @@ export const FEATURE_COUNTS = {
     "resource": {
       "uses": 3,
       "files": 3
+    },
+    "debounced": {
+      "uses": 0,
+      "files": 0
     },
     "untracked": {
       "uses": 72,
@@ -75,7 +79,7 @@ export const FEATURE_COUNTS = {
       "files": 6
     },
     "inject": {
-      "uses": 565,
+      "uses": 567,
       "files": 132
     },
     "takeUntilDestroyed": {
@@ -127,8 +131,8 @@ export const FEATURE_COUNTS = {
       "files": 121
     },
     "destroyRef": {
-      "uses": 109,
-      "files": 45
+      "uses": 113,
+      "files": 47
     },
     "booleanAttribute": {
       "uses": 535,
@@ -192,6 +196,10 @@ export const FEATURE_COUNTS = {
       "uses": 12,
       "files": 9
     },
+    "debounced": {
+      "uses": 1,
+      "files": 1
+    },
     "untracked": {
       "uses": 5,
       "files": 3
@@ -241,7 +249,7 @@ export const FEATURE_COUNTS = {
       "files": 18
     },
     "if": {
-      "uses": 38,
+      "uses": 39,
       "files": 24
     },
     "for": {
@@ -277,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 247,
+  "specFiles": 248,
   "pages": 144
 } as const;

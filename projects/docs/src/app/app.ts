@@ -4,6 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  debounced,
   DOCUMENT,
   effect,
   ElementRef,
@@ -114,11 +115,13 @@ const TYPING_TARGET =
         <p id="docs-nav-search-hint" class="star-sr-only">
           Enter opens the first match. Slash moves the focus back to this field.
         </p>
-        <!-- Always in the page (a live region must exist before its text changes); only the
-             "no match" text is shown. -->
-        <p class="docs-nav__status" [class.star-sr-only]="matchCount() > 0" role="status">
-          {{ status() }}
-        </p>
+        <!-- The live region is always in the page (it must exist before its text changes) and
+             is read out once typing pauses. The visible "no match" text follows the list at
+             once; it is hidden from screen readers, which get the live region. -->
+        <p class="star-sr-only" role="status">{{ status() }}</p>
+        @if (noMatch(); as text) {
+          <p class="docs-nav__status" aria-hidden="true">{{ text }}</p>
+        }
         @for (group of groups(); track group.label) {
           <section class="docs-nav__group">
             <h2 class="docs-nav__heading">{{ group.label }}</h2>
@@ -256,30 +259,53 @@ export class App {
   }
   protected readonly query = signal('');
 
-  /** Navigation groups, filtered by the search text (label and keywords). */
-  protected readonly groups = computed<readonly DocsNavGroup[]>(() => {
-    const words = this.query().toLocaleLowerCase().split(/\s+/).filter(Boolean);
-    if (!words.length) return DOCS_NAV;
-    return DOCS_NAV.map((group) => ({
-      ...group,
-      items: group.items.filter((item) => {
-        const text = `${item.label} ${item.keywords ?? ''} ${group.label}`.toLocaleLowerCase();
-        return words.every((word) => text.includes(word));
-      }),
-    })).filter((group) => group.items.length);
-  });
+  /** Navigation groups, filtered by the search text at once (label and keywords). */
+  protected readonly groups = computed(() => filterNav(this.query()));
 
-  /** Number of pages that the search shows. */
-  protected readonly matchCount = computed(() =>
-    this.groups().reduce((sum, group) => sum + group.items.length, 0),
-  );
+  /**
+   * The search text once typing has paused for `SEARCH_STATUS_WAIT` ms. Experimental Angular
+   * `debounced()` (22.0), used in the docs application only: the library uses stable APIs only.
+   * The list filters at once; only the status below waits, so a screen reader reads the result
+   * once per pause instead of once per key.
+   */
+  private readonly settledQuery = debounced(() => this.query(), SEARCH_STATUS_WAIT);
 
-  /** Result of the search, for a screen reader. The "no match" text is also shown. */
+  /** Result of the settled search, for a screen reader (the live region). */
   protected readonly status = computed(() => {
-    const query = this.query().trim();
+    const query = this.settledQuery.value().trim();
     if (!query) return '';
-    const count = this.matchCount();
-    if (!count) return `No page matches “${query}”.`;
+    const count = countPages(filterNav(query));
+    if (!count) return noMatchText(query);
     return count === 1 ? '1 page matches.' : `${count} pages match.`;
   });
+
+  /** The visible "no match" text, at once with the list (empty while pages match). */
+  protected readonly noMatch = computed(() => {
+    const query = this.query().trim();
+    return query && !this.groups().length ? noMatchText(query) : '';
+  });
+}
+
+function noMatchText(query: string): string {
+  return `No page matches “${query}”.`;
+}
+
+/** Wait of the search status after the last key, in ms. */
+const SEARCH_STATUS_WAIT = 400;
+
+/** The navigation groups whose pages contain every word of `query` (label, keywords, group). */
+function filterNav(query: string): readonly DocsNavGroup[] {
+  const words = query.toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return DOCS_NAV;
+  return DOCS_NAV.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      const text = `${item.label} ${item.keywords ?? ''} ${group.label}`.toLocaleLowerCase();
+      return words.every((word) => text.includes(word));
+    }),
+  })).filter((group) => group.items.length);
+}
+
+function countPages(groups: readonly DocsNavGroup[]): number {
+  return groups.reduce((sum, group) => sum + group.items.length, 0);
 }

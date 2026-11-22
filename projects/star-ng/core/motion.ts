@@ -18,16 +18,26 @@ export function starPrefersReducedMotion(doc: Document | null | undefined): bool
  * motion, where the browser has no `getAnimations` (jsdom, server), and for an endless animation
  * (a spinner in the content) it does not wait. `timeout` (ms) is the fallback for an animation
  * that never ends (a hidden tab); it is the cap Angular uses for `animate.leave`. Returns a
- * function that cancels the wait (it clears the timer and `done` does not run). Shared by the
- * entry points; not public API.
+ * function that cancels the wait (it clears the timer and `done` does not run). With `ownOnly`,
+ * only the animations of the element itself count (its `::backdrop` included), not those of its
+ * content. Shared by the entry points; not public API.
  */
-export function ɵstarAfterExit(element: Element, done: () => void, timeout = 4000): () => void {
+export function ɵstarAfterExit(
+  element: Element,
+  done: () => void,
+  timeout = 4000,
+  ownOnly = false,
+): () => void {
   const doc = element.ownerDocument;
   const running =
     typeof element.getAnimations === 'function' && !starPrefersReducedMotion(doc)
       ? element
           .getAnimations({ subtree: true })
           .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+          .filter(
+            (animation) =>
+              !ownOnly || (animation.effect as KeyframeEffect | null)?.target === element,
+          )
       : [];
   if (!running.length) {
     done();
@@ -97,5 +107,94 @@ export function ɵstarLeaveWithClass(
       watch.observe(parent, { childList: true });
     }
     wait.cancel = ɵstarAfterExit(target, end);
+  };
+}
+
+/** Per `CSS` namespace (one per window): it supports `overlay`. */
+const overlaySupport = new WeakMap<object, boolean>();
+/** Set by `ɵstarOverrideDialogExit`: wins over the feature check. */
+let overlayOverride: boolean | null = null;
+
+/**
+ * Sets the answer of `ɵstarDialogExitAfterClose` (true: the browser shows the exit after
+ * `close()`; false: the exit runs before it), or `null` for the feature check again. For tests,
+ * which cannot change the CSS support of the browser. Not public API.
+ */
+export function ɵstarOverrideDialogExit(value: boolean | null): void {
+  overlayOverride = value;
+}
+
+/**
+ * True when the browser can show the exit transition of a `<dialog>` after `close()`: it supports
+ * the CSS `overlay` property, which keeps a closing modal dialog in the top layer (Chromium).
+ * Firefox and WebKit have no `overlay`: a closed dialog goes at once. Without `CSS.supports`
+ * (server, jsdom) it is true, so nothing changes there. Read once per window (`CSS` namespace). Shared by the
+ * entry points; not public API.
+ */
+export function ɵstarDialogExitAfterClose(doc: Document): boolean {
+  if (overlayOverride !== null) return overlayOverride;
+  const css = doc.defaultView?.CSS;
+  if (typeof css?.supports !== 'function') return true;
+  let known = overlaySupport.get(css);
+  if (known === undefined) {
+    known = css.supports('overlay', 'auto');
+    overlaySupport.set(css, known);
+  }
+  return known;
+}
+
+/** A close of `ɵstarCloseDialog` that waits for the exit motion. */
+export interface ɵStarDialogClose {
+  /** Ends the motion now: closes the dialog and runs `closed` (a re-open during the exit). */
+  finish(): void;
+  /** Drops the close: the dialog stays as it is and `closed` does not run (a destroy). */
+  cancel(): void;
+}
+
+/**
+ * Closes a native `<dialog>` and then runs `closed`. Where the browser can show the exit after
+ * `close()` (`ɵstarDialogExitAfterClose`), it closes at once and the CSS `allow-discrete`
+ * transition runs. Elsewhere (Firefox, WebKit) it first sets `data-star-closing` on the open
+ * dialog, so the control CSS moves it to its closed look while it is still shown, waits for those
+ * animations (`ɵstarAfterExit`: at once under reduced motion or when nothing runs, 4 s at most),
+ * and then closes. Returns the pending close, or `null` when it closed at once. Shared by the
+ * entry points; not public API.
+ */
+export function ɵstarCloseDialog(
+  dialog: HTMLDialogElement,
+  closed: () => void,
+): ɵStarDialogClose | null {
+  const doc = dialog.ownerDocument;
+  const close = () => {
+    dialog.removeAttribute('data-star-closing');
+    if (dialog.open) dialog.close();
+    closed();
+  };
+  if (!dialog.open || ɵstarDialogExitAfterClose(doc) || starPrefersReducedMotion(doc)) {
+    close();
+    return null;
+  }
+  let done = false;
+  let stopWait: () => void = () => undefined;
+  const end = () => {
+    if (done) return;
+    done = true;
+    stopWait();
+    close();
+  };
+  dialog.setAttribute('data-star-closing', '');
+  // Only the dialog's own exit (and its ::backdrop): the page is still inert while it runs, so a
+  // finite animation in the content must not hold an invisible modal on the page.
+  stopWait = ɵstarAfterExit(dialog, end, 4000, true);
+  // Nothing ran (no motion): it closed at once.
+  if (done) return null;
+  return {
+    finish: end,
+    cancel: () => {
+      if (done) return;
+      done = true;
+      stopWait();
+      dialog.removeAttribute('data-star-closing');
+    },
   };
 }

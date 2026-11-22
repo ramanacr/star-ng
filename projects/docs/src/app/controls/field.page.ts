@@ -46,7 +46,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Async validation"
         source="field/async"
         [script]="asyncScript"
-        note="While an async validator runs, pending() of the field state is true: the field is aria-busy and the hint row shows a busy icon. Try admin, taken by another account."
+        note="While an async validator runs, pending() of the field state is true: the field and its control are aria-busy and the hint row shows a busy icon (hidden from screen readers). Try admin, taken by another account."
       >
         <div class="docs-stack">
           <star-field label="User name" hint="Letters and digits." [state]="account.userName()">

@@ -117,6 +117,7 @@ export function unmask(mask: string, masked: string, slotChar = '_'): string {
       [attr.aria-label]="ariaLabel()"
       [attr.aria-labelledby]="ariaLabelledBy()"
       [attr.aria-describedby]="field?.describedBy() ?? null"
+      [attr.aria-busy]="fieldBusy()"
       [attr.aria-invalid]="showInvalid() || null"
       (beforeinput)="onBeforeInput(input, $any($event))"
       (input)="onInput(input)"
@@ -140,6 +141,8 @@ export class StarInputMask implements FormValueControl<string> {
   private readonly defaults = injectStarControlDefaults([]);
   protected readonly uiText = inject(STAR_UI_TEXT);
   protected readonly field = injectStarFieldLink(() => this.inputId());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   /** Invalid after touch, or while the parent `star-field` shows an error. */
   protected readonly showInvalid = computed(
     () => (this.invalid() && this.touched()) || !!this.field?.errorText(),

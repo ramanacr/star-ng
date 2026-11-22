@@ -346,6 +346,8 @@ export class StarEditor implements FormValueControl<string> {
   private readonly toolbarElement = viewChild<ElementRef<HTMLElement>>('toolbarElement');
   /** The parent `star-field` when it labels the area (a `div` textbox is not labelable). */
   private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
   protected readonly describedBy = computed(() =>
     starJoinIds(this.field?.describedBy(), this.maxLength() !== undefined ? this.counterId : null),

@@ -58,6 +58,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       [attr.aria-label]="ariaLabel()"
       [attr.aria-labelledby]="labelledBy()"
       [attr.aria-describedby]="fieldDescribedBy()"
+      [attr.aria-busy]="fieldBusy()"
       [attr.aria-valuemin]="lowest()"
       [attr.aria-valuemax]="highest()"
       [attr.aria-valuenow]="value()"
@@ -126,6 +127,8 @@ export class StarKnob implements FormValueControl<number> {
   private readonly dial = viewChild.required<ElementRef<SVGSVGElement>>('dial');
   /** The parent `star-field` when it labels the knob: an SVG slider is not labelable. */
   private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() =>
     starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
   );
@@ -410,6 +413,7 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
       [attr.aria-label]="labelledBy() ? null : (ariaLabel() ?? text.colorLabel)"
       [attr.aria-labelledby]="labelledBy()"
       [attr.aria-describedby]="fieldDescribedBy()"
+      [attr.aria-busy]="fieldBusy()"
       [attr.aria-required]="required() || null"
       [attr.aria-invalid]="showInvalid() || null"
     >
@@ -643,6 +647,8 @@ export class StarColorPicker implements FormValueControl<string> {
   readonly closed = output<void>();
   /** The parent `star-field` when it labels the swatch group (a group is not labelable). */
   protected readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() =>
     starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
   );

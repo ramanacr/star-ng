@@ -174,7 +174,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
         [attr.aria-multiselectable]="isMulti() || null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-disabled]="disabled() || null"
-        [attr.aria-busy]="lazyBusy() || null"
+        [attr.aria-busy]="lazyBusy() || fieldBusy()"
         [style.--star-item-size.px]="itemSize()"
         [style.height]="viewportHeight()"
         (keydown)="onKeydown($event)"
@@ -267,7 +267,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
         [attr.aria-multiselectable]="isMulti() || null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-disabled]="disabled() || null"
-        [attr.aria-busy]="lazyBusy() || null"
+        [attr.aria-busy]="lazyBusy() || fieldBusy()"
         [style.max-height]="scrollHeight()"
         (cdkDropListDropped)="onDrop($event)"
         (keydown)="onKeydown($event)"
@@ -321,7 +321,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
         [attr.aria-multiselectable]="isMulti() || null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-disabled]="disabled() || null"
-        [attr.aria-busy]="lazyBusy() || null"
+        [attr.aria-busy]="lazyBusy() || fieldBusy()"
         [style.max-height]="scrollHeight()"
         (keydown)="onKeydown($event)"
         (focus)="onFocus()"
@@ -522,6 +522,8 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   private readonly viewport = viewChild(CdkVirtualScrollViewport);
   /** The parent `star-field` when it labels the list (a `ul` listbox is not labelable). */
   private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   private readonly injector = inject(Injector);

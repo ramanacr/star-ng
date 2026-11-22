@@ -161,6 +161,7 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
     '[attr.aria-label]': 'labelledBy() ? null : (ariaLabel() ?? text.signaturePad)',
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'describedBy()',
+    '[attr.aria-busy]': 'fieldBusy()',
     '[attr.aria-disabled]': 'disabled() || null',
     '[class.star-signature--disabled]': 'disabled()',
     '[class.star-signature--readonly]': 'readonly()',
@@ -309,6 +310,8 @@ export class StarSignaturePad implements FormValueControl<string> {
   readonly touch = output<void>();
 
   protected readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
   protected readonly hintId = inject(_IdGenerator).getId('star-signature-hint-');
   protected readonly describedBy = computed(() =>

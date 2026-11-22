@@ -21,6 +21,7 @@ export const STAR_DATE_TEMPLATE = `
       [attr.aria-label]="ariaLabel()"
       [attr.aria-controls]="open() ? panelId : null"
       [attr.aria-describedby]="fieldDescribedBy()"
+      [attr.aria-busy]="fieldBusy()"
       [attr.aria-invalid]="showInvalid() || null"
       (input)="typed.set(input.value)"
       (click)="readonlyInput() && togglePanel()"

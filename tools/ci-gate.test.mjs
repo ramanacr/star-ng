@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { JOBS } from './ci-changes.mjs';
+import { ADVISORY_JOBS, JOBS } from './ci-changes.mjs';
 import { evaluate } from './ci-gate.mjs';
 
 const ALL_ON = {
@@ -40,6 +40,7 @@ const CASES = [
   ['everything needed and successful: pass', needs(ALL_ON), true],
   ['nothing needed but light, the rest skipped: pass', needs(ALL_OFF), true],
   ['needed job skipped: FAIL', needs(ALL_ON, { visual: 'skipped' }), false],
+  ['cross-browser job failed: FAIL', needs(ALL_ON, { 'e2e-cross-browser': 'failure' }), false],
   ['needed job cancelled: FAIL', needs(ALL_ON, { e2e: 'cancelled' }), false],
   ['needed job failed: FAIL', needs(ALL_ON, { a11y: 'failure' }), false],
   [
@@ -118,7 +119,7 @@ for (const [name, input, ok] of CASES) {
 test('the gate checks every job of the table', () => {
   assert.deepEqual(
     JOBS.map((entry) => entry.job),
-    ['light', 'build-test', 'docs-build', 'e2e', 'e2e-dev', 'a11y', 'visual'],
+    ['light', 'build-test', 'docs-build', 'e2e', 'e2e-dev', 'a11y', 'visual', 'e2e-cross-browser'],
   );
 });
 
@@ -150,11 +151,23 @@ test('ci.yml: every job of the table exists, uses its output, and is in the need
     assert.ok(text.includes(`needs.changes.outputs.${output} == 'true'`), `${job} uses ${output}`);
     assert.ok(gateNeeds.includes(job), `${job} is in the needs of the gate`);
   }
-  // Every job of the file (two-space keys under `jobs:`) is in the table, or is `changes` or the gate.
+  // An advisory job (not green on a pull request yet) runs on its output but does not block.
+  for (const { job, output } of ADVISORY_JOBS) {
+    assert.match(text, new RegExp(`\n {2}${job}:\n`), `job ${job} exists`);
+    assert.ok(text.includes(`needs.changes.outputs.${output} == 'true'`), `${job} uses ${output}`);
+    assert.ok(!gateNeeds.includes(job), `advisory job ${job} is not in the needs of the gate`);
+    assert.ok(!JOBS.some((entry) => entry.job === job), `${job} is not in both tables`);
+  }
+  // Every job of the file (two-space keys under `jobs:`) is in a table, or is `changes` or the gate.
   const ids = [...text.slice(text.indexOf('\njobs:')).matchAll(/\n {2}([a-z0-9-]+):\n/g)].map(
     (m) => m[1],
   );
-  const known = new Set(['changes', 'ci-gate', ...JOBS.map((entry) => entry.job)]);
+  const known = new Set([
+    'changes',
+    'ci-gate',
+    ...JOBS.map((entry) => entry.job),
+    ...ADVISORY_JOBS.map((entry) => entry.job),
+  ]);
   assert.deepEqual(
     ids.filter((id) => !known.has(id)),
     [],
