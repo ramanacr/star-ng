@@ -42,6 +42,20 @@ export const JOBS = [
   { job: 'visual', output: 'visual', title: 'visual (screenshots)' },
 ];
 
+/**
+ * Jobs of ci.yml that run on an output of `changes` but are not (yet) in the needs of
+ * `ci-gate`: their result does not block a merge. A job stays here until it is green on a pull
+ * request; then it moves to `JOBS` and into the needs of the gate. `ci-gate.test.mjs` checks
+ * that each job exists, uses its output, and is NOT in the needs of the gate.
+ */
+export const ADVISORY_JOBS = [
+  {
+    job: 'e2e-cross-browser',
+    output: 'e2e',
+    title: 'e2e-cross-browser (Firefox and WebKit, tag @cross-browser; not in the gate yet)',
+  },
+];
+
 // The needs of a rule. `build` = the build-test job (it also does the format check and the
 // name check, so it makes the `light` job unnecessary). `e2e` = the e2e and a11y jobs (both
 // need the docs build). `visual` = the visual job (needs the docs build too).

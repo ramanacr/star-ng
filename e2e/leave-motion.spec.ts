@@ -71,7 +71,7 @@ async function left(page: Page, cls: string): Promise<LeaveEntry> {
 for (const reduced of [false, true]) {
   const motion = reduced ? 'reduced motion' : 'motion';
 
-  test.describe(`leave motion, ${motion}`, () => {
+  test.describe(`leave motion, ${motion} @cross-browser`, () => {
     test('a select panel leaves with its keyframes, then the overlay goes', async ({ page }) => {
       await open(page, '/controls/select', reduced);
       const live = example(page, 'Objects as options');
@@ -180,7 +180,7 @@ for (const reduced of [false, true]) {
  * of the partials. The computed `animation-name` and `transition-duration` do not depend on timing.
  */
 for (const reduced of [false, true]) {
-  test(`enter motion of overlays, toasts and dialogs, ${reduced ? 'reduced motion' : 'motion'}`, async ({
+  test(`enter motion of overlays, toasts and dialogs, ${reduced ? 'reduced motion' : 'motion'} @cross-browser`, async ({
     page,
   }) => {
     const motion = async (selector: string) =>
@@ -237,7 +237,7 @@ for (const reduced of [false, true]) {
  * gone after it. Motion stays on (the fade is the thing under test), and the hydration markers
  * are gone before the first click.
  */
-test.describe('leave motion of the dropdown and mention panels', () => {
+test.describe('leave motion of the dropdown and mention panels @cross-browser', () => {
   test('the dropdown panel fades out, then goes', async ({ page }) => {
     await open(page, '/controls/dropdown', false);
     await example(page, 'Choose from a list').getByRole('button', { name: 'Export as' }).click();

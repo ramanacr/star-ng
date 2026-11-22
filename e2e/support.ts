@@ -55,6 +55,19 @@ export async function pageTransitionDone(page: Page): Promise<void> {
   );
 }
 
+/**
+ * Skips the rest of a test that needs `pageTransitionDone` in a browser without
+ * `document.activeViewTransition` (Chromium has it; the Firefox and WebKit projects of the
+ * `@cross-browser` run may not). Without it the end of the cross-fade cannot be awaited.
+ */
+export async function skipWithoutActiveViewTransition(page: Page): Promise<void> {
+  const supported = await page.evaluate(() => 'activeViewTransition' in document);
+  test.skip(
+    !supported,
+    'document.activeViewTransition is missing in this browser (Chromium-only API today)',
+  );
+}
+
 /** The live area of one example of the open page, found by the example heading. */
 export function example(page: Page, heading: string): Locator {
   return page

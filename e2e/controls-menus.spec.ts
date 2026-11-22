@@ -4,8 +4,27 @@ import { example, openPage } from './support';
 // Popups of the menus live in the CDK overlay container, outside the example area.
 const popup = (page: import('@playwright/test').Page) => page.locator('.cdk-overlay-container');
 
+/**
+ * After a click outside an open menu, the menu is gone and the focus is not left on a removed
+ * menu item (the menu blurs its item before it fades): the active element is in the document and
+ * outside the overlay container, and Tab still moves the focus to a control of the page.
+ */
+async function focusLeftMenu(page: import('@playwright/test').Page): Promise<void> {
+  await expect(popup(page).getByRole('menu')).toHaveCount(0);
+  const state = await page.evaluate(() => {
+    const active = document.activeElement;
+    return {
+      connected: !!active?.isConnected,
+      inOverlay: !!active?.closest('.cdk-overlay-container'),
+    };
+  });
+  expect(state).toEqual({ connected: true, inOverlay: false });
+  await page.keyboard.press('Tab');
+  expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true);
+}
+
 test.describe('menu', () => {
-  test('opens with Enter, moves with arrows, runs an item and returns the focus', async ({
+  test('opens with Enter, moves with arrows, runs an item and returns the focus @cross-browser', async ({
     page,
   }) => {
     await openPage(page, '/controls/menu', 'Menu');
@@ -29,7 +48,9 @@ test.describe('menu', () => {
     await expect(trigger).toBeFocused();
   });
 
-  test('opens with Arrow down, wraps around, and closes with Escape', async ({ page }) => {
+  test('opens with Arrow down, wraps around, and closes with Escape @cross-browser', async ({
+    page,
+  }) => {
     await openPage(page, '/controls/menu', 'Menu');
     const live = example(page, 'Popup menu');
     const trigger = live.getByRole('button', { name: 'File' });
@@ -48,6 +69,22 @@ test.describe('menu', () => {
     await expect(popup(page).getByRole('menu')).toHaveCount(0);
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await expect(trigger).toBeFocused();
+    await expect(live.getByRole('status')).toHaveText('Last action: none');
+  });
+
+  test('closes on a click outside and the focus leaves the menu @cross-browser', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/menu', 'Menu');
+    const live = example(page, 'Popup menu');
+    const trigger = live.getByRole('button', { name: 'File' });
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(popup(page).getByRole('menuitem', { name: 'New file' })).toBeFocused();
+
+    await page.getByRole('heading', { level: 1, name: 'Menu' }).click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await focusLeftMenu(page);
     await expect(live.getByRole('status')).toHaveText('Last action: none');
   });
 
@@ -81,7 +118,7 @@ test.describe('menu', () => {
     );
   });
 
-  test('opens a nested submenu with Arrow right and closes it with Arrow left', async ({
+  test('opens a nested submenu with Arrow right and closes it with Arrow left @cross-browser', async ({
     page,
   }) => {
     await openPage(page, '/controls/menu', 'Menu');
@@ -107,7 +144,7 @@ test.describe('menu', () => {
     await expect(trigger).toBeFocused();
   });
 
-  test('an icon-only trigger has an accessible name, and an inline menu is in place', async ({
+  test('an icon-only trigger has an accessible name, and an inline menu is in place @cross-browser', async ({
     page,
   }) => {
     await openPage(page, '/controls/menu', 'Menu');
@@ -133,7 +170,9 @@ test.describe('split button', () => {
     await expect(live.getByRole('status')).toHaveText('Last action: Place order');
   });
 
-  test('the caret opens the menu with the keyboard and focus returns to it', async ({ page }) => {
+  test('the caret opens the menu with the keyboard and focus returns to it @cross-browser', async ({
+    page,
+  }) => {
     await openPage(page, '/controls/split-button', 'Split button');
     const live = example(page, 'Main action and menu');
     const caret = live.getByRole('button', { name: 'More actions' });
@@ -166,7 +205,7 @@ test.describe('split button', () => {
 });
 
 test.describe('menubar', () => {
-  test('moves between items with arrows, opens a dropdown and closes it with Escape', async ({
+  test('moves between items with arrows, opens a dropdown and closes it with Escape @cross-browser', async ({
     page,
   }) => {
     await openPage(page, '/controls/menubar', 'Menubar');
@@ -222,7 +261,9 @@ test.describe('menubar', () => {
 });
 
 test.describe('context menu', () => {
-  test('opens on right-click, moves with arrows and runs an item', async ({ page }) => {
+  test('opens on right-click, moves with arrows and runs an item @cross-browser', async ({
+    page,
+  }) => {
     await openPage(page, '/controls/context-menu', 'Context menu');
     const live = example(page, 'Right-click area');
     await live.getByLabel('Order row').click({ button: 'right' });
@@ -237,7 +278,7 @@ test.describe('context menu', () => {
     await expect(popup(page).getByRole('menu')).toHaveCount(0);
   });
 
-  test('closes with Escape', async ({ page }) => {
+  test('closes with Escape @cross-browser', async ({ page }) => {
     await openPage(page, '/controls/context-menu', 'Context menu');
     const live = example(page, 'Right-click area');
     await live.getByLabel('Order row').click({ button: 'right' });
@@ -246,10 +287,22 @@ test.describe('context menu', () => {
     await expect(popup(page).getByRole('menu')).toHaveCount(0);
     await expect(live.getByRole('status')).toHaveText('Last action: none');
   });
+  test('closes on a click outside and the focus leaves the menu @cross-browser', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/context-menu', 'Context menu');
+    const live = example(page, 'Right-click area');
+    await live.getByLabel('Order row').click({ button: 'right' });
+    await expect(popup(page).getByRole('menuitem', { name: 'Open' })).toBeFocused();
+
+    await page.getByRole('heading', { level: 1, name: 'Context menu' }).click();
+    await focusLeftMenu(page);
+    await expect(live.getByRole('status')).toHaveText('Last action: none');
+  });
 });
 
 test.describe('mega menu', () => {
-  test('opens a panel with a labelled group per column and closes with Escape', async ({
+  test('opens a panel with a labelled group per column and closes with Escape @cross-browser', async ({
     page,
   }) => {
     await openPage(page, '/controls/mega-menu', 'Mega menu');

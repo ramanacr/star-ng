@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { JOBS } from './ci-changes.mjs';
+import { ADVISORY_JOBS, JOBS } from './ci-changes.mjs';
 import { evaluate } from './ci-gate.mjs';
 
 const ALL_ON = {
@@ -150,11 +150,23 @@ test('ci.yml: every job of the table exists, uses its output, and is in the need
     assert.ok(text.includes(`needs.changes.outputs.${output} == 'true'`), `${job} uses ${output}`);
     assert.ok(gateNeeds.includes(job), `${job} is in the needs of the gate`);
   }
-  // Every job of the file (two-space keys under `jobs:`) is in the table, or is `changes` or the gate.
+  // An advisory job (not green on a pull request yet) runs on its output but does not block.
+  for (const { job, output } of ADVISORY_JOBS) {
+    assert.match(text, new RegExp(`\n {2}${job}:\n`), `job ${job} exists`);
+    assert.ok(text.includes(`needs.changes.outputs.${output} == 'true'`), `${job} uses ${output}`);
+    assert.ok(!gateNeeds.includes(job), `advisory job ${job} is not in the needs of the gate`);
+    assert.ok(!JOBS.some((entry) => entry.job === job), `${job} is not in both tables`);
+  }
+  // Every job of the file (two-space keys under `jobs:`) is in a table, or is `changes` or the gate.
   const ids = [...text.slice(text.indexOf('\njobs:')).matchAll(/\n {2}([a-z0-9-]+):\n/g)].map(
     (m) => m[1],
   );
-  const known = new Set(['changes', 'ci-gate', ...JOBS.map((entry) => entry.job)]);
+  const known = new Set([
+    'changes',
+    'ci-gate',
+    ...JOBS.map((entry) => entry.job),
+    ...ADVISORY_JOBS.map((entry) => entry.job),
+  ]);
   assert.deepEqual(
     ids.filter((id) => !known.has(id)),
     [],

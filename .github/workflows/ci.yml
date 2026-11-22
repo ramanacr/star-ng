@@ -337,6 +337,75 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  # Focus and overlay behaviour in Firefox and WebKit: the tests tagged @cross-browser (menus,
+  # menubar, nested and context menus, the table and tree-table context menus, select, popover,
+  # dialog service, tooltip, leave motion). The other jobs run Chromium only. The Playwright
+  # projects `firefox` and `webkit` exist only when E2E_CROSS_BROWSER is set (or a --project
+  # flag names them), so a local run never needs these browsers (playwright.config.ts).
+  # ADVISORY: this job is not in the needs of `ci-gate` yet (tools/ci-changes.mjs,
+  # ADVISORY_JOBS). When it is green on a pull request, move it to JOBS and to the needs list of
+  # the gate.
+  e2e-cross-browser:
+    name: e2e-cross-browser (${{ matrix.browser }})
+    needs: [changes, docs-build]
+    if: needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      E2E_STATIC_DIR: dist/docs/browser
+      E2E_CROSS_BROWSER: '1'
+      BROWSER: ${{ matrix.browser }}
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Read Playwright version
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      # Its own cache key: the Chromium jobs cache only Chromium.
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-${{ matrix.browser }}
+
+      # Always run: the browser download is skipped when the cache has it, but the system
+      # libraries of Firefox and WebKit (apt) are not on the GitHub Ubuntu image.
+      - name: Install Playwright ${{ matrix.browser }} with its system libraries
+        run: pnpm exec playwright install --with-deps "$BROWSER"
+
+      - name: Download the docs build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: docs-dist
+          path: dist/docs/browser
+
+      - name: Cross-browser tests (@cross-browser)
+        run: pnpm e2e --project="$BROWSER" --grep @cross-browser --workers=2
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 7
+
   # Accessibility scan with axe-core (e2e/a11y.spec.ts): every docs page and about 65 opened
   # states, in the light and the dark theme, about 330 tests. A separate job keeps the `e2e`
   # job short: the scan runs in parallel, and the two shards halve its run time. Any violation

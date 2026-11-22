@@ -81,7 +81,9 @@ test.describe('table interaction', () => {
     expect(text).toBe('Cable kit\tLisbon\r\nKeyboard\tOslo');
   });
 
-  test('opens the context menu with Shift+F10 and gives the focus back', async ({ page }) => {
+  test('opens the context menu with Shift+F10 and gives the focus back @cross-browser', async ({
+    page,
+  }) => {
     await openPage(page);
     const live = example(page, 'Context menu');
     const grid = live.getByRole('grid', { name: 'Orders with a context menu' });

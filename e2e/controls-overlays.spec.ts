@@ -1,5 +1,11 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { collectErrors, example, openPage, pageTransitionDone } from './support';
+import {
+  collectErrors,
+  example,
+  openPage,
+  pageTransitionDone,
+  skipWithoutActiveViewTransition,
+} from './support';
 
 /**
  * Presses Tab `times` times. A modal dialog traps the focus: it may pass through the browser
@@ -157,7 +163,9 @@ test.describe('dialog', () => {
     await expect(dialog).toBeHidden();
   });
 
-  test('puts the focus on the marked element and returns it to the trigger', async ({ page }) => {
+  test('puts the focus on the marked element and returns it to the trigger @cross-browser', async ({
+    page,
+  }) => {
     await openPage(page, '/controls/dialog', 'Dialog');
     const live = example(page, 'Initial focus');
 
@@ -178,7 +186,7 @@ test.describe('dialog', () => {
     await expect(marked).toBeFocused();
   });
 
-  test('the dialog service passes data in and the result out', async ({ page }) => {
+  test('the dialog service passes data in and the result out @cross-browser', async ({ page }) => {
     await openPage(page, '/controls/dialog', 'Dialog');
     const live = example(page, 'Dialog from code');
     const trigger = live.getByRole('button', { name: 'Edit note' });
@@ -218,7 +226,7 @@ test.describe('dialog', () => {
     await expect(live.getByRole('status')).toHaveText('Note: Ring the bell twice.');
   });
 
-  test('the dialog service dialog traps Tab', async ({ page }) => {
+  test('the dialog service dialog traps Tab @cross-browser', async ({ page }) => {
     await openPage(page, '/controls/dialog', 'Dialog');
     await example(page, 'Dialog from code').getByRole('button', { name: 'Edit note' }).click();
     const dialog = page.getByRole('dialog', { name: 'Edit note' });
@@ -827,7 +835,9 @@ test.describe('drawer modes', () => {
 });
 
 test.describe('popover', () => {
-  test('opens on the button, moves the focus in and returns it on Escape', async ({ page }) => {
+  test('opens on the button, moves the focus in and returns it on Escape @cross-browser', async ({
+    page,
+  }) => {
     await openPage(page, '/controls/popover', 'Popover');
     const live = example(page, 'Details popover');
     const anchor = live.getByRole('button', { name: 'Details' });
@@ -851,7 +861,7 @@ test.describe('popover', () => {
     await expect(anchor).toBeFocused();
   });
 
-  test('closes with its own button, with a click on the anchor and with a click outside', async ({
+  test('closes with its own button, with a click on the anchor and with a click outside @cross-browser', async ({
     page,
   }) => {
     await openPage(page, '/controls/popover', 'Popover');
@@ -894,7 +904,7 @@ test.describe('popover', () => {
     await expect(live.getByRole('button', { name: 'Rename order' })).toBeFocused();
   });
 
-  test('stays open on a click outside with dismissable off and keeps the focus', async ({
+  test('stays open on a click outside with dismissable off and keeps the focus @cross-browser', async ({
     page,
   }) => {
     await openPage(page, '/controls/popover', 'Popover');
@@ -937,7 +947,9 @@ test.describe('tooltip', () => {
     await expect(host).not.toHaveAttribute('aria-describedby', /.+/);
   });
 
-  test('shows on keyboard focus and hides on Escape while the focus stays', async ({ page }) => {
+  test('shows on keyboard focus and hides on Escape while the focus stays @cross-browser', async ({
+    page,
+  }) => {
     await openPage(page, '/controls/tooltip', 'Tooltip');
     const button = example(page, 'Icon button').getByRole('button', { name: 'Export orders' });
 
@@ -1171,13 +1183,16 @@ test.describe('service overlays close when the page goes', () => {
     await expect(question).toHaveCount(0);
   });
 
-  test('scheduler: Back closes the event editor that the scheduler opened', async ({ page }) => {
+  test('scheduler: Back closes the event editor that the scheduler opened @cross-browser', async ({
+    page,
+  }) => {
     await openPage(page, '/controls/button', 'Button');
     await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
     await page.locator('#docs-nav').getByRole('link', { name: 'Scheduler', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Scheduler' })).toBeVisible();
     // A held press with `page.mouse` reaches the page only after the cross-fade of the page
     // change (the scroll and the layout are final before the new page shows).
+    await skipWithoutActiveViewTransition(page);
     await pageTransitionDone(page);
     // A held click on a booking of the timeline opens the edit editor (StarDialogService).
     const rooms = example(page, 'Rooms on a timeline, with the editor');

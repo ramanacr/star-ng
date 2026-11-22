@@ -23,7 +23,7 @@ const listbox = (page: Page, name: string) => page.getByRole('listbox', { name, 
 const panelSearch = (page: Page) => page.locator('.star-panel__filter').getByRole('searchbox');
 
 test.describe('select', () => {
-  test('opens with Enter, jumps by typing, chooses with Enter and returns the focus', async ({
+  test('opens with Enter, jumps by typing, chooses with Enter and returns the focus @cross-browser', async ({
     page,
   }) => {
     await openHydrated(page, 'select', 'Select');
@@ -54,7 +54,7 @@ test.describe('select', () => {
     await expect(select).toBeFocused();
   });
 
-  test('closes with Escape without a change and keeps the focus on the select', async ({
+  test('closes with Escape without a change and keeps the focus on the select @cross-browser', async ({
     page,
   }) => {
     await openHydrated(page, 'select', 'Select');

@@ -116,7 +116,9 @@ test.describe('tree table features', () => {
     await expect(live.getByRole('spinbutton')).toHaveCount(0);
   });
 
-  test('opens the row context menu with Shift+F10 and with a right click', async ({ page }) => {
+  test('opens the row context menu with Shift+F10 and with a right click @cross-browser', async ({
+    page,
+  }) => {
     const { live, row } = await open(page, 'Context menu');
     await row('shop').focus();
     await page.keyboard.press('Shift+F10');
