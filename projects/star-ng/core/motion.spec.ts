@@ -194,7 +194,9 @@ describe('ɵstarCloseDialog', () => {
   function fade(dialog: Element) {
     let finish!: () => void;
     const finished = new Promise<void>((resolve) => (finish = resolve));
-    const animation = { finished, effect: { getComputedTiming: () => ({ iterations: 1 }) } };
+    // The dialog's own animation: ɵstarCloseDialog waits only for those.
+    const effect = { getComputedTiming: () => ({ iterations: 1 }), target: dialog };
+    const animation = { finished, effect };
     (dialog as unknown as { getAnimations: () => unknown[] }).getAnimations = () => [animation];
     return finish;
   }
