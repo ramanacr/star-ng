@@ -1,6 +1,6 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, inject, PLATFORM_ID, Service } from '@angular/core';
 
 /**
  * Copies text to the clipboard (CDK `Clipboard`; PrimeNG has no service). It uses the async
@@ -13,7 +13,7 @@ import { inject, Injectable, PLATFORM_ID } from '@angular/core';
  *
  * The `starCopy` directive (`@star-ng/ui/utility`) wraps it for a button and announces the result.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class StarClipboard {
   private readonly cdk = inject(Clipboard);
   private readonly document = inject(DOCUMENT);

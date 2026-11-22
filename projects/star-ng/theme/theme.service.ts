@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { Injectable, InjectionToken, computed, effect, inject, signal } from '@angular/core';
+import { computed, DOCUMENT, effect, inject, InjectionToken, Service, signal } from '@angular/core';
 import { STAR_THEME_DEFAULT_STORAGE_KEY } from './theme-key';
 
 /** `'system'` follows the operating system setting (`prefers-color-scheme`). */
@@ -26,7 +25,7 @@ const MODES: readonly StarThemeMode[] = ['system', 'light', 'dark'];
  *
  * The service is optional: an application that has one fixed theme does not need it.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class StarThemeService {
   private readonly document = inject(DOCUMENT);
   private readonly storageKey = inject(STAR_THEME_STORAGE_KEY);

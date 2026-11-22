@@ -1,4 +1,4 @@
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterEveryRender,
   afterNextRender,
@@ -7,6 +7,7 @@ import {
   Component,
   computed,
   contentChildren,
+  DOCUMENT,
   effect,
   ElementRef,
   forwardRef,

@@ -2,11 +2,11 @@ import { isPlatformBrowser } from '@angular/common';
 import {
   DestroyRef,
   inject,
-  Injectable,
   InjectionToken,
   NgZone,
   PLATFORM_ID,
   Provider,
+  Service,
   signal,
 } from '@angular/core';
 
@@ -32,7 +32,7 @@ export function provideStarClock(tick: number): Provider {
  * On the server the clock does not tick: `now()` stays the time of the render. PrimeNG: none;
  * Material: none.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class StarClock {
   private readonly current = signal(Date.now());
   /** The time in milliseconds at the last tick. */

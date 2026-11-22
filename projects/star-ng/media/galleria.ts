@@ -1,4 +1,4 @@
-import { DOCUMENT, isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -6,6 +6,7 @@ import {
   computed,
   contentChildren,
   Directive,
+  DOCUMENT,
   effect,
   forwardRef,
   inject,

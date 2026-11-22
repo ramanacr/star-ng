@@ -1,9 +1,9 @@
-import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  DOCUMENT,
   inject,
   signal,
 } from '@angular/core';

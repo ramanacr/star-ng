@@ -1,11 +1,11 @@
 import { Directionality } from '@angular/cdk/bidi';
-import { DOCUMENT } from '@angular/common';
 import {
   DestroyRef,
+  DOCUMENT,
   EnvironmentProviders,
-  Injectable,
   inject,
   provideEnvironmentInitializer,
+  Service,
   signal,
 } from '@angular/core';
 
@@ -68,7 +68,7 @@ export function starInlineKey(event: KeyboardEvent, element?: Element | null): s
  *
  * The application only sets `dir` on `<html>`: `document.documentElement.dir = 'rtl'`.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class StarDirectionService {
   private readonly document = inject(DOCUMENT);
   private readonly directionality = inject(Directionality, { optional: true });

@@ -8,7 +8,7 @@ import {
   OverlayRef,
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -18,6 +18,7 @@ import {
   contentChildren,
   DestroyRef,
   Directive,
+  DOCUMENT,
   ElementRef,
   inject,
   Injector,

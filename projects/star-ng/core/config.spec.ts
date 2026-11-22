@@ -1,7 +1,7 @@
-import { DOCUMENT } from '@angular/common';
 import {
   ApplicationRef,
   createEnvironmentInjector,
+  DOCUMENT,
   EnvironmentInjector,
   Injector,
 } from '@angular/core';

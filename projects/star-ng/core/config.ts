@@ -1,14 +1,14 @@
-import { DOCUMENT } from '@angular/common';
 import {
+  DOCUMENT,
   effect,
   EnvironmentProviders,
   inject,
-  Injectable,
   InjectionToken,
   isDevMode,
   makeEnvironmentProviders,
   provideEnvironmentInitializer,
   Provider,
+  Service,
   signal,
   untracked,
 } from '@angular/core';
@@ -127,7 +127,7 @@ export const STAR_CONFIG = new InjectionToken<StarConfig>('STAR_CONFIG', {
  * time: the motion switch and the z-index base follow at once; a control reads its defaults when
  * it is created, so a change applies to controls created after it.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class StarConfigService {
   private readonly document = inject(DOCUMENT);
   private readonly state = signal<StarConfig>(inject(STAR_CONFIG));

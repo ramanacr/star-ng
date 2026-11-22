@@ -1,5 +1,5 @@
 import { AriaLivePoliteness, LiveAnnouncer } from '@angular/cdk/a11y';
-import { inject, Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 
 /** Options of `StarAnnouncer.announce`. */
 export interface StarAnnounceOptions {
@@ -28,7 +28,7 @@ export const STAR_ANNOUNCER_DEDUPE_MS = 1000;
  * Controls with their own `aria-live` region keep it: use this service for messages that have no
  * visible place on the page.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class StarAnnouncer {
   private readonly live = inject(LiveAnnouncer);
   /** The time of the last announcement per source, politeness and text. */

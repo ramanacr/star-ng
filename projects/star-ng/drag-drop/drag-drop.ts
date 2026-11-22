@@ -2,20 +2,20 @@
 // `igxDrop`). The pointer uses the native HTML drag and drop of the browser (drag image, drop
 // effects); a long press starts a touch drag; Space picks an item up for the keyboard. The
 // directives never move anything: the owner moves the data in `dropped`.
-import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
   computed,
   DestroyRef,
   Directive,
+  DOCUMENT,
   ElementRef,
   HostAttributeToken,
   inject,
-  Injectable,
   Injector,
   input,
   output,
+  Service,
   signal,
 } from '@angular/core';
 import { STAR_UI_TEXT, StarAnnouncer, starInlineKey } from '@star-ng/ui/core';
@@ -98,7 +98,7 @@ export function ɵstarDropEffect(
 }
 
 /** The registered drop zones and the drag in progress, shared by the page. @internal */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class ɵStarDragRegistry {
   private readonly doc = inject(DOCUMENT);
   private readonly text = inject(STAR_UI_TEXT);

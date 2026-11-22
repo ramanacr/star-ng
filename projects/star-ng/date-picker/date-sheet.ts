@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { inject, signal } from '@angular/core';
+import { DOCUMENT, inject, signal } from '@angular/core';
 
 /**
  * The touch mode of the date pickers (`touchUI`, `breakpoint`): the popup in a modal native

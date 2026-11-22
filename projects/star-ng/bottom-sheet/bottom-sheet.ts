@@ -1,4 +1,4 @@
-import { DOCUMENT, NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   ApplicationRef,
@@ -6,6 +6,7 @@ import {
   Component,
   ComponentRef,
   createComponent,
+  DOCUMENT,
   ElementRef,
   EnvironmentInjector,
   inject,
