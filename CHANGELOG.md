@@ -2,7 +2,7 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
-## [Unreleased]
+## [0.5.0] - 2026-11-22
 
 ### Added
 
@@ -149,6 +149,18 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tree table: a `td[starTableCell]` of a `starRow` template in a frozen column now gets the sticky offset of the column. The docs and the JSDoc now name both parts of the toggle icon (`expandIcon` for the default icon, `toggleIcon` for the wrapper of a `starIcon="toggle"` template); the names do not change.
 - Docs site (internal; the package does not change): during the cross-fade of a page change (view transition) the browser sends every pointer event to the document, so a click on the new page did nothing for about a quarter of a second. The docs fade is now 150 ms instead of the browser default of 250 ms, and the first press ends the fade at once, so the next press reaches the page. The scroll position and the layout of the new page are already final when it shows; a new end-to-end test checks this for a nav link, Back and Forward, and an anchor link to another page. The initial bundle of the docs grows by 0.27 kB (644.94 kB).
 - Field and every control that links to it: while an async validator runs (`pending()`), the control now has `aria-busy="true"` on the element with its role, as well as the `star-field` wrapper (`starInput`, input number, input mask, password, OTP, tags, select, multi-select, autocomplete, multi-column combobox, cascade select, tree select, tree, listbox, date, time and calendar pickers, checkbox, radio group, toggle switch, select button, slider, knob, color picker, rating, gauges, editor, file upload, signature pad). A screen reader reports the state of the focused control, not of its wrapper. A unit test covers every linked control. A new end-to-end test (`e2e/field-busy-a11y.spec.ts`, tag `@a11y`) reads the Chromium accessibility tree (name, validity, description, busy icon) and Playwright's ARIA snapshot (the alert) for the Field example; busy is read from the attribute, because the tree reports busy only for live regions. No screen-reader pass is claimed; the Accessibility guide lists the manual steps for NVDA, JAWS and VoiceOver.
+
+### Migrating from 0.4
+
+Read this list when you update from `0.4.x` to `0.5.0`. Each item is a change that can break code, tests or styles. The items are in the `Changed` and `Fixed` sections above, with more detail.
+
+1. Menus: the list of a `star-menu` is now inside a `framePanel` element. Change a selector that needs the list as a direct child of the overlay pane, for example `.cdk-overlay-pane > .star-menu`.
+2. Cascade select: `beforeShow` and `beforeHide` now emit before the overlay opens or closes, and `show` and `hide` emit after it. Do not expect the list in the page at `beforeShow`.
+3. Scheduler: `editorSave` and `eventDelete` now emit when Save or Delete is pressed, before the editor dialog closes.
+4. Message: a new `life` value now starts the timer again, and `closed` emits once.
+5. Leave motion: closed panels, popovers, tooltips, menus, toasts, banners, messages, chips and tabs now fade out before they leave the DOM. A test that expects the element to be gone at once must wait for it to leave, or turn the motion off with `provideStarNg({ reducedMotion: 'always' })`.
+6. Dialog, window and bottom sheet services: in Firefox and WebKit, `closed` and `afterDismissed()` now come after the exit motion. After the user closes a service dialog, a later `ref.close(result)` is ignored. When the host is destroyed first, the result is the one given so far, or `undefined`.
+7. Reduced motion: under `prefers-reduced-motion: reduce`, the reduced-motion rules of the library now win over a consumer rule of one class on the listed elements. An application that imports single style partials must also import `base`.
 
 ## [0.4.0] - 2026-11-21
 
