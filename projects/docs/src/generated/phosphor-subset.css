@@ -4,7 +4,7 @@
  * Rules and fonts: @phosphor-icons/web (MIT licence, see THIRD_PARTY_NOTICES.md).
  */
 
-/* bold: 207 of 1530 icons */
+/* bold: 208 of 1530 icons */
 @font-face {
   font-family: "Phosphor-Bold";
   src: url("../../../../node_modules/@phosphor-icons/web/src/bold/Phosphor-Bold.woff2") format("woff2");
@@ -196,6 +196,9 @@
 }
 .ph-bold.ph-circle:before {
   content: "\e18a";
+}
+.ph-bold.ph-circle-notch:before {
+  content: "\eb44";
 }
 .ph-bold.ph-clipboard:before {
   content: "\e196";

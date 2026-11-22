@@ -1,5 +1,4 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
-import { DOCUMENT } from '@angular/common';
 import {
   afterRenderEffect,
   booleanAttribute,
@@ -8,6 +7,7 @@ import {
   computed,
   DestroyRef,
   Directive,
+  DOCUMENT,
   ElementRef,
   inject,
   input,
@@ -26,6 +26,8 @@ export interface StarFieldStateLike {
   touched(): boolean;
   invalid(): boolean;
   required?(): boolean;
+  /** An async validator runs (Signal Forms `validateAsync`, `validateHttp`). Optional. */
+  pending?(): boolean;
   errors(): readonly { readonly kind: string; readonly message?: string }[];
 }
 
@@ -45,7 +47,12 @@ export interface StarFieldStateLike {
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-field', '[class.star-field--invalid]': 'errorText()' },
+  host: {
+    class: 'star-field',
+    '[class.star-field--invalid]': 'errorText()',
+    '[class.star-field--pending]': 'pending()',
+    '[attr.aria-busy]': 'pending() || null',
+  },
   template: `
     @if (label()) {
       <!-- A click on the label only moves the focus to the control (see onLabelClick). Keyboard
@@ -71,8 +78,17 @@ export interface StarFieldStateLike {
       <p data-star-part="errorText" class="star-field__error" [id]="errorId" role="alert">
         {{ error }}
       </p>
-    } @else if (hint()) {
-      <p data-star-part="hintText" class="star-field__hint" [id]="hintId">{{ hint() }}</p>
+    } @else if (hint() || pending()) {
+      <p data-star-part="hintText" class="star-field__hint" [id]="hintId">
+        @if (pending()) {
+          <i
+            data-star-part="pendingIcon"
+            class="ph-bold ph-circle-notch star-field__pending"
+            aria-hidden="true"
+          ></i>
+        }
+        {{ hint() }}
+      </p>
     }
   `,
 })
@@ -120,6 +136,11 @@ export class StarField {
    * element puts it in `aria-labelledby` when the user set no `ariaLabel` or `ariaLabelledBy`.
    */
   readonly labelledBy = computed(() => (this.label() ? this.labelId : null));
+  /**
+   * The state has an async validator running (`pending()` of a Signal Forms field state): the
+   * field is `aria-busy` and the hint row shows a busy icon.
+   */
+  readonly pending = computed(() => !!this.state()?.pending?.());
   protected readonly isRequired = computed(() => this.required() || !!this.state()?.required?.());
 
   readonly errorText = computed(() => {

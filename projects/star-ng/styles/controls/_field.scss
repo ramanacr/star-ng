@@ -86,6 +86,14 @@ textarea.star-input--auto-resize {
   font: var(--star-type-body-sm);
   color: var(--star-text-muted);
 }
+// Busy state: an async validator runs (`pending()` of the field state).
+.star-field__pending {
+  display: inline-block;
+  margin-inline-end: 0.25rem;
+  color: var(--star-field-pending-color, var(--star-accent));
+  vertical-align: -0.125em;
+  animation: star-spin 0.8s linear infinite;
+}
 .star-field__required {
   margin-inline-start: 0.15rem;
   color: var(--star-danger);
