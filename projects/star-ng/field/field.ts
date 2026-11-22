@@ -138,7 +138,9 @@ export class StarField {
   readonly labelledBy = computed(() => (this.label() ? this.labelId : null));
   /**
    * The state has an async validator running (`pending()` of a Signal Forms field state): the
-   * field is `aria-busy` and the hint row shows a busy icon.
+   * field is `aria-busy` and the hint row shows a busy icon (hidden from assistive technology).
+   * A `starInput` control is `aria-busy` too: a screen reader reports the state of the focused
+   * control, not of its wrapper.
    */
   readonly pending = computed(() => !!this.state()?.pending?.());
   protected readonly isRequired = computed(() => this.required() || !!this.state()?.required?.());
@@ -268,6 +270,7 @@ export function starJoinIds(...ids: readonly (string | null | undefined)[]): str
     '[attr.id]': 'resolvedId()',
     '[attr.aria-describedby]': 'field?.describedBy() ?? null',
     '[attr.aria-invalid]': 'showInvalid() || null',
+    '[attr.aria-busy]': 'field?.pending() || null',
     '(input)': 'resizeFallback()',
   },
 })

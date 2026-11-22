@@ -31,6 +31,8 @@ describe('StarField pending state', () => {
     fixture.componentInstance.pending.set(true);
     await fixture.whenStable();
     expect(field.getAttribute('aria-busy')).toBe('true');
+    // The control is busy too: a screen reader reads the state of the focused control.
+    expect(field.querySelector('input')!.getAttribute('aria-busy')).toBe('true');
     expect(field.classList).toContain('star-field--pending');
     const icon = field.querySelector('[data-star-part=pendingIcon]')!;
     expect(icon.getAttribute('aria-hidden')).toBe('true');
@@ -39,6 +41,7 @@ describe('StarField pending state', () => {
     fixture.componentInstance.pending.set(false);
     await fixture.whenStable();
     expect(field.getAttribute('aria-busy')).toBeNull();
+    expect(field.querySelector('input')!.getAttribute('aria-busy')).toBeNull();
   });
 
   it('works with a state that has no pending()', async () => {
