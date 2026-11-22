@@ -71,6 +71,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         [attr.aria-labelledby]="labelledBy()"
         [attr.aria-required]="required() || null"
         [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-busy]="fieldBusy()"
         [attr.aria-invalid]="showInvalid() || null"
         [attr.aria-disabled]="disabled() || null"
         [attr.aria-readonly]="readonly() || null"

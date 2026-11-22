@@ -139,6 +139,7 @@ const ROW_GUESS = 40;
         [attr.aria-labelledby]="labelledBy()"
         [attr.aria-required]="required() || null"
         [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-busy]="fieldBusy()"
         [attr.aria-invalid]="showInvalid() || null"
         (click)="openPanel()"
         (input)="onEditInput(trigger.value)"

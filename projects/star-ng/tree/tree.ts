@@ -313,6 +313,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
           [attr.aria-label]="ariaLabel()"
           [attr.aria-labelledby]="labelledBy()"
           [attr.aria-describedby]="moveHintId()"
+          [attr.aria-busy]="fieldBusy()"
           [attr.aria-multiselectable]="multiselectable()"
           [attr.tabindex]="activeRendered() ? -1 : 0"
           [style.height]="viewportHeight()"
@@ -341,6 +342,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
           [attr.aria-label]="ariaLabel()"
           [attr.aria-labelledby]="labelledBy()"
           [attr.aria-describedby]="moveHintId()"
+          [attr.aria-busy]="fieldBusy()"
           [attr.aria-multiselectable]="multiselectable()"
           [style.max-height]="scrollHeight()"
         >
@@ -544,6 +546,8 @@ export class StarTree implements FormValueControl<readonly string[]> {
    * select the select owns the label, so this is `null` there.
    */
   private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
 
   private readonly filterFields = computed(() => {
@@ -1151,6 +1155,7 @@ const POSITIONS: ConnectedPosition[] = [
         [attr.aria-label]="triggerName()"
         [attr.aria-labelledby]="labelledBy()"
         [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-busy]="fieldBusy()"
         [attr.aria-invalid]="showInvalid() || null"
         (click)="open.set(!open())"
         (keydown.arrowdown)="$event.preventDefault(); open.set(true)"
@@ -1262,6 +1267,8 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
     () => this.inputId,
     () => this.focus(),
   );
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly positions = POSITIONS;
 
   readonly value = model<readonly string[]>([]);

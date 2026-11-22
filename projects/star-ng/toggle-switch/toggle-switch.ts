@@ -66,6 +66,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
         [attr.aria-label]="ariaLabel()"
         [attr.aria-labelledby]="ariaLabelledBy()"
         [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-busy]="fieldBusy()"
         (change)="onChange(box)"
         (blur)="touch.emit()"
       />
@@ -97,6 +98,8 @@ export class StarToggleSwitch implements FormCheckboxControl {
   readonly inputId = input(inject(_IdGenerator).getId('star-switch-'));
   /** The parent `star-field` when it labels the switch: the label points at the input. */
   private readonly field = injectStarFieldLink(this.inputId);
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   readonly ariaLabel = input<string | null>(null);
   /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */

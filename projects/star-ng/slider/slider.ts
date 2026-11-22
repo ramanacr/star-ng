@@ -50,6 +50,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
       [attr.aria-label]="ariaLabel()"
       [attr.aria-labelledby]="ariaLabelledBy()"
       [attr.aria-describedby]="fieldDescribedBy()"
+      [attr.aria-busy]="fieldBusy()"
       [attr.aria-valuetext]="valueText()"
       [attr.aria-invalid]="showInvalid() || null"
       [attr.name]="name() || null"
@@ -89,6 +90,8 @@ export class StarSlider implements FormValueControl<number> {
   readonly inputId = input(inject(_IdGenerator).getId('star-slider-'));
   /** The parent `star-field` when it labels the slider: the label points at the input. */
   private readonly field = injectStarFieldLink(this.inputId);
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   /** Invalid after touch, or while the parent `star-field` shows an error. */
   protected readonly showInvalid = computed(
     () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
@@ -157,6 +160,7 @@ export class StarSlider implements FormValueControl<number> {
         (change)="slideEnd.emit(value())"
         [attr.aria-label]="text.sliderMinimum(groupLabel())"
         [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-busy]="fieldBusy()"
         [attr.aria-valuetext]="format()(value()[0])"
         (input)="setLow(+low.value, low)"
         (blur)="touch.emit()"
@@ -177,6 +181,7 @@ export class StarSlider implements FormValueControl<number> {
         (change)="slideEnd.emit(value())"
         [attr.aria-label]="text.sliderMaximum(groupLabel())"
         [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-busy]="fieldBusy()"
         [attr.aria-valuetext]="format()(value()[1])"
         (input)="setHigh(+high.value, high)"
         (blur)="touch.emit()"
@@ -228,6 +233,8 @@ export class StarRangeSlider implements FormValueControl<readonly [number, numbe
    * has no `for`: each input names itself with the label text, and a click focuses the low one.
    */
   private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   /** `ariaLabel`, else the `star-field` label text. */
   protected readonly groupLabel = computed(() => this.ariaLabel() ?? (this.field?.label() || ''));
   /** Invalid after touch, or while the parent `star-field` shows an error. */

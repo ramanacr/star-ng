@@ -139,8 +139,9 @@ export class StarField {
   /**
    * The state has an async validator running (`pending()` of a Signal Forms field state): the
    * field is `aria-busy` and the hint row shows a busy icon (hidden from assistive technology).
-   * A `starInput` control is `aria-busy` too: a screen reader reports the state of the focused
-   * control, not of its wrapper.
+   * Every control that links to the field (`starInput` and the StarNG form controls) is
+   * `aria-busy` too, on the element with its role: a screen reader reports the state of the
+   * focused control, not of its wrapper.
    */
   readonly pending = computed(() => !!this.state()?.pending?.());
   protected readonly isRequired = computed(() => this.required() || !!this.state()?.required?.());

@@ -369,6 +369,7 @@ const TEMPLATE = `
         [attr.aria-labelledby]="ariaLabelledBy()"
         [attr.aria-required]="required() || null"
         [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-busy]="fieldBusy()"
         [attr.aria-invalid]="showInvalid() || null"
         [attr.aria-expanded]="panelVisible()"
         [attr.aria-controls]="panelVisible() ? listId : null"

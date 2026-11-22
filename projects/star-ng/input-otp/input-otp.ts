@@ -32,6 +32,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     '[attr.aria-label]': 'labelledBy() ? null : (ariaLabel() ?? text.otpLabel)',
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'fieldDescribedBy()',
+    '[attr.aria-busy]': 'fieldBusy()',
     '[class.star-otp--invalid]': '(invalid() && touched()) || !!field?.errorText()',
   },
   template: `
@@ -74,6 +75,8 @@ export class StarInputOtp implements FormValueControl<string> {
 
   /** The parent `star-field` when it labels the group (several inputs: no single `for`). */
   protected readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 

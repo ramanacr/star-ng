@@ -149,6 +149,7 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
           [attr.aria-labelledby]="ariaLabelledBy()"
           [attr.aria-required]="required() || null"
           [attr.aria-describedby]="describedBy()"
+          [attr.aria-busy]="fieldBusy()"
           [attr.aria-invalid]="(invalid() && touched()) || !!rejection() || null"
           (input)="onInput(input)"
           (keydown)="onKeydown($event)"
@@ -187,6 +188,8 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
   private readonly field = injectStarFieldLink(() => this.inputId());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
 
   readonly value = model<readonly string[]>([]);
   readonly placeholder = input<string | null>(null);

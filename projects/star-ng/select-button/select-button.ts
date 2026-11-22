@@ -46,6 +46,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'fieldDescribedBy()',
+    '[attr.aria-busy]': 'fieldBusy()',
     '[attr.aria-required]': '(!multiple() && required()) || null',
     '[attr.aria-disabled]': 'disabled() || null',
     '[class.star-segmented--invalid]': 'invalid() && touched()',
@@ -81,6 +82,8 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   /** The parent `star-field` when it labels the group (a group is not labelable). */
   private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
 
   readonly value = model<TValue | readonly TValue[] | null>(null);
   readonly options = input<readonly TOption[]>([]);

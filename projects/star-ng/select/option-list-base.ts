@@ -318,6 +318,8 @@ export abstract class StarOptionListBase<TOption, TValue> {
   );
   /** `aria-describedby` of the trigger: the hint or error of the parent `star-field`. */
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   protected readonly interactive = computed(() => !this.disabled() && !this.readonly());
 
   protected readonly visibleOptions = computed(() => {

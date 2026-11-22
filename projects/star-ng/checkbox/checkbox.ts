@@ -65,6 +65,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
         [attr.aria-label]="ariaLabel()"
         [attr.aria-labelledby]="ariaLabelledBy()"
         [attr.aria-describedby]="describedBy()"
+        [attr.aria-busy]="fieldBusy()"
         (change)="onChange(box)"
         (blur)="touch.emit()"
       />
@@ -108,6 +109,8 @@ export class StarCheckbox implements FormCheckboxControl {
 
   /** The parent `star-field` when it labels the box: the label points at the input. */
   private readonly field = injectStarFieldLink(this.inputId);
+  /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
+  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
   /** Errors show only after the user has visited the control, or while the field shows one. */
   protected readonly showInvalid = computed(
     () => (this.invalid() && this.touched()) || !!this.field?.errorText(),

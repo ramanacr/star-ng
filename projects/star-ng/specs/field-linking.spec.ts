@@ -10,19 +10,22 @@ import {
   StarTimePicker,
 } from '@star-ng/ui/date-picker';
 import { StarEditor } from '@star-ng/ui/editor';
-import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarField, StarFieldStateLike, StarInput } from '@star-ng/ui/field';
 import { StarFileUpload } from '@star-ng/ui/file-upload';
+import { StarLinearGauge, StarRadialGauge } from '@star-ng/ui/gauge';
 import { StarInputMask } from '@star-ng/ui/input-mask';
 import { StarInputNumber } from '@star-ng/ui/input-number';
 import { StarInputOtp } from '@star-ng/ui/input-otp';
 import { StarInputTags } from '@star-ng/ui/input-tags';
 import { StarColorPicker, StarKnob } from '@star-ng/ui/knob';
 import { StarListbox } from '@star-ng/ui/listbox';
+import { StarMultiColumnCombobox } from '@star-ng/ui/multi-column-combobox';
 import { StarPassword } from '@star-ng/ui/password';
 import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';
 import { StarRating } from '@star-ng/ui/rating';
 import { StarCascadeSelect, StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSelectButton } from '@star-ng/ui/select-button';
+import { StarSignaturePad } from '@star-ng/ui/signature-pad';
 import { StarRangeSlider, StarSlider } from '@star-ng/ui/slider';
 import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { StarTree, StarTreeNode, StarTreeSelect } from '@star-ng/ui/tree';
@@ -75,82 +78,96 @@ const PLACES = [{ name: 'Germany', children: [{ name: 'Munich' }] }];
     StarTreeSelect,
   ],
   template: `
-    <star-field id="f-select" label="Select city" hint="Pick one">
+    <star-field [state]="state" id="f-select" label="Select city" hint="Pick one">
       <star-select [options]="cities" />
     </star-field>
-    <star-field id="f-multi" label="Multi city"
+    <star-field [state]="state" id="f-multi" label="Multi city"
       ><star-multi-select [options]="cities"
     /></star-field>
-    <star-field id="f-cascade" label="Cascade place">
+    <star-field [state]="state" id="f-cascade" label="Cascade place">
       <star-cascade-select [options]="places" optionLabel="name" />
     </star-field>
-    <star-field id="f-ac" label="Auto city" hint="Type a city">
+    <star-field [state]="state" id="f-ac" label="Auto city" hint="Type a city">
       <star-autocomplete [suggestions]="cities" />
     </star-field>
-    <star-field id="f-mac" label="Multi auto city">
+    <star-field [state]="state" id="f-mac" label="Multi auto city">
       <star-multi-autocomplete [suggestions]="cities" />
     </star-field>
-    <star-field id="f-date" label="Due date" hint="Day / month / year">
+    <star-field [state]="state" id="f-date" label="Due date" hint="Day / month / year">
       <star-date-picker />
     </star-field>
-    <star-field id="f-range" label="Trip dates"><star-date-range-picker /></star-field>
-    <star-field id="f-dates" label="Meeting days"><star-multi-date-picker /></star-field>
-    <star-field id="f-time" label="Start time"><star-time-picker /></star-field>
-    <star-field id="f-tree" label="Department"><star-tree-select [nodes]="nodes" /></star-field>
-    <star-field id="f-slider" label="Volume"><star-slider /></star-field>
-    <star-field id="f-range-slider" label="Price"><star-range-slider /></star-field>
-    <star-field id="f-knob" label="Level"><star-knob /></star-field>
-    <star-field id="f-color" label="Tag color">
+    <star-field [state]="state" id="f-range" label="Trip dates"
+      ><star-date-range-picker
+    /></star-field>
+    <star-field [state]="state" id="f-dates" label="Meeting days"
+      ><star-multi-date-picker
+    /></star-field>
+    <star-field [state]="state" id="f-time" label="Start time"><star-time-picker /></star-field>
+    <star-field [state]="state" id="f-tree" label="Department"
+      ><star-tree-select [nodes]="nodes"
+    /></star-field>
+    <star-field [state]="state" id="f-slider" label="Volume"><star-slider /></star-field>
+    <star-field [state]="state" id="f-range-slider" label="Price"><star-range-slider /></star-field>
+    <star-field [state]="state" id="f-knob" label="Level"><star-knob /></star-field>
+    <star-field [state]="state" id="f-color" label="Tag color">
       <star-color-picker [swatches]="['#112233', '#445566']" />
     </star-field>
-    <star-field id="f-rating" label="Score"><star-rating /></star-field>
-    <star-field id="f-segment" label="Size">
+    <star-field [state]="state" id="f-rating" label="Score"><star-rating /></star-field>
+    <star-field [state]="state" id="f-segment" label="Size">
       <star-select-button [options]="['S', 'M', 'L']" />
     </star-field>
-    <star-field id="f-radio" label="Plan">
+    <star-field [state]="state" id="f-radio" label="Plan">
       <star-radio-group>
         <star-radio value="free">Free</star-radio>
         <star-radio value="pro">Pro</star-radio>
       </star-radio-group>
     </star-field>
-    <star-field id="f-otp" label="Code"><star-input-otp [length]="4" /></star-field>
-    <star-field id="f-listbox" label="Cities"><star-listbox [options]="cities" /></star-field>
-    <star-field id="f-editor" label="Notes"><star-editor /></star-field>
-    <star-field id="f-treeview" label="Folders"><star-tree [nodes]="nodes" /></star-field>
-    <star-field id="f-calendar" label="Pick a day"><star-calendar /></star-field>
-    <star-field id="f-check" label="Terms"><star-checkbox>I agree</star-checkbox></star-field>
-    <star-field id="f-switch" label="Alerts">
+    <star-field [state]="state" id="f-otp" label="Code"><star-input-otp [length]="4" /></star-field>
+    <star-field [state]="state" id="f-listbox" label="Cities"
+      ><star-listbox [options]="cities"
+    /></star-field>
+    <star-field [state]="state" id="f-editor" label="Notes"><star-editor /></star-field>
+    <star-field [state]="state" id="f-treeview" label="Folders"
+      ><star-tree [nodes]="nodes"
+    /></star-field>
+    <star-field [state]="state" id="f-calendar" label="Pick a day"><star-calendar /></star-field>
+    <star-field [state]="state" id="f-check" label="Terms"
+      ><star-checkbox>I agree</star-checkbox></star-field
+    >
+    <star-field [state]="state" id="f-switch" label="Alerts">
       <star-toggle-switch [hasLabel]="false" />
     </star-field>
-    <star-field id="f-upload" label="Attachments"><star-file-upload /></star-field>
+    <star-field [state]="state" id="f-upload" label="Attachments"><star-file-upload /></star-field>
     <!-- Controls that already linked before #55. -->
-    <star-field id="f-password" label="Password"><star-password /></star-field>
-    <star-field id="f-number" label="Quantity"><star-input-number /></star-field>
-    <star-field id="f-mask" label="Phone"><star-input-mask mask="999-9999" /></star-field>
-    <star-field id="f-tags" label="Regions"><star-input-tags /></star-field>
-    <star-field id="f-text" label="Name"><input starInput /></star-field>
+    <star-field [state]="state" id="f-password" label="Password"><star-password /></star-field>
+    <star-field [state]="state" id="f-number" label="Quantity"><star-input-number /></star-field>
+    <star-field [state]="state" id="f-mask" label="Phone"
+      ><star-input-mask mask="999-9999"
+    /></star-field>
+    <star-field [state]="state" id="f-tags" label="Regions"><star-input-tags /></star-field>
+    <star-field [state]="state" id="f-text" label="Name"><input starInput /></star-field>
     <!-- The user's labelling wins. -->
-    <star-field id="f-own-label" label="Field text">
+    <star-field [state]="state" id="f-own-label" label="Field text">
       <star-select [options]="cities" ariaLabel="Own name" />
     </star-field>
     <span id="outside">Outside text</span>
-    <star-field id="f-own-by" label="Field text">
+    <star-field [state]="state" id="f-own-by" label="Field text">
       <star-select [options]="cities" ariaLabelledBy="outside" />
     </star-field>
-    <star-field id="f-error" label="Status" [error]="error()">
+    <star-field [state]="state" id="f-error" label="Status" [error]="error()">
       <star-select [options]="cities" />
     </star-field>
-    <star-field id="f-swap" label="Swapped">
+    <star-field [state]="state" id="f-swap" label="Swapped">
       @if (swap()) {
         <star-select [options]="cities" />
       } @else {
         <star-autocomplete [suggestions]="cities" />
       }
     </star-field>
-    <star-field id="f-ro-date" label="Read-only typing"
+    <star-field [state]="state" id="f-ro-date" label="Read-only typing"
       ><star-date-picker readonlyInput
     /></star-field>
-    <star-field id="f-two" label="Shared" hint="Shared hint" error="Shared error">
+    <star-field [state]="state" id="f-two" label="Shared" hint="Shared hint" error="Shared error">
       <star-select id="first" [options]="cities" />
       <star-select id="second" [options]="cities" />
     </star-field>
@@ -162,6 +179,14 @@ class Host {
   readonly places = PLACES;
   readonly error = signal<string | null>(null);
   readonly swap = signal(false);
+  /** `pending()` of every field: an async validator runs. */
+  readonly pending = signal(false);
+  readonly state: StarFieldStateLike = {
+    touched: () => false,
+    invalid: () => false,
+    errors: () => [],
+    pending: () => this.pending(),
+  };
 }
 
 afterEach(() => document.querySelectorAll('.cdk-overlay-container').forEach((n) => n.remove()));
@@ -295,6 +320,79 @@ describe('star-field label linking (#55)', () => {
     await fixture.whenStable();
     expect(field.contains(document.activeElement), `${id} focus`).toBe(true);
     expect(document.activeElement).not.toBe(label);
+  });
+
+  it('every linked control is aria-busy while an async validator of its field runs', async () => {
+    const { fixture, el } = await setup();
+    const control = (id: string, selector: string) =>
+      el.querySelector(`#${id}`)!.querySelector(selector)!;
+    for (const [id, selector] of NAMED) {
+      expect(control(id, selector).hasAttribute('aria-busy'), `${id} at rest`).toBe(false);
+    }
+    fixture.componentInstance.pending.set(true);
+    await fixture.whenStable();
+    for (const [id, selector] of NAMED) {
+      expect(control(id, selector).getAttribute('aria-busy'), `${id} pending`).toBe('true');
+    }
+    // A second control in the same field does not own the field, so it is not busy.
+    expect(el.querySelector('#second [role=combobox]')!.hasAttribute('aria-busy')).toBe(false);
+    fixture.componentInstance.pending.set(false);
+    await fixture.whenStable();
+    for (const [id, selector] of NAMED) {
+      expect(control(id, selector).hasAttribute('aria-busy'), `${id} done`).toBe(false);
+    }
+  });
+
+  it('the gauges, the signature pad and the multi-column combobox are busy too', async () => {
+    @Component({
+      imports: [
+        StarField,
+        StarLinearGauge,
+        StarMultiColumnCombobox,
+        StarRadialGauge,
+        StarSignaturePad,
+      ],
+      template: `
+        <star-field id="g-linear" label="Load" [state]="state"
+          ><star-linear-gauge interactive
+        /></star-field>
+        <star-field id="g-radial" label="Speed" [state]="state"><star-radial-gauge /></star-field>
+        <star-field id="g-sign" label="Signature" [state]="state"
+          ><star-signature-pad
+        /></star-field>
+        <star-field id="g-mcc" label="Product" [state]="state"
+          ><star-multi-column-combobox [options]="cities"
+        /></star-field>
+      `,
+    })
+    class More {
+      readonly cities = CITIES;
+      readonly pending = signal(false);
+      readonly state: StarFieldStateLike = {
+        touched: () => false,
+        invalid: () => false,
+        errors: () => [],
+        pending: () => this.pending(),
+      };
+    }
+    const fixture = TestBed.createComponent(More);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const controls: readonly [string, string][] = [
+      ['g-linear', 'star-linear-gauge'],
+      ['g-radial', 'star-radial-gauge'],
+      ['g-sign', 'star-signature-pad'],
+      ['g-mcc', '[role=combobox]'],
+    ];
+    const busy = () =>
+      controls.map(([id, selector]) =>
+        el.querySelector(`#${id} ${selector}`)!.getAttribute('aria-busy'),
+      );
+    expect(busy()).toEqual([null, null, null, null]);
+    fixture.componentInstance.pending.set(true);
+    await fixture.whenStable();
+    expect(busy()).toEqual(['true', 'true', 'true', 'true']);
   });
 
   it('every label for points at a labelable element in its field', async () => {
