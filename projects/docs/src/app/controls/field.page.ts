@@ -6,14 +6,26 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { email, form, FormField, required, validateAsync } from '@angular/forms/signals';
+import { StarButton } from '@star-ng/ui/button';
+import { StarCheckbox } from '@star-ng/ui/checkbox';
 import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
   styleUrl: './field.page.scss',
   selector: 'docs-field-page',
-  imports: [DOCS, StarField, StarInput, FormField],
+  imports: [
+    DOCS,
+    StarButton,
+    StarCheckbox,
+    StarField,
+    StarInput,
+    StarRadio,
+    StarRadioGroup,
+    FormField,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -55,6 +67,29 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Groups of checkboxes and radios"
+        source="field/groups"
+        note="Every checkbox in a field is described by the hint and the error; the first one also takes the label. A radio group passes the hint and the error to each radio, because Windows Narrator does not read them from the group."
+      >
+        <div class="docs-stack">
+          <star-field label="Toppings" hint="Pick one or more." [error]="groupError()">
+            <star-checkbox>Cheese</star-checkbox>
+            <star-checkbox>Olives</star-checkbox>
+            <star-checkbox>Peppers</star-checkbox>
+          </star-field>
+          <star-field label="Plan" hint="You can change it later." [error]="groupError()">
+            <star-radio-group>
+              <star-radio value="free">Free</star-radio>
+              <star-radio value="pro">Pro</star-radio>
+            </star-radio-group>
+          </star-field>
+          <star-button variant="secondary" (pressed)="toggleGroupError()">
+            {{ groupError() ? 'Clear the errors' : 'Show the errors' }}
+          </star-button>
+        </div>
+      </docs-example>
+
       <docs-example heading="Sizes" source="field/sizes">
         <div class="docs-stack">
           <input starInput size="sm" aria-label="Small" placeholder="Small" />
@@ -91,6 +126,11 @@ import { DOCS, DocsRow } from '../shared/docs';
   `,
 })
 export class FieldPage {
+  protected readonly groupError = signal<string | null>(null);
+  protected toggleGroupError(): void {
+    this.groupError.update((error) => (error ? null : 'Make a choice to continue.'));
+  }
+
   protected readonly model = signal({ email: '' });
   protected readonly contact = form(this.model, (path) => {
     required(path.email, { message: 'Enter an email address.' });

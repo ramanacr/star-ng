@@ -175,8 +175,10 @@ import { DOCS } from '../shared/docs';
       <p>
         While an async validator runs, a field is busy. The file
         <code>e2e/field-busy-a11y.spec.ts</code> (tag <code>&#64;a11y</code>, Chromium) reads the
-        accessibility tree of the browser (<code>Accessibility.getFullAXTree</code>) for the example
-        <strong>Async validation</strong> of the Field page. It checks automatically that:
+        accessibility tree of the browser (<code>Accessibility.getFullAXTree</code>) for the
+        examples <strong>Async validation</strong> and
+        <strong>Groups of checkboxes and radios</strong> of the Field page. It checks automatically
+        that:
       </p>
       <ol>
         <li>
@@ -188,29 +190,151 @@ import { DOCS } from '../shared/docs';
         </li>
         <li>The busy icon is not in the accessibility tree (it is decoration and has no text).</li>
         <li>
+          While the validator runs, the polite status of the field says "Checking…" (the text
+          <code>fieldPending</code> of <code>STAR_UI_TEXT</code>). When it ends, the status is empty
+          again.
+        </li>
+        <li>
           When the validator ends, busy is gone. For a taken name the text box is invalid, its
           description is the error text, and the error is an <code>alert</code> (a live region; the
           test reads this role with the ARIA snapshot of Playwright).
         </li>
         <li>For a free name the text box is valid again and the hint describes it again.</li>
+        <li>
+          Every checkbox in a field and every radio of a radio group in a field is described by the
+          hint, and by the error when the field shows one. Then each of them is invalid.
+        </li>
       </ol>
+
+      <h3>Screen-reader pass: Windows Narrator</h3>
       <p>
-        The test does not prove what a screen reader says. No screen-reader pass is claimed. Before
-        a release, do these steps with NVDA and JAWS (Windows, Chrome or Edge, and Firefox) and
-        VoiceOver (macOS and iOS, Safari):
+        These results were observed on 22 November 2026 with Windows Narrator, Windows 11 Pro (build
+        26200) and Chrome 158. NVDA was not installed on the test computer. The speech of Narrator
+        was recorded from the audio output and written down by a speech-to-text model on the same
+        computer (whisper.cpp). The focus moved with the keyboard and with
+        <code>element.focus()</code>. A local test page added a 6-second validator to a text box, a
+        select, a date picker, checkboxes and a radio group, because the 800 ms of the docs example
+        end before the focus is back on the field.
+      </p>
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <thead>
+            <tr>
+              <th scope="col">Control</th>
+              <th scope="col">At rest</th>
+              <th scope="col">While busy</th>
+              <th scope="col">Error appears</th>
+              <th scope="col">Focus returns to the invalid control</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Text box (<code>starInput</code>)</td>
+              <td>Pass: "user name, edit, letters and digits"</td>
+              <td>"Checking"; the word "busy" is not said</td>
+              <td>Pass: "This user name is taken." without a key press</td>
+              <td>Pass: "user name, edit, admin. This user name is taken, invalid."</td>
+            </tr>
+            <tr>
+              <td>Select</td>
+              <td>Pass: "City, select, combo box, collapsed, Pick a city"</td>
+              <td>The word "busy" is not said</td>
+              <td>Pass: the error text, without a key press</td>
+              <td>
+                Pass: "city, select, combo box, collapsed, this choice is not available, invalid"
+              </td>
+            </tr>
+            <tr>
+              <td>Date picker</td>
+              <td>Pass: "Due date, edit, day, month, year, has pop-up"</td>
+              <td>The word "busy" is not said</td>
+              <td>Pass: the error text, without a key press</td>
+              <td>Pass: "due date, edit, this choice is not available, invalid, has pop-up"</td>
+            </tr>
+            <tr>
+              <td>First checkbox of a field</td>
+              <td>Pass: "toppings, cheese, check box, unchecked, pick one or more"</td>
+              <td>The word "busy" is not said</td>
+              <td>Pass: the error text, without a key press</td>
+              <td>Pass: "cheese, check box, unchecked, this choice is not available, invalid"</td>
+            </tr>
+            <tr>
+              <td>Other checkboxes of a field</td>
+              <td>Pass after the fix: "olives, check box, unchecked, pick one or more"</td>
+              <td>The word "busy" is not said</td>
+              <td>Pass: the error text, without a key press</td>
+              <td>Pass after the fix: "olives, check box, unchecked, make a choice to continue"</td>
+            </tr>
+            <tr>
+              <td>Radio group</td>
+              <td>
+                Pass after the fix: "plan, radio group, free, radio button, non-selected, you can
+                change it later"
+              </td>
+              <td>The word "busy" is not said</td>
+              <td>Pass: the error text, without a key press</td>
+              <td>
+                Pass after the fix: "invalid, plan, radio group, pro, radio button, make a choice to
+                continue"
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Two problems were found and fixed in the same change:</p>
+      <ul>
+        <li>
+          Only the first checkbox of a field was described by the hint and the error. Now every
+          checkbox in the field is. Only the first one also takes the field label.
+        </li>
+        <li>
+          A radio group had the description and the invalid state on the element with the role
+          <code>radiogroup</code>. Narrator does not read them when a radio gets the focus. Now each
+          radio input has them too.
+        </li>
+      </ul>
+      <p>
+        <strong>Busy.</strong> Narrator did not say "busy" for any control, although the focused
+        control had <code>aria-busy="true"</code>. Many screen readers do not announce
+        <code>aria-busy</code> on a form control: the attribute tells them to wait until a region
+        has finished its update. For this reason the field now also says "Checking…" in a polite
+        status (<code>role="status"</code>, part <code>pendingStatus</code>) while the validator
+        runs. Narrator said "checking" after each change of the value. Change the text with
+        <code>provideStarUiText</code> (key <code>fieldPending</code>); the German and the Spanish
+        language packs have it too.
+      </p>
+      <p><strong>Not yet tested.</strong> Do the steps below before a release with:</p>
+      <ul>
+        <li>NVDA with Chrome, Edge and Firefox (Windows).</li>
+        <li>JAWS with Chrome and Edge (Windows).</li>
+        <li>VoiceOver with Safari on macOS.</li>
+        <li>VoiceOver with Safari on iOS.</li>
+        <li>Narrator with Edge and Firefox (the pass above used Chrome only).</li>
+      </ul>
+      <p>
+        For NVDA and JAWS, make sure in particular that a radio does not read the hint or the error
+        twice (once from the group and once from the radio), and that "Checking…" is read once.
       </p>
       <ol>
         <li>Open the Field page and move to the field <strong>User name</strong> with Tab.</li>
         <li>Make sure that the reader says the name, the hint "Letters and digits." and "edit".</li>
         <li>
-          Type <code>admin</code> and press Tab. Go back with Shift+Tab during the 800 ms of the
-          check. Write down if the reader says "busy". Readers differ here: some say nothing.
+          Type <code>admin</code>. Make sure that the reader says "Checking…". Write down if it also
+          says "busy".
         </li>
         <li>
-          Make sure that the reader says "This user name is taken." once, without a key press, and
-          then "invalid entry" or "invalid data" on the field.
+          Press Tab and Shift+Tab. Make sure that the reader says "This user name is taken." once,
+          without a key press, and then "invalid entry" or "invalid data" on the field.
         </li>
-        <li>Type <code>ada</code> and make sure that the error goes and nothing else is said.</li>
+        <li>
+          Type <code>ada</code> and make sure that the error goes and only "Checking…" is said.
+        </li>
+        <li>
+          In the example <strong>Groups of checkboxes and radios</strong>, move to each checkbox and
+          each radio. Make sure that the reader says the hint. Select
+          <strong>Show the errors</strong>, move to them again, and make sure that the reader says
+          "Make a choice to continue." and "invalid".
+        </li>
       </ol>
 
       <h3>Other browsers</h3>

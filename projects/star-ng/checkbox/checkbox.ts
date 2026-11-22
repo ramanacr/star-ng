@@ -23,7 +23,7 @@ import {
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
-import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
+import { injectStarFieldLink, StarField, starJoinIds } from '@star-ng/ui/field';
 
 /**
  * Checkbox (PrimeNG `p-checkbox` binary mode). Native `<input type="checkbox">` for full
@@ -107,17 +107,31 @@ export class StarCheckbox implements FormCheckboxControl {
 
   private readonly box = viewChild.required<ElementRef<HTMLInputElement>>('box');
 
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   /** The parent `star-field` when it labels the box: the label points at the input. */
   private readonly field = injectStarFieldLink(this.inputId);
+  /**
+   * The parent `star-field` of every checkbox in it, also when another control owns the label: a
+   * group of checkboxes in one field shares the hint, the error and the busy state, so each box
+   * is described by them. A checkbox in an overlay (outside the field in the DOM) does not use it.
+   */
+  private readonly parentField = inject(StarField, { optional: true });
+  private readonly sharedField = computed(
+    () =>
+      this.field ??
+      (this.parentField && this.hostElement.parentElement?.closest('star-field')
+        ? this.parentField
+        : null),
+  );
   /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
-  protected readonly fieldBusy = computed(() => this.field?.pending() || null);
+  protected readonly fieldBusy = computed(() => this.sharedField()?.pending() || null);
   /** Errors show only after the user has visited the control, or while the field shows one. */
   protected readonly showInvalid = computed(
-    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+    () => (this.invalid() && this.touched()) || !!this.sharedField()?.errorText(),
   );
   /** `ariaDescribedBy` and the hint or error of the parent `star-field`. */
   protected readonly describedBy = computed(() =>
-    starJoinIds(this.ariaDescribedBy(), this.field?.describedBy()),
+    starJoinIds(this.ariaDescribedBy(), this.sharedField()?.describedBy()),
   );
 
   protected onChange(box: HTMLInputElement): void {

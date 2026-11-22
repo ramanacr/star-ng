@@ -65,14 +65,22 @@ export class StarRadioGroup<T = unknown> implements FormValueControl<T | null> {
   private readonly field = injectStarFieldLink(null, () => this.focus());
   /** `aria-busy` of the control while an async validator of the parent `star-field` runs. */
   protected readonly fieldBusy = computed(() => this.field?.pending() || null);
-  /** Invalid after touch, or while the parent `star-field` shows an error. */
-  protected readonly showInvalid = computed(
+  /**
+   * @internal Invalid after touch, or while the parent `star-field` shows an error. Each
+   * `star-radio` also sets `aria-invalid` on its input: Windows Narrator does not read the state
+   * of the group when a radio gets the focus.
+   */
+  readonly showInvalid = computed(
     () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
   );
   protected readonly labelledBy = computed(() =>
     starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
   );
-  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+  /**
+   * @internal The hint or error of the parent `star-field`. Each `star-radio` also points its input
+   * at it: Windows Narrator does not read the description of the group when a radio gets the focus.
+   */
+  readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   isSelected(value: T): boolean {
     return Object.is(this.value(), value);
@@ -114,6 +122,8 @@ export class StarRadioGroup<T = unknown> implements FormValueControl<T | null> {
         [checked]="checked()"
         [disabled]="isDisabled()"
         [required]="group.required()"
+        [attr.aria-describedby]="group.fieldDescribedBy()"
+        [attr.aria-invalid]="group.showInvalid() || null"
         (change)="onChange(radio)"
         (blur)="group.touch.emit()"
       />

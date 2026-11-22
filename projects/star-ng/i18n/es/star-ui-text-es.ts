@@ -31,6 +31,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   copied: 'Copiado',
   copyFailed: 'No se pudo copiar',
   keyFilterInvalid: 'El valor contiene un carácter no permitido.',
+  fieldPending: 'Comprobando…',
   tagsHint: 'Intro o coma para añadir. Retroceso quita el último elemento.',
   tagAdded: (label) => `Se añadió ${label}`,
   tagRemoved: (label) => `Se quitó ${label}`,
