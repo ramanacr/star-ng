@@ -115,11 +115,13 @@ const TYPING_TARGET =
         <p id="docs-nav-search-hint" class="star-sr-only">
           Enter opens the first match. Slash moves the focus back to this field.
         </p>
-        <!-- Always in the page (a live region must exist before its text changes); only the
-             "no match" text is shown. -->
-        <p class="docs-nav__status" [class.star-sr-only]="matchCount() > 0" role="status">
-          {{ status() }}
-        </p>
+        <!-- The live region is always in the page (it must exist before its text changes) and
+             is read out once typing pauses. The visible "no match" text follows the list at
+             once; it is hidden from screen readers, which get the live region. -->
+        <p class="star-sr-only" role="status">{{ status() }}</p>
+        @if (noMatch(); as text) {
+          <p class="docs-nav__status" aria-hidden="true">{{ text }}</p>
+        }
         @for (group of groups(); track group.label) {
           <section class="docs-nav__group">
             <h2 class="docs-nav__heading">{{ group.label }}</h2>
@@ -268,17 +270,24 @@ export class App {
    */
   private readonly settledQuery = debounced(() => this.query(), SEARCH_STATUS_WAIT);
 
-  /** Number of pages that match the settled search text. */
-  protected readonly matchCount = computed(() => countPages(filterNav(this.settledQuery.value())));
-
-  /** Result of the search, for a screen reader (a live region). The "no match" text is also shown. */
+  /** Result of the settled search, for a screen reader (the live region). */
   protected readonly status = computed(() => {
     const query = this.settledQuery.value().trim();
     if (!query) return '';
-    const count = this.matchCount();
-    if (!count) return `No page matches “${query}”.`;
+    const count = countPages(filterNav(query));
+    if (!count) return noMatchText(query);
     return count === 1 ? '1 page matches.' : `${count} pages match.`;
   });
+
+  /** The visible "no match" text, at once with the list (empty while pages match). */
+  protected readonly noMatch = computed(() => {
+    const query = this.query().trim();
+    return query && !this.groups().length ? noMatchText(query) : '';
+  });
+}
+
+function noMatchText(query: string): string {
+  return `No page matches “${query}”.`;
 }
 
 /** Wait of the search status after the last key, in ms. */

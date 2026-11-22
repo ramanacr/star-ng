@@ -43,7 +43,7 @@ export const FEATURE_COUNTS = {
       "files": 88
     },
     "computed": {
-      "uses": 814,
+      "uses": 840,
       "files": 105
     },
     "linkedSignal": {
@@ -249,7 +249,7 @@ export const FEATURE_COUNTS = {
       "files": 18
     },
     "if": {
-      "uses": 38,
+      "uses": 39,
       "files": 24
     },
     "for": {

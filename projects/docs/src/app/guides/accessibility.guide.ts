@@ -181,14 +181,16 @@ import { DOCS } from '../shared/docs';
       <ol>
         <li>
           While the validator runs, the text box itself has <code>aria-busy="true"</code>, not only
-          its wrapper, and it stays valid and described by the hint. The test reads this attribute
-          from the element: the browser tree that the test can read reports busy only for live
-          regions.
+          its wrapper (every control that links to a <code>star-field</code> does this on the
+          element with its role; a unit test checks all of them), and it stays valid and described
+          by the hint. The test reads this attribute from the element: the browser tree that the
+          test can read reports busy only for live regions.
         </li>
         <li>The busy icon is not in the accessibility tree (it is decoration and has no text).</li>
         <li>
           When the validator ends, busy is gone. For a taken name the text box is invalid, its
-          description is the error text, and the error is an <code>alert</code> (a live region).
+          description is the error text, and the error is an <code>alert</code> (a live region; the
+          test reads this role with the ARIA snapshot of Playwright).
         </li>
         <li>For a free name the text box is valid again and the hint describes it again.</li>
       </ol>
@@ -216,8 +218,10 @@ import { DOCS } from '../shared/docs';
         The CI job <code>e2e-cross-browser</code> runs the end-to-end tests tagged
         <code>&#64;cross-browser</code> in Firefox and WebKit: focus return and outside clicks of
         the menus, menubar, nested and context menus (also in the table and the tree table), select,
-        popover, dialog service and tooltip, and the leave motion of the overlays. All other tests
-        run in Chromium.
+        popover, dialog service and tooltip, the leave motion of the overlays, and the page
+        cross-fade of the docs (skipped where <code>document.activeViewTransition</code> is
+        missing). The job is advisory: it is not yet a required check. All other tests run in
+        Chromium.
       </p>
 
       <h3>What an automated scan cannot find</h3>

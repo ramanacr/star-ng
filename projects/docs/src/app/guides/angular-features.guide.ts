@@ -84,7 +84,7 @@ const FEATURES: readonly FeatureRow[] = [
     feature: 'Signal Forms: `FormValueControl`, `FormCheckboxControl`, `[field]`',
     since: '21 (experimental), 22.0 (public)',
     library:
-      'Used: `FormValueControl` {lib:formValueControl}, `FormCheckboxControl` {lib:formCheckboxControl}, imports of `@angular/forms/signals` {lib:signalForms}. No `ControlValueAccessor`. The field wrapper (`StarField`) reads `pending()` of a field state: while an async validator runs, the field and its `starInput` are `aria-busy` and the field shows a busy icon.',
+      'Used: `FormValueControl` {lib:formValueControl}, `FormCheckboxControl` {lib:formCheckboxControl}, imports of `@angular/forms/signals` {lib:signalForms}. No `ControlValueAccessor`. The field wrapper (`StarField`) reads `pending()` of a field state: while an async validator runs, the field and the control linked to it (`starInput` and every StarNG form control) are `aria-busy`, and the field shows a busy icon.',
     docs: 'Used: {docs:signalForms} imports of `@angular/forms/signals`; the Forms guide shows Signal Forms and validation, and the Field page an async validator (`validateAsync`).',
   },
   {
