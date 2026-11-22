@@ -104,7 +104,7 @@ test.describe('field busy state in the accessibility tree @a11y', () => {
     expect(await busyIconHidden(cdp)).toBe(true);
     // Most screen readers do not announce aria-busy (Windows Narrator never did in the manual
     // pass), so the field also says "Checking…" in a polite status.
-    await expect(live.getByRole('status')).toHaveText('Checking…');
+    await expect(live.locator('star-field [aria-live=polite]')).toHaveText('Checking…');
 
     // Resolved: busy is gone (on the control and on the wrapper), the text box is invalid and
     // described by the error, which is an alert (a live region, read out when it appears).
@@ -113,7 +113,7 @@ test.describe('field busy state in the accessibility tree @a11y', () => {
       .toEqual({ busy: false, invalid: 'true', description: 'This user name is taken.' });
     await expect(live.locator('star-field')).not.toHaveAttribute('aria-busy', /.*/);
     await expect(live.getByRole('alert')).toHaveText('This user name is taken.');
-    await expect(live.getByRole('status')).toHaveText('');
+    await expect(live.locator('star-field [aria-live=polite]')).toHaveText('');
     await expect(live).toMatchAriaSnapshot(`
       - textbox "User name"
       - alert: This user name is taken.

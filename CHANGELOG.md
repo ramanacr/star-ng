@@ -43,7 +43,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 #### Field
 
 - Field: `StarFieldStateLike` has an optional `pending()` (Signal Forms `FieldState.pending`). While an async validator runs, `star-field` is `aria-busy`, gets the class `star-field--pending`, and the hint row shows a busy icon (part `pendingIcon`, color `--star-field-pending-color`, default `--star-accent`). A state without `pending()` works as before.
-- Field: while an async validator runs, a polite status (`role="status"`, part `pendingStatus`, hidden on screen) says "Checking…". Most screen readers do not announce `aria-busy`; Windows Narrator did not in the manual pass. The text is the new key `fieldPending` of `STAR_UI_TEXT` (German "Wird geprüft …", Spanish "Comprobando…").
+- Field: while an async validator runs, a polite live region (`aria-live="polite"`, hidden on screen, no role and no part, so `getByRole('status')` of a page still finds one element) says "Checking…". Most screen readers do not announce `aria-busy`; Windows Narrator did not in the manual pass. The text is the new key `fieldPending` of `STAR_UI_TEXT` (German "Wird geprüft …", Spanish "Comprobando…").
 
 #### Icon
 

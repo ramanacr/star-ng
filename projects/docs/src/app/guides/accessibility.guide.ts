@@ -190,9 +190,9 @@ import { DOCS } from '../shared/docs';
         </li>
         <li>The busy icon is not in the accessibility tree (it is decoration and has no text).</li>
         <li>
-          While the validator runs, the polite status of the field says "Checking…" (the text
-          <code>fieldPending</code> of <code>STAR_UI_TEXT</code>). When it ends, the status is empty
-          again.
+          While the validator runs, the polite live region of the field says "Checking…" (the text
+          <code>fieldPending</code> of <code>STAR_UI_TEXT</code>). When it ends, the live region is
+          empty again.
         </li>
         <li>
           When the validator ends, busy is gone. For a taken name the text box is invalid, its
@@ -298,8 +298,8 @@ import { DOCS } from '../shared/docs';
         control had <code>aria-busy="true"</code>. Many screen readers do not announce
         <code>aria-busy</code> on a form control: the attribute tells them to wait until a region
         has finished its update. For this reason the field now also says "Checking…" in a polite
-        status (<code>role="status"</code>, part <code>pendingStatus</code>) while the validator
-        runs. Narrator said "checking" after each change of the value. Change the text with
+        live region (<code>aria-live="polite"</code>, hidden on screen) while the validator runs.
+        Narrator said "checking" after each change of the value. Change the text with
         <code>provideStarUiText</code> (key <code>fieldPending</code>); the German and the Spanish
         language packs have it too.
       </p>

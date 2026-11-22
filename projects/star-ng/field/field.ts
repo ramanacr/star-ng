@@ -93,9 +93,7 @@ export interface StarFieldStateLike {
     }
     <!-- Polite status while an async validator runs: most screen readers do not announce
          aria-busy. It stays in the DOM, so a live region exists before its text changes. -->
-    <span data-star-part="pendingStatus" class="star-sr-only" role="status">{{
-      pending() ? text.fieldPending : ''
-    }}</span>
+    <span class="star-sr-only" aria-live="polite">{{ pending() ? text.fieldPending : '' }}</span>
   `,
 })
 export class StarField {

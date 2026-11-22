@@ -70,8 +70,9 @@ describe('StarField pending state', () => {
     await fixture.whenStable();
     const field = (fixture.nativeElement as HTMLElement).querySelector('star-field')!;
     // The live region is in the DOM before its text changes, so screen readers announce it.
-    const status = field.querySelector('[data-star-part=pendingStatus]')!;
-    expect(status.getAttribute('role')).toBe('status');
+    // No role: an extra `status` in every field would clash with `getByRole('status')` of a page.
+    const status = field.querySelector('[aria-live=polite]')!;
+    expect(status.hasAttribute('role')).toBe(false);
     expect(status.classList).toContain('star-sr-only');
     expect(status.textContent!.trim()).toBe('');
 
@@ -94,7 +95,7 @@ describe('StarField pending state', () => {
     fixture.componentInstance.pending.set(true);
     await fixture.whenStable();
     const status = (fixture.nativeElement as HTMLElement).querySelector(
-      '[data-star-part=pendingStatus]',
+      'star-field [aria-live=polite]',
     )!;
     expect(status.textContent!.trim()).toBe('Prüfe');
   });
