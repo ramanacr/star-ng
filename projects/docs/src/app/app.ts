@@ -4,6 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  debounced,
   DOCUMENT,
   effect,
   ElementRef,
@@ -256,30 +257,46 @@ export class App {
   }
   protected readonly query = signal('');
 
-  /** Navigation groups, filtered by the search text (label and keywords). */
-  protected readonly groups = computed<readonly DocsNavGroup[]>(() => {
-    const words = this.query().toLocaleLowerCase().split(/\s+/).filter(Boolean);
-    if (!words.length) return DOCS_NAV;
-    return DOCS_NAV.map((group) => ({
-      ...group,
-      items: group.items.filter((item) => {
-        const text = `${item.label} ${item.keywords ?? ''} ${group.label}`.toLocaleLowerCase();
-        return words.every((word) => text.includes(word));
-      }),
-    })).filter((group) => group.items.length);
-  });
+  /** Navigation groups, filtered by the search text at once (label and keywords). */
+  protected readonly groups = computed(() => filterNav(this.query()));
 
-  /** Number of pages that the search shows. */
-  protected readonly matchCount = computed(() =>
-    this.groups().reduce((sum, group) => sum + group.items.length, 0),
-  );
+  /**
+   * The search text once typing has paused for `SEARCH_STATUS_WAIT` ms. Experimental Angular
+   * `debounced()` (22.0), used in the docs application only: the library uses stable APIs only.
+   * The list filters at once; only the status below waits, so a screen reader reads the result
+   * once per pause instead of once per key.
+   */
+  private readonly settledQuery = debounced(() => this.query(), SEARCH_STATUS_WAIT);
 
-  /** Result of the search, for a screen reader. The "no match" text is also shown. */
+  /** Number of pages that match the settled search text. */
+  protected readonly matchCount = computed(() => countPages(filterNav(this.settledQuery.value())));
+
+  /** Result of the search, for a screen reader (a live region). The "no match" text is also shown. */
   protected readonly status = computed(() => {
-    const query = this.query().trim();
+    const query = this.settledQuery.value().trim();
     if (!query) return '';
     const count = this.matchCount();
     if (!count) return `No page matches “${query}”.`;
     return count === 1 ? '1 page matches.' : `${count} pages match.`;
   });
+}
+
+/** Wait of the search status after the last key, in ms. */
+const SEARCH_STATUS_WAIT = 400;
+
+/** The navigation groups whose pages contain every word of `query` (label, keywords, group). */
+function filterNav(query: string): readonly DocsNavGroup[] {
+  const words = query.toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return DOCS_NAV;
+  return DOCS_NAV.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      const text = `${item.label} ${item.keywords ?? ''} ${group.label}`.toLocaleLowerCase();
+      return words.every((word) => text.includes(word));
+    }),
+  })).filter((group) => group.items.length);
+}
+
+function countPages(groups: readonly DocsNavGroup[]): number {
+  return groups.reduce((sum, group) => sum + group.items.length, 0);
 }

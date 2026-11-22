@@ -54,6 +54,10 @@ export const FEATURE_COUNTS = {
       "uses": 3,
       "files": 3
     },
+    "debounced": {
+      "uses": 0,
+      "files": 0
+    },
     "untracked": {
       "uses": 72,
       "files": 32
@@ -191,6 +195,10 @@ export const FEATURE_COUNTS = {
     "resource": {
       "uses": 12,
       "files": 9
+    },
+    "debounced": {
+      "uses": 1,
+      "files": 1
     },
     "untracked": {
       "uses": 5,
