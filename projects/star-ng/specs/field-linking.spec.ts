@@ -348,6 +348,7 @@ describe('star-field label linking (#55)', () => {
       imports: [
         StarField,
         StarLinearGauge,
+        StarListbox,
         StarMultiColumnCombobox,
         StarRadialGauge,
         StarSignaturePad,
@@ -362,6 +363,9 @@ describe('star-field label linking (#55)', () => {
         /></star-field>
         <star-field id="g-mcc" label="Product" [state]="state"
           ><star-multi-column-combobox [options]="cities"
+        /></star-field>
+        <star-field id="g-dd" label="Order" [state]="state"
+          ><star-listbox [options]="cities" dragdrop
         /></star-field>
       `,
     })
@@ -384,15 +388,19 @@ describe('star-field label linking (#55)', () => {
       ['g-radial', 'star-radial-gauge'],
       ['g-sign', 'star-signature-pad'],
       ['g-mcc', '[role=combobox]'],
+      ['g-dd', '[role=listbox]'],
     ];
     const busy = () =>
       controls.map(([id, selector]) =>
         el.querySelector(`#${id} ${selector}`)!.getAttribute('aria-busy'),
       );
-    expect(busy()).toEqual([null, null, null, null]);
+    expect(busy()).toEqual([null, null, null, null, null]);
     fixture.componentInstance.pending.set(true);
     await fixture.whenStable();
-    expect(busy()).toEqual(['true', 'true', 'true', 'true']);
+    expect(busy()).toEqual(['true', 'true', 'true', 'true', 'true']);
+    fixture.componentInstance.pending.set(false);
+    await fixture.whenStable();
+    expect(busy()).toEqual([null, null, null, null, null]);
   });
 
   it('every label for points at a labelable element in its field', async () => {
