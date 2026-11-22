@@ -12,6 +12,8 @@ interface LeaveEntry {
   readonly cls: string;
   readonly animation: string;
   readonly removed: boolean;
+  /** True when the element was still in the document as it got the leave class. */
+  readonly connected: boolean;
 }
 
 /** Opens a page and waits until every hydration marker is gone. */
@@ -24,14 +26,19 @@ async function open(page: Page, path: string, reduced: boolean): Promise<void> {
 /** Records each element that gets a `--leaving` class, its animation then, and its removal. */
 async function recordLeaves(page: Page): Promise<void> {
   await page.evaluate(() => {
-    const log: { el: Element; cls: string; animation: string }[] = [];
+    const log: { el: Element; cls: string; animation: string; connected: boolean }[] = [];
     (window as unknown as { __leaves: typeof log }).__leaves = log;
     new MutationObserver((records) => {
       for (const record of records) {
         const el = record.target as Element;
         const cls = [...el.classList].find((name) => name.endsWith('--leaving'));
         if (cls && !log.some((entry) => entry.el === el)) {
-          log.push({ el, cls, animation: getComputedStyle(el).animationName });
+          log.push({
+            el,
+            cls,
+            animation: getComputedStyle(el).animationName,
+            connected: el.isConnected,
+          });
         }
       }
     }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
@@ -41,8 +48,15 @@ async function recordLeaves(page: Page): Promise<void> {
 async function leaves(page: Page): Promise<LeaveEntry[]> {
   return page.evaluate(() =>
     (
-      window as unknown as { __leaves: { el: Element; cls: string; animation: string }[] }
-    ).__leaves.map(({ el, cls, animation }) => ({ cls, animation, removed: !el.isConnected })),
+      window as unknown as {
+        __leaves: { el: Element; cls: string; animation: string; connected: boolean }[];
+      }
+    ).__leaves.map(({ el, cls, animation, connected }) => ({
+      cls,
+      animation,
+      connected,
+      removed: !el.isConnected,
+    })),
   );
 }
 
@@ -217,3 +231,89 @@ for (const reduced of [false, true]) {
     expect(reduced ? none(dialog) : !none(dialog)).toBe(true);
   });
 }
+
+/**
+ * Dropdown and mention panels fade out: the element is still there when the leave starts and is
+ * gone after it. Motion stays on (the fade is the thing under test), and the hydration markers
+ * are gone before the first click.
+ */
+test.describe('leave motion of the dropdown and mention panels', () => {
+  test('the dropdown panel fades out, then goes', async ({ page }) => {
+    await open(page, '/controls/dropdown', false);
+    await example(page, 'Choose from a list').getByRole('button', { name: 'Export as' }).click();
+    await expect(page.getByRole('listbox', { name: 'Export format' })).toBeVisible();
+    await recordLeaves(page);
+    await page.keyboard.press('Escape');
+    const entry = await left(page, 'star-panel--leaving');
+    expect(entry.connected).toBe(true);
+    expect(entry.animation).toBe('star-panel-out');
+    await expect(page.getByRole('listbox', { name: 'Export format' })).toHaveCount(0);
+  });
+
+  test('the mention panel fades out, then goes', async ({ page }) => {
+    await open(page, '/controls/mention', false);
+    const field = example(page, 'Mention people').getByRole('textbox', { name: 'Comment' });
+    await field.click();
+    await field.pressSequentially('@');
+    await expect(page.getByRole('listbox')).toBeVisible();
+    await recordLeaves(page);
+    await page.evaluate(() => {
+      const watch = new MutationObserver(() => {
+        const host = document.querySelector('star-mention-panel.star-mention-panel--leaving');
+        if (host?.firstElementChild) {
+          (window as unknown as { __inner: string }).__inner = getComputedStyle(
+            host.firstElementChild,
+          ).animationName;
+          watch.disconnect();
+        }
+      });
+      watch.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
+    await page.keyboard.press('Escape');
+    const entry = await left(page, 'star-mention-panel--leaving');
+    expect(entry.connected).toBe(true);
+    // The host gets the class; the panel inside it runs the keyframes.
+    expect(await page.evaluate(() => (window as unknown as { __inner: string }).__inner)).toBe(
+      'star-panel-out',
+    );
+    await expect(page.locator('star-mention-panel')).toHaveCount(0);
+  });
+
+  test('opening the dropdown again during the fade shows one panel', async ({ page }) => {
+    await open(page, '/controls/dropdown', false);
+    const trigger = example(page, 'Choose from a list').getByRole('button', { name: 'Export as' });
+    await trigger.click();
+    await expect(page.getByRole('listbox', { name: 'Export format' })).toBeVisible();
+    // As soon as the old panel gets its leave class, open the overlay again (same task).
+    await page.evaluate(() => {
+      const button = [...document.querySelectorAll('button')].find((b) =>
+        b.textContent?.includes('Export as'),
+      )!;
+      const log: { reopened: boolean } = { reopened: false };
+      (window as unknown as { __reopen: typeof log }).__reopen = log;
+      const watch = new MutationObserver(() => {
+        if (!log.reopened && document.querySelector('.star-panel--leaving')) {
+          log.reopened = true;
+          watch.disconnect();
+          button.click();
+        }
+      });
+      watch.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
+    await page.keyboard.press('Escape');
+    await expect
+      .poll(() =>
+        page.evaluate(() => (window as unknown as { __reopen: { reopened: boolean } }).__reopen),
+      )
+      .toEqual({ reopened: true });
+    const panels = page.locator('.star-dropdown');
+    await expect(panels).toHaveCount(1);
+    await expect(page.locator('.star-panel--leaving')).toHaveCount(0);
+    const ids = await page.evaluate(() => {
+      const all = [...document.querySelectorAll('[id]')].map((el) => el.id);
+      return all.filter((id, i) => all.indexOf(id) !== i);
+    });
+    expect(ids).toEqual([]);
+    await expect(page.getByRole('listbox', { name: 'Export format' })).toHaveCount(1);
+  });
+});

@@ -17,10 +17,11 @@ export function starPrefersReducedMotion(doc: Document | null | undefined): bool
  * shows before the element leaves the DOM. `done` runs at once when nothing runs, under reduced
  * motion, where the browser has no `getAnimations` (jsdom, server), and for an endless animation
  * (a spinner in the content) it does not wait. `timeout` (ms) is the fallback for an animation
- * that never ends (a hidden tab); it is the cap Angular uses for `animate.leave`. Shared by the
+ * that never ends (a hidden tab); it is the cap Angular uses for `animate.leave`. Returns a
+ * function that cancels the wait (it clears the timer and `done` does not run). Shared by the
  * entry points; not public API.
  */
-export function ɵstarAfterExit(element: Element, done: () => void, timeout = 4000): void {
+export function ɵstarAfterExit(element: Element, done: () => void, timeout = 4000): () => void {
   const doc = element.ownerDocument;
   const running =
     typeof element.getAnimations === 'function' && !starPrefersReducedMotion(doc)
@@ -30,7 +31,7 @@ export function ɵstarAfterExit(element: Element, done: () => void, timeout = 40
       : [];
   if (!running.length) {
     done();
-    return;
+    return () => undefined;
   }
   let ended = false;
   const end = () => {
@@ -41,6 +42,10 @@ export function ɵstarAfterExit(element: Element, done: () => void, timeout = 40
   };
   const timer = setTimeout(end, timeout);
   void Promise.allSettled(running.map((animation) => animation.finished)).then(end);
+  return () => {
+    ended = true;
+    clearTimeout(timer);
+  };
 }
 
 /** Options of `ɵstarLeaveWithClass`. */
@@ -73,10 +78,12 @@ export function ɵstarLeaveWithClass(
     target.classList.add(className);
     let ended = false;
     let watch: MutationObserver | null = null;
+    const wait: { cancel?: () => void } = {};
     const end = () => {
       if (ended) return;
       ended = true;
       watch?.disconnect();
+      wait.cancel?.();
       animationComplete();
     };
     const parent = target.parentNode;
@@ -89,6 +96,6 @@ export function ɵstarLeaveWithClass(
       });
       watch.observe(parent, { childList: true });
     }
-    ɵstarAfterExit(target, end);
+    wait.cancel = ɵstarAfterExit(target, end);
   };
 }

@@ -63,6 +63,8 @@ Add the compiled CSS and two Phosphor icon weights to the `styles` of your build
 
 With Sass, you can use the SCSS entry instead: `@use '@star-ng/ui/styles/star-ng';`.
 
+If you import single style partials instead of the whole entry, also import `base`: the reduced-motion rules of all controls are in it.
+
 ## Use a control
 
 Import a control from its entry point, not from the package root.

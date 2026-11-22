@@ -77,6 +77,22 @@ describe('ɵstarAfterExit', () => {
   });
 });
 
+describe('ɵstarAfterExit cancel', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('clears the timer and does not run done after a cancel', () => {
+    vi.useFakeTimers();
+    const stuck = fakeAnimation();
+    const done = vi.fn();
+    const cancel = ɵstarAfterExit(elementWith([stuck.animation]), done, 500);
+    expect(vi.getTimerCount()).toBe(1);
+    cancel();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.advanceTimersByTime(1000);
+    expect(done).not.toHaveBeenCalled();
+  });
+});
+
 describe('ɵstarLeaveWithClass', () => {
   it('moves the focus out, adds the class and completes when no motion runs', () => {
     const panel = document.createElement('div');
@@ -128,5 +144,29 @@ describe('ɵstarLeaveWithClass', () => {
     await new Promise((resolve) => setTimeout(resolve));
     expect(animationComplete).toHaveBeenCalledTimes(1);
     pane.remove();
+  });
+
+  it('clears the wait timer when the leave ends early', async () => {
+    vi.useFakeTimers();
+    try {
+      const pane = document.createElement('div');
+      const panel = document.createElement('div');
+      pane.append(panel);
+      document.body.append(pane);
+      const fade = fakeAnimation();
+      (panel as unknown as { getAnimations: () => unknown[] }).getAnimations = () => [
+        fade.animation,
+      ];
+      const animationComplete = vi.fn();
+      ɵstarLeaveWithClass('x--leaving')({ target: panel, animationComplete });
+      expect(vi.getTimerCount()).toBe(1);
+      pane.append(document.createElement('div'));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(animationComplete).toHaveBeenCalledTimes(1);
+      expect(vi.getTimerCount()).toBe(0);
+      pane.remove();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -30,6 +30,10 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
  * as `star-select`; Enter / Space toggle the active option and keep the panel open.
  *
  * `<star-multi-select [options]="tags" optionLabel="name" optionValue="id" [(value)]="ids" display="chip" filter />`
+ *
+ * Chips are keyed by the chosen value. If the application replaces `value` with equal object
+ * copies (a form reset, a reload), the chips are rebuilt and each plays its leave motion. Use
+ * `optionValue` with primitive values, or keep the identities of the values, to avoid it.
  */
 @Component({
   selector: 'star-multi-select',
