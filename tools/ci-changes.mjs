@@ -40,6 +40,11 @@ export const JOBS = [
   { job: 'e2e-dev', output: 'e2e', title: 'e2e-dev (tests that need ng serve)' },
   { job: 'a11y', output: 'a11y', title: 'a11y (2 shards)' },
   { job: 'visual', output: 'visual', title: 'visual (screenshots)' },
+  {
+    job: 'e2e-cross-browser',
+    output: 'e2e',
+    title: 'e2e-cross-browser (Firefox and WebKit, tag @cross-browser)',
+  },
 ];
 
 /**
@@ -48,13 +53,7 @@ export const JOBS = [
  * request; then it moves to `JOBS` and into the needs of the gate. `ci-gate.test.mjs` checks
  * that each job exists, uses its output, and is NOT in the needs of the gate.
  */
-export const ADVISORY_JOBS = [
-  {
-    job: 'e2e-cross-browser',
-    output: 'e2e',
-    title: 'e2e-cross-browser (Firefox and WebKit, tag @cross-browser; not in the gate yet)',
-  },
-];
+export const ADVISORY_JOBS = [];
 
 // The needs of a rule. `build` = the build-test job (it also does the format check and the
 // name check, so it makes the `light` job unnecessary). `e2e` = the e2e and a11y jobs (both

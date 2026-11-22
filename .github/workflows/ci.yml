@@ -342,9 +342,6 @@ jobs:
   # dialog service, tooltip, leave motion). The other jobs run Chromium only. The Playwright
   # projects `firefox` and `webkit` exist only when E2E_CROSS_BROWSER is set (or a --project
   # flag names them), so a local run never needs these browsers (playwright.config.ts).
-  # ADVISORY: this job is not in the needs of `ci-gate` yet (tools/ci-changes.mjs,
-  # ADVISORY_JOBS). When it is green on a pull request, move it to JOBS and to the needs list of
-  # the gate.
   e2e-cross-browser:
     name: e2e-cross-browser (${{ matrix.browser }})
     needs: [changes, docs-build]
@@ -586,7 +583,7 @@ jobs:
     if: >-
       always() && (github.event.action != 'labeled' && github.event.action != 'unlabeled'
       || github.event.label.name == 'ci:full')
-    needs: [changes, light, build-test, docs-build, e2e, e2e-dev, a11y, visual]
+    needs: [changes, light, build-test, docs-build, e2e, e2e-dev, a11y, visual, e2e-cross-browser]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:

@@ -40,6 +40,7 @@ const CASES = [
   ['everything needed and successful: pass', needs(ALL_ON), true],
   ['nothing needed but light, the rest skipped: pass', needs(ALL_OFF), true],
   ['needed job skipped: FAIL', needs(ALL_ON, { visual: 'skipped' }), false],
+  ['cross-browser job failed: FAIL', needs(ALL_ON, { 'e2e-cross-browser': 'failure' }), false],
   ['needed job cancelled: FAIL', needs(ALL_ON, { e2e: 'cancelled' }), false],
   ['needed job failed: FAIL', needs(ALL_ON, { a11y: 'failure' }), false],
   [
@@ -118,7 +119,7 @@ for (const [name, input, ok] of CASES) {
 test('the gate checks every job of the table', () => {
   assert.deepEqual(
     JOBS.map((entry) => entry.job),
-    ['light', 'build-test', 'docs-build', 'e2e', 'e2e-dev', 'a11y', 'visual'],
+    ['light', 'build-test', 'docs-build', 'e2e', 'e2e-dev', 'a11y', 'visual', 'e2e-cross-browser'],
   );
 });
 

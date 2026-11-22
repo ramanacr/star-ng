@@ -220,7 +220,7 @@ import { DOCS } from '../shared/docs';
         the menus, menubar, nested and context menus (also in the table and the tree table), select,
         popover, dialog service and tooltip, the leave motion of the overlays, and the page
         cross-fade of the docs (skipped where <code>document.activeViewTransition</code> is
-        missing). The job is advisory: it is not yet a required check. All other tests run in
+        missing). The job is part of the required <code>ci-gate</code> check. All other tests run in
         Chromium.
       </p>
 
