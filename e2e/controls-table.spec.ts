@@ -1599,6 +1599,12 @@ test.describe('table: tools panel', () => {
         }),
       );
       expect(panels.length).toBeGreaterThan(0);
+      // The closed popover host has no box of its own.
+      const hosts = page.locator('[data-star-part="toolsPanel"] > star-popover');
+      expect(await hosts.count()).toBeGreaterThan(0);
+      for (const host of await hosts.all()) {
+        await expect(host).toHaveCSS('display', 'contents');
+      }
       for (const panel of panels) {
         expect(panel.empty).toBe(0);
         expect(Math.abs(panel.end - panel.lastEnd)).toBeLessThanOrEqual(0.5);
