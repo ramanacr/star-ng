@@ -100,22 +100,23 @@ export function ɵstarLeaveWithClass(
   };
 }
 
-/** Per document: the browser keeps a closing modal `<dialog>` in the top layer (CSS `overlay`). */
-const overlaySupport = new WeakMap<Document, boolean>();
+/** Per `CSS` namespace (one per window): it supports `overlay`. */
+const overlaySupport = new WeakMap<object, boolean>();
 
 /**
  * True when the browser can show the exit transition of a `<dialog>` after `close()`: it supports
  * the CSS `overlay` property, which keeps a closing modal dialog in the top layer (Chromium).
  * Firefox and WebKit have no `overlay`: a closed dialog goes at once. Without `CSS.supports`
- * (server, jsdom) it is true, so nothing changes there. Read once per document. Shared by the
+ * (server, jsdom) it is true, so nothing changes there. Read once per window (`CSS` namespace). Shared by the
  * entry points; not public API.
  */
 export function ɵstarDialogExitAfterClose(doc: Document): boolean {
-  let known = overlaySupport.get(doc);
+  const css = doc.defaultView?.CSS;
+  if (typeof css?.supports !== 'function') return true;
+  let known = overlaySupport.get(css);
   if (known === undefined) {
-    const css = doc.defaultView?.CSS;
-    known = typeof css?.supports === 'function' ? css.supports('overlay', 'auto') : true;
-    overlaySupport.set(doc, known);
+    known = css.supports('overlay', 'auto');
+    overlaySupport.set(css, known);
   }
   return known;
 }

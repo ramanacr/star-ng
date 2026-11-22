@@ -2,11 +2,18 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarDialog } from '@star-ng/ui/dialog';
 
-// A browser without CSS `overlay` (Firefox, WebKit): the exit motion runs before close().
-// Set before any dialog closes in this file; the feature check is read once per document.
-Object.defineProperty(window, 'CSS', {
-  configurable: true,
-  value: { supports: (property: string) => property !== 'overlay' },
+// A browser without CSS `overlay` (Firefox, WebKit): the exit motion runs before close(). The
+// feature check is cached per `CSS` namespace, so a new namespace object gives a fresh check;
+// the original one comes back after this file (the specs share one window).
+const originalCss = Object.getOwnPropertyDescriptor(window, 'CSS');
+beforeAll(() => {
+  const supports = (property: string, value?: string) =>
+    property === 'overlay' ? false : (originalCss?.value?.supports?.(property, value) ?? false);
+  Object.defineProperty(window, 'CSS', { configurable: true, value: { supports } });
+});
+afterAll(() => {
+  if (originalCss) Object.defineProperty(window, 'CSS', originalCss);
+  else delete (window as unknown as { CSS?: unknown }).CSS;
 });
 
 // jsdom has no HTMLDialogElement methods. Minimal stand-ins (real browsers implement these).
