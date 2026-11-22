@@ -18,16 +18,26 @@ export function starPrefersReducedMotion(doc: Document | null | undefined): bool
  * motion, where the browser has no `getAnimations` (jsdom, server), and for an endless animation
  * (a spinner in the content) it does not wait. `timeout` (ms) is the fallback for an animation
  * that never ends (a hidden tab); it is the cap Angular uses for `animate.leave`. Returns a
- * function that cancels the wait (it clears the timer and `done` does not run). Shared by the
- * entry points; not public API.
+ * function that cancels the wait (it clears the timer and `done` does not run). With `ownOnly`,
+ * only the animations of the element itself count (its `::backdrop` included), not those of its
+ * content. Shared by the entry points; not public API.
  */
-export function ɵstarAfterExit(element: Element, done: () => void, timeout = 4000): () => void {
+export function ɵstarAfterExit(
+  element: Element,
+  done: () => void,
+  timeout = 4000,
+  ownOnly = false,
+): () => void {
   const doc = element.ownerDocument;
   const running =
     typeof element.getAnimations === 'function' && !starPrefersReducedMotion(doc)
       ? element
           .getAnimations({ subtree: true })
           .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+          .filter(
+            (animation) =>
+              !ownOnly || (animation.effect as KeyframeEffect | null)?.target === element,
+          )
       : [];
   if (!running.length) {
     done();
@@ -165,13 +175,17 @@ export function ɵstarCloseDialog(
     return null;
   }
   let done = false;
+  let stopWait: () => void = () => undefined;
   const end = () => {
     if (done) return;
     done = true;
+    stopWait();
     close();
   };
   dialog.setAttribute('data-star-closing', '');
-  ɵstarAfterExit(dialog, end);
+  // Only the dialog's own exit (and its ::backdrop): the page is still inert while it runs, so a
+  // finite animation in the content must not hold an invisible modal on the page.
+  stopWait = ɵstarAfterExit(dialog, end, 4000, true);
   // Nothing ran (no motion): it closed at once.
   if (done) return null;
   return {
@@ -179,6 +193,7 @@ export function ɵstarCloseDialog(
     cancel: () => {
       if (done) return;
       done = true;
+      stopWait();
       dialog.removeAttribute('data-star-closing');
     },
   };

@@ -39,6 +39,7 @@ export class StarBottomSheetRef<R = unknown> {
   readonly closed = new Promise<R | undefined>((resolve) => (this.resolve = resolve));
   private result: R | undefined;
   private done = false;
+  private requested = false;
 
   constructor(private readonly hide: () => void) {}
 
@@ -48,7 +49,10 @@ export class StarBottomSheetRef<R = unknown> {
   }
 
   dismiss(result?: R): void {
-    if (this.done) return;
+    // The first call wins: a second one during the exit motion (the result comes after it where
+    // the browser has no CSS `overlay`) does not change the result.
+    if (this.done || this.requested) return;
+    this.requested = true;
     this.result = result;
     this.hide();
   }

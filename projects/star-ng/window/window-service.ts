@@ -52,11 +52,15 @@ export class StarWindowRef<R = unknown> {
   readonly closed = new Promise<R | undefined>((resolve) => (this.resolve = resolve));
   private result: R | undefined;
   private done = false;
+  private requested = false;
 
   constructor(private readonly hide: () => void) {}
 
   close(result?: R): void {
-    if (this.done) return;
+    // The first call wins: a second one during the exit motion (the result comes after it where
+    // the browser has no CSS `overlay`) does not change the result.
+    if (this.done || this.requested) return;
+    this.requested = true;
     this.result = result;
     this.hide();
   }
@@ -142,6 +146,8 @@ export class StarWindowService {
     host.setInput('component', component);
     host.setInput('config', config);
     host.setInput('contentInjector', contentInjector);
+    // Destroyed before it closed (for example during the exit motion): the result still comes.
+    host.onDestroy(() => ref.settle());
     host.instance.closed = () => {
       ref.settle();
       // The close transition (`allow-discrete`) needs the element in the DOM: destroy after it.

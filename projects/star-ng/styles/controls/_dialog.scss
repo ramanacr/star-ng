@@ -49,12 +49,15 @@ html:has(dialog.star-dialog--block-scroll[open]) {
     }
   }
   // The closed look while the dialog is still open: browsers without CSS `overlay` (Firefox,
-  // WebKit) run the exit with `data-star-closing` before close() (see ɵstarCloseDialog).
+  // WebKit) run the exit with `data-star-closing` before close() (see ɵstarCloseDialog). It takes
+  // no pointer input: a click during the exit goes nowhere, not to the fading dialog.
   &[open][data-star-closing] {
+    pointer-events: none;
     opacity: 0;
     scale: 0.96;
   }
   &[open][data-star-closing]::backdrop {
+    pointer-events: none;
     opacity: 0;
   }
 }

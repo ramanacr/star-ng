@@ -231,6 +231,8 @@ export class StarBottomSheet {
     host.setInput('contentInjector', contentInjector);
     host.setInput('templateContext', { $implicit: config.data, ref });
     host.instance.dismiss = () => ref.dismiss();
+    // Destroyed before it closed (for example during the exit motion): the result still comes.
+    host.onDestroy(() => ref.settle());
     host.instance.hidden = () => {
       ref.settle();
       if (this.current?.host === host) this.current = null;
