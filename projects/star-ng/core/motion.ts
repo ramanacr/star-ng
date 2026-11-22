@@ -42,3 +42,21 @@ export function ɵstarAfterExit(element: Element, done: () => void, timeout = 40
   const timer = setTimeout(end, timeout);
   void Promise.allSettled(running.map((animation) => animation.finished)).then(end);
 }
+
+/**
+ * An `animate.leave` function (`(animate.leave)="leave($event)"`) that adds `className` and ends
+ * the leave when its motion has ended (`ɵstarAfterExit`). Unlike the plain class form, it first
+ * moves the focus out of the leaving element (to the page body), so code that returns the focus
+ * "when it has nowhere else to be" (a context menu that closed) sees that at once, and the focus
+ * is not lost later when the element goes. Shared by the entry points; not public API.
+ */
+export function ɵstarLeaveWithClass(
+  className: string,
+): (event: { target: Element; animationComplete: () => void }) => void {
+  return ({ target, animationComplete }) => {
+    const active = target.ownerDocument.activeElement;
+    if (active instanceof HTMLElement && target.contains(active)) active.blur();
+    target.classList.add(className);
+    ɵstarAfterExit(target, animationComplete);
+  };
+}

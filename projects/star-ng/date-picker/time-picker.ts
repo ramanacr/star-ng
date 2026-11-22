@@ -130,6 +130,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
       <div
         starPart="panel"
         class="star-panel star-date__panel star-time__panel"
+        animate.leave="star-panel--leaving"
         role="dialog"
         [id]="panelId"
         [attr.aria-label]="text.chooseTime"

@@ -56,6 +56,24 @@ table.star-sr-only {
   .star-skeleton::after {
     animation: none;
   }
+  // Leave motion (`animate.leave`): with no animation, Angular removes the element at once.
+  // The control partials repeat these after their own rules, which come later in the bundle.
+  .star-toast--leaving,
+  .star-banner__inner--leaving,
+  .star-panel--leaving,
+  .star-popover--leaving,
+  .star-tooltip--leaving,
+  .star-menu-frame--leaving,
+  .star-menu-frame--leaving > .star-menu,
+  .star-menu--leaving,
+  .star-chip--leaving,
+  .star-tabs__item--leaving {
+    animation: none;
+  }
+  .star-message,
+  .star-banner {
+    transition: none;
+  }
 }
 
 // Phosphor icons take size from their container.

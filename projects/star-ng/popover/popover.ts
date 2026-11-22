@@ -85,6 +85,7 @@ const POSITIONS: ConnectedPosition[] = [
       <div
         starPart="surface"
         class="star-popover"
+        animate.leave="star-popover--leaving"
         tabindex="-1"
         [id]="panelId"
         [attr.role]="role()"

@@ -1,4 +1,4 @@
-import { ɵstarAfterExit } from './motion';
+import { ɵstarAfterExit, ɵstarLeaveWithClass } from './motion';
 
 /** A fake animation whose `finished` promise the test settles. */
 function fakeAnimation(iterations = 1) {
@@ -74,5 +74,24 @@ describe('ɵstarAfterExit', () => {
     expect(done).toHaveBeenCalledTimes(1);
     stuck.finish();
     expect(done).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('ɵstarLeaveWithClass', () => {
+  it('moves the focus out, adds the class and completes when no motion runs', () => {
+    const panel = document.createElement('div');
+    const item = document.createElement('button');
+    panel.append(item);
+    document.body.append(panel);
+    item.focus();
+    expect(document.activeElement).toBe(item);
+    const animationComplete = vi.fn();
+
+    ɵstarLeaveWithClass('x--leaving')({ target: panel, animationComplete });
+
+    expect(document.activeElement).toBe(document.body);
+    expect(panel.classList).toContain('x--leaving');
+    expect(animationComplete).toHaveBeenCalledTimes(1);
+    panel.remove();
   });
 });

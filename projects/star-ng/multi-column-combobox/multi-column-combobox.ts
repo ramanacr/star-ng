@@ -1,11 +1,12 @@
 import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
   Directive,
+  DOCUMENT,
   forwardRef,
   inject,
   input,
@@ -191,6 +192,7 @@ const ROW_GUESS = 40;
         starPart="panel"
         class="star-panel star-mcc__panel"
         [class]="panelClasses()"
+        animate.leave="star-panel--leaving"
         [style]="panelStyle()"
         [style.--star-mcc-columns]="gridColumns()"
         (mousedown)="onPanelMousedown($event)"

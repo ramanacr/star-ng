@@ -13,6 +13,17 @@
   outline: none;
   animation: star-panel-in var(--star-duration-base) $ease;
 }
+// Leave motion (`animate.leave`). The keyframes are repeated in each partial that uses them, so a
+// page that loads only this partial still has them.
+.star-popover--leaving {
+  animation: star-panel-out var(--star-duration-fast) $ease forwards;
+}
+@keyframes star-panel-out {
+  to {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
 .star-confirm--popup {
   gap: 0.75rem;
 
@@ -33,7 +44,8 @@
 }
 
 @include star-reduced-motion {
-  .star-popover {
+  .star-popover,
+  .star-popover--leaving {
     animation: none;
     transition: none;
   }

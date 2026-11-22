@@ -6,7 +6,7 @@ import {
   CdkVirtualForOf,
   CdkVirtualScrollViewport,
 } from '@angular/cdk/scrolling';
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterEveryRender,
   afterNextRender,
@@ -17,6 +17,7 @@ import {
   computed,
   contentChildren,
   DestroyRef,
+  DOCUMENT,
   effect,
   ElementRef,
   forwardRef,
@@ -1199,7 +1200,11 @@ const POSITIONS: ConnectedPosition[] = [
       (overlayOutsideClick)="onOutside($event)"
       (overlayKeydown)="$event.key === 'Escape' && close(true)"
     >
-      <div starPart="panel" class="star-panel star-tree-select__panel">
+      <div
+        starPart="panel"
+        class="star-panel star-tree-select__panel"
+        animate.leave="star-panel--leaving"
+      >
         @if (headerSlot(); as header) {
           <div data-star-part="headerSlotPanel" class="star-panel__header">
             <ng-container *ngTemplateOutlet="header" />

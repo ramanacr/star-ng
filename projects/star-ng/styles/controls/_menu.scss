@@ -49,6 +49,26 @@
     animation: none;
   }
 }
+// Leave motion of a popup menu (`animate.leave` on the frame). The frame has no box unless it is
+// framed, so the list inside moves then. A menu inline in the page (`.star-menu-host`) leaves at
+// once.
+.star-menu-frame--leaving,
+.star-menu-frame--leaving > .star-menu,
+.star-menu--leaving {
+  animation: star-panel-out var(--star-duration-fast) $ease forwards;
+}
+.star-menu-frame--framed.star-menu-frame--leaving > .star-menu,
+.star-menu-host .star-menu-frame--leaving,
+.star-menu-host .star-menu-frame--leaving > .star-menu {
+  animation: none;
+}
+// Repeated in each partial that uses it, so a page that loads only this partial has it.
+@keyframes star-panel-out {
+  to {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
 .star-menu__start,
 .star-menu__end {
   padding: 0.25rem 0.75rem;
@@ -222,6 +242,11 @@
 @include star-reduced-motion {
   .star-panel-menu__caret {
     transition: none;
+  }
+  .star-menu-frame--leaving,
+  .star-menu-frame--leaving > .star-menu,
+  .star-menu--leaving {
+    animation: none;
   }
 }
 

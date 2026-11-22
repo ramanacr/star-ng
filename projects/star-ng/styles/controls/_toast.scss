@@ -96,6 +96,17 @@
     translate: 0 -0.5rem;
   }
 }
+// Leave motion (`animate.leave`): Angular keeps the closed toast in the DOM until it ends.
+.star-toast--leaving {
+  pointer-events: none;
+  animation: star-toast-out var(--star-duration-base) $ease forwards;
+}
+@keyframes star-toast-out {
+  to {
+    opacity: 0;
+    translate: 0 -0.5rem;
+  }
+}
 .star-toast--success {
   --star-tone: var(--star-success);
 }
@@ -144,5 +155,13 @@
   }
   &:focus-visible {
     outline: 2px solid var(--star-accent);
+  }
+}
+
+// After the control rules, so it wins over them under the system setting too.
+@include star-reduced-motion {
+  .star-toast,
+  .star-toast--leaving {
+    animation: none;
   }
 }

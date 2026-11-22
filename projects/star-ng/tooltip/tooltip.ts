@@ -81,7 +81,12 @@ function positionsFor(position: StarTooltipPosition, rtl: boolean): ConnectedPos
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-tooltip', role: 'tooltip', '[id]': 'id()' },
+  host: {
+    class: 'star-tooltip',
+    role: 'tooltip',
+    '[id]': 'id()',
+    'animate.leave': 'star-tooltip--leaving',
+  },
   template: `{{ text() }}`,
 })
 export class StarTooltipPanel {

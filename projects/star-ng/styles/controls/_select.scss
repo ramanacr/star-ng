@@ -158,6 +158,17 @@
     translate: 0 -4px;
   }
 }
+// Leave motion of an overlay panel (`animate.leave`). The CDK keeps the overlay until the panel
+// leaves the pane; the CDK has already turned off the pointer events of the pane.
+.star-panel--leaving {
+  animation: star-panel-out var(--star-duration-fast) $ease forwards;
+}
+@keyframes star-panel-out {
+  to {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
 .star-panel__filter {
   display: flex;
   align-items: center;
@@ -267,4 +278,11 @@
   padding: 0.75rem;
   color: var(--star-text-muted);
   text-align: center;
+}
+
+// After the control rules, so it wins over them under the system setting too.
+@include star-reduced-motion {
+  .star-panel--leaving {
+    animation: none;
+  }
 }

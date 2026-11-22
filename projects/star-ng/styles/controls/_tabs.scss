@@ -279,9 +279,22 @@
 .star-tabs__list.cdk-drop-list-dragging .star-tabs__item:not(.cdk-drag-placeholder) {
   transition: transform var(--star-duration-base) ease;
 }
+// Leave motion of a closed tab (`animate.leave`).
+.star-tabs__item--leaving {
+  pointer-events: none;
+  animation: star-tabs-item-out var(--star-duration-fast) ease-in forwards;
+}
+@keyframes star-tabs-item-out {
+  to {
+    opacity: 0;
+  }
+}
 @include star-reduced-motion {
   .star-tabs__list.cdk-drop-list-dragging .star-tabs__item:not(.cdk-drag-placeholder) {
     transition: none;
+  }
+  .star-tabs__item--leaving {
+    animation: none;
   }
 }
 // Close button of the selected tab for assistive technology: visually hidden until it has the

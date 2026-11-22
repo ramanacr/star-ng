@@ -1,12 +1,13 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
   ElementRef,
   inject,
   Injector,
@@ -498,6 +499,7 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
       <div
         starPart="panel"
         class="star-panel star-date__panel star-color__panel"
+        animate.leave="star-panel--leaving"
         role="dialog"
         [id]="panelId"
         [attr.dir]="rtl() ? 'rtl' : 'ltr'"

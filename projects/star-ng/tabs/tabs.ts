@@ -1,6 +1,6 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -12,6 +12,7 @@ import {
   contentChildren,
   DestroyRef,
   Directive,
+  DOCUMENT,
   ElementRef,
   forwardRef,
   inject,
@@ -238,6 +239,7 @@ export class StarTab {
             data-star-part="item"
             class="star-tabs__item"
             [class.star-tabs__item--closable]="tab.closable()"
+            animate.leave="star-tabs__item--leaving"
             cdkDrag
             [cdkDragDisabled]="!reorderable() || tab.disabled()"
           >

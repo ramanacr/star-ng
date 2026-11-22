@@ -171,6 +171,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         starPart="panel"
         class="star-panel"
         [class]="panelClasses()"
+        animate.leave="star-panel--leaving"
         [style]="panelStyle()"
         (mousedown)="onPanelMousedown($event)"
         (keydown)="onPanelKeydown($event)"
