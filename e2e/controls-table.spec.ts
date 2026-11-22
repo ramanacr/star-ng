@@ -1571,3 +1571,38 @@ test.describe('table: width', () => {
     });
   }
 });
+
+test.describe('table: tools panel', () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+
+  // The last button of the tools panel ends at the end edge of the panel. The closed Columns
+  // popover has no box: as a zero-size flex item it took the 8 px gap and moved the buttons.
+  for (const [path, heading] of [
+    ['/controls/table-columns', 'Table columns'],
+    ['/controls/table-sort-filter', 'Table sorting and filtering'],
+    ['/controls/table-layout', 'Table layout'],
+  ] as const) {
+    test(`${path}: the tool buttons end at the end edge of the panel`, async ({ page }) => {
+      await openPage(page, path, heading);
+      const panels = await page.locator('[data-star-part="toolsPanel"]').evaluateAll((tools) =>
+        tools.map((panel) => {
+          const end =
+            panel.getBoundingClientRect().right - parseFloat(getComputedStyle(panel).paddingRight);
+          const boxes = [...panel.children]
+            .filter((child) => getComputedStyle(child).display !== 'contents')
+            .map((child) => child.getBoundingClientRect());
+          return {
+            end,
+            lastEnd: Math.max(...boxes.map((box) => box.right)),
+            empty: boxes.filter((box) => box.width === 0 || box.height === 0).length,
+          };
+        }),
+      );
+      expect(panels.length).toBeGreaterThan(0);
+      for (const panel of panels) {
+        expect(panel.empty).toBe(0);
+        expect(Math.abs(panel.end - panel.lastEnd)).toBeLessThanOrEqual(0.5);
+      }
+    });
+  }
+});
