@@ -1,4 +1,6 @@
 // Chip and tags field.
+@use '../shared' as *;
+
 .star-chip {
   display: inline-flex;
   align-items: center;
@@ -15,6 +17,17 @@
 }
 .star-chip--sm {
   padding: 0.125rem 0.5rem;
+}
+// Leave motion of a removed chip (`animate.leave`).
+.star-chip--leaving {
+  pointer-events: none;
+  animation: star-chip-out var(--star-duration-fast) ease-in forwards;
+}
+@keyframes star-chip-out {
+  to {
+    opacity: 0;
+    scale: 0.8;
+  }
 }
 .star-chip__remove {
   display: inline-grid;
@@ -106,4 +119,10 @@
 }
 .star-chips-area__item.cdk-drag-placeholder {
   opacity: 0.4;
+}
+
+@include star-reduced-motion {
+  .star-chip--leaving {
+    animation: none;
+  }
 }

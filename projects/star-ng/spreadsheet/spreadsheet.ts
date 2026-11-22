@@ -1,5 +1,4 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
-import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -7,6 +6,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  DOCUMENT,
   ElementRef,
   inject,
   Injector,
@@ -27,6 +27,7 @@ import {
   starInlineKey,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarKeyed,
 } from '@star-ng/ui/core';
 import { StarToolbar } from '@star-ng/ui/layout';
 import {
@@ -518,7 +519,8 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
         role="tablist"
         [attr.aria-label]="text.spreadsheetSheets"
       >
-        @for (sheet of sheetList(); track $index; let i = $index) {
+        @for (entry of sheetEntries(); track entry.key; let i = $index) {
+          @let sheet = entry.item;
           <button
             data-star-part="tabButton"
             type="button"
@@ -650,6 +652,14 @@ export class StarSpreadsheet {
   protected readonly sheetList = computed<readonly StarSpreadsheetSheet[]>(() =>
     this.sheets().length ? this.sheets() : [{ name: this.sheetName(), cells: this.cells() }],
   );
+  /** `@for` entries of the sheet tabs, keyed by the name, or its occurrence when two share it. */
+  protected readonly sheetEntries = computed(() => {
+    const sheets = this.sheetList();
+    return ɵstarKeyed(sheets.map((sheet) => sheet.name)).map((entry, i) => ({
+      key: entry.key,
+      item: sheets[i],
+    }));
+  });
   protected readonly showTabs = computed(() => this.sheets().length > 0);
   protected readonly sheetIndex = computed(() =>
     Math.min(Math.max(0, this.activeSheet()), this.sheetList().length - 1),

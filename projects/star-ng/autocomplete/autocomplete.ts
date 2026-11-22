@@ -26,6 +26,7 @@ import {
   StarPart,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarKeyed,
   type StarEmptyContext,
 } from '@star-ng/ui/core';
 import {
@@ -316,14 +317,23 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   protected chips(): readonly Chip<TValue>[] {
     return [];
   }
+  /** `@for` entries of the chips, keyed by the value, or its occurrence when it repeats. */
+  protected readonly chipEntries = computed(() => {
+    const chips = this.chips();
+    return ɵstarKeyed(chips.map((chip) => chip.value)).map((entry, i) => ({
+      key: entry.key,
+      item: chips[i],
+    }));
+  });
 }
 
 const TEMPLATE = `
   <div data-star-part="controlPanel" #control class="star-select__control star-ac__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
     <div data-star-part="mainPanel" class="star-ac__main">
       @if (isMultiple) {
-        @for (chip of chips(); track $index) {
-          <span data-star-part="chipPanel" class="star-chip star-chip--sm">
+        @for (entry of chipEntries(); track entry.key) {
+          @let chip = entry.item;
+          <span data-star-part="chipPanel" class="star-chip star-chip--sm" animate.leave="star-chip--leaving">
             {{ chip.label }}
             @if (interactive()) {
               <button data-star-part="removeButton"
@@ -403,6 +413,7 @@ const TEMPLATE = `
     <div starPart="panel"
       class="star-panel"
       [class]="panelClasses()"
+      animate.leave="star-panel--leaving"
       [style]="panelStyle()"
       (mousedown)="onPanelMousedown($event)"
       (keydown)="onPanelKeydown($event)"

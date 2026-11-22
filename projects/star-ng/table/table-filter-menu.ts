@@ -20,6 +20,7 @@ import {
   StarStyled,
   StarUiText,
   ɵSTAR_PART_HOST,
+  ɵStarItemKeys,
 } from '@star-ng/ui/core';
 import { StarPopover } from '@star-ng/ui/popover';
 import {
@@ -106,7 +107,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
             </option>
           </select>
         }
-        @for (rule of draft(); track $index; let i = $index) {
+        @for (rule of draft(); track ruleKeys.keyOf(rule); let i = $index) {
           <fieldset data-star-part="rulePanel" class="star-table-filter__rule">
             <legend class="star-sr-only">{{ text.filterRule(i + 1) }}</legend>
             @if (showModes()) {
@@ -297,6 +298,8 @@ export class StarTableFilterMenu {
 
   protected readonly panel = viewChild.required<StarPopover>('panel');
   protected readonly draft = signal<readonly StarFilterRule[]>([]);
+  /** `@for` keys of the rules: an edited rule keeps its row (and the focus in it). */
+  protected readonly ruleKeys = new ɵStarItemKeys();
   protected readonly operator = signal<'and' | 'or'>('and');
 
   protected readonly active = computed(() => starIsActiveFilter(this.value()));
@@ -395,7 +398,9 @@ export class StarTableFilterMenu {
   }
 
   private update(index: number, change: (rule: StarFilterRule) => StarFilterRule): void {
-    this.draft.update((rules) => rules.map((rule, i) => (i === index ? change(rule) : rule)));
+    this.draft.update((rules) =>
+      rules.map((rule, i) => (i === index ? this.ruleKeys.carry(rule, change(rule)) : rule)),
+    );
     if (!this.showApply()) this.emit();
   }
 

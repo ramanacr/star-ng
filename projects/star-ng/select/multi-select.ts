@@ -11,7 +11,14 @@ import {
   output,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_SLOT_HOST, StarPart, starSlot, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  StarPart,
+  starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+  ɵstarKeyed,
+} from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
 import { StarChipContext } from './select-slots';
 import { starSelectionChanging, StarSelectionChangingEvent } from './selection-changing';
@@ -76,7 +83,8 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           }}</span>
         } @else if (display() === 'chip') {
           <span data-star-part="chipsPanel" class="star-select__chips">
-            @for (option of selectedOptions(); track $index) {
+            @for (entry of optionEntries(); track entry.key) {
+              @let option = entry.item;
               @if (chipSlot(); as custom) {
                 <!-- The slot owns its buttons: a click on one must not toggle the panel. -->
                 <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
@@ -84,7 +92,11 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                   <ng-container *ngTemplateOutlet="custom; context: chipContext(option)" />
                 </span>
               } @else {
-                <span data-star-part="chipPanel" class="star-chip star-chip--sm">
+                <span
+                  data-star-part="chipPanel"
+                  class="star-chip star-chip--sm"
+                  animate.leave="star-chip--leaving"
+                >
                   {{ labelOf(option) }}
                   @if (interactive()) {
                     <button
@@ -101,8 +113,13 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                 </span>
               }
             }
-            @for (custom of customValues(); track $index) {
-              <span data-star-part="chipPanel" class="star-chip star-chip--sm">
+            @for (entry of customEntries(); track entry.key) {
+              @let custom = entry.item;
+              <span
+                data-star-part="chipPanel"
+                class="star-chip star-chip--sm"
+                animate.leave="star-chip--leaving"
+              >
                 {{ custom }}
                 @if (interactive()) {
                   <button
@@ -179,6 +196,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         starPart="panel"
         class="star-panel"
         [class]="panelClasses()"
+        animate.leave="star-panel--leaving"
         [style]="panelStyle()"
         (mousedown)="onPanelMousedown($event)"
         (keydown)="onPanelKeydown($event)"
@@ -445,6 +463,9 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
     const known = this.selectedOptions().map((option) => this.valueOf(option));
     return this.value().filter((value) => !known.some((v) => this.equals(v, value)));
   });
+  /** `@for` entries of the chips, keyed by the option, or its occurrence when it repeats. */
+  protected readonly optionEntries = computed(() => ɵstarKeyed(this.selectedOptions()));
+  protected readonly customEntries = computed(() => ɵstarKeyed(this.customValues()));
   protected readonly selectedCount = computed(
     () => this.selectedOptions().length + this.customValues().length,
   );
