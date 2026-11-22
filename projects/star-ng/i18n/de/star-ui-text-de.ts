@@ -31,6 +31,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   copied: 'Kopiert',
   copyFailed: 'Kopieren fehlgeschlagen',
   keyFilterInvalid: 'Der Wert enthält ein unzulässiges Zeichen.',
+  fieldPending: 'Wird geprüft …',
   tagsHint:
     'Mit der Eingabetaste oder einem Komma hinzufügen. Die Rücktaste entfernt den letzten Eintrag.',
   tagAdded: (label) => `${label} hinzugefügt`,

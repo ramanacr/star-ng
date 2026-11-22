@@ -43,7 +43,7 @@ export const FEATURE_COUNTS = {
       "files": 88
     },
     "computed": {
-      "uses": 840,
+      "uses": 841,
       "files": 105
     },
     "linkedSignal": {
@@ -79,7 +79,7 @@ export const FEATURE_COUNTS = {
       "files": 6
     },
     "inject": {
-      "uses": 567,
+      "uses": 570,
       "files": 132
     },
     "takeUntilDestroyed": {
@@ -181,7 +181,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 937,
+      "uses": 938,
       "files": 122
     },
     "computed": {

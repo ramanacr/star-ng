@@ -36,6 +36,11 @@ export interface StarUiText {
   readonly copyFailed: string;
   /** Validation message of `starKeyFilter` with `validateOnly`. */
   readonly keyFilterInvalid: string;
+  /**
+   * Polite status of `star-field` while an async validator runs (`pending()`). Screen readers
+   * announce it; most of them do not announce `aria-busy`.
+   */
+  readonly fieldPending: string;
   // Tags field
   readonly tagsHint: string;
   readonly tagAdded: (label: string) => string;
@@ -950,6 +955,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   copied: 'Copied',
   copyFailed: 'Copy failed',
   keyFilterInvalid: 'The value has a character that is not allowed.',
+  fieldPending: 'Checking…',
   tagsHint: 'Press Enter or comma to add. Backspace removes the last item.',
   tagAdded: (label) => `${label} added`,
   tagRemoved: (label) => `${label} removed`,

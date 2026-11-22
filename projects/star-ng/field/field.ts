@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 import {
   injectStarControlDefaults,
+  STAR_UI_TEXT,
   StarInputVariant,
   StarStyled,
   ɵSTAR_PART_HOST,
@@ -90,6 +91,9 @@ export interface StarFieldStateLike {
         {{ hint() }}
       </p>
     }
+    <!-- Polite status while an async validator runs: most screen readers do not announce
+         aria-busy. It stays in the DOM, so a live region exists before its text changes. -->
+    <span class="star-sr-only" aria-live="polite">{{ pending() ? text.fieldPending : '' }}</span>
   `,
 })
 export class StarField {
@@ -109,6 +113,7 @@ export class StarField {
 
   private readonly ids = inject(_IdGenerator);
   private readonly document = inject(DOCUMENT);
+  protected readonly text = inject(STAR_UI_TEXT);
   readonly labelId = this.ids.getId('star-field-label-');
   readonly hintId = this.ids.getId('star-field-hint-');
   readonly errorId = this.ids.getId('star-field-error-');

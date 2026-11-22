@@ -102,6 +102,9 @@ test.describe('field busy state in the accessibility tree @a11y', () => {
       .poll(state, { timeout: 2_000, intervals: [50] })
       .toEqual({ busy: true, invalid: 'false', description: 'Letters and digits.' });
     expect(await busyIconHidden(cdp)).toBe(true);
+    // Most screen readers do not announce aria-busy (Windows Narrator never did in the manual
+    // pass), so the field also says "Checking…" in a polite status.
+    await expect(live.locator('star-field [aria-live=polite]')).toHaveText('Checking…');
 
     // Resolved: busy is gone (on the control and on the wrapper), the text box is invalid and
     // described by the error, which is an alert (a live region, read out when it appears).
@@ -110,6 +113,7 @@ test.describe('field busy state in the accessibility tree @a11y', () => {
       .toEqual({ busy: false, invalid: 'true', description: 'This user name is taken.' });
     await expect(live.locator('star-field')).not.toHaveAttribute('aria-busy', /.*/);
     await expect(live.getByRole('alert')).toHaveText('This user name is taken.');
+    await expect(live.locator('star-field [aria-live=polite]')).toHaveText('');
     await expect(live).toMatchAriaSnapshot(`
       - textbox "User name"
       - alert: This user name is taken.
@@ -124,5 +128,63 @@ test.describe('field busy state in the accessibility tree @a11y', () => {
       .poll(state, { timeout: 5_000 })
       .toEqual({ busy: false, invalid: 'false', description: 'Letters and digits.' });
     await expect(live.getByRole('alert')).toHaveCount(0);
+  });
+
+  test('every checkbox and every radio of a field is described by the hint, then the error', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/field', 'Field');
+    const live = example(page, 'Groups of checkboxes and radios');
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Accessibility.enable');
+
+    /** Description and validity of every node of a role, by name. */
+    const nodes = async (role: string) => {
+      const { nodes: all } = (await cdp.send('Accessibility.getFullAXTree')) as {
+        nodes: AXNode[];
+      };
+      return Object.fromEntries(
+        all
+          .filter((entry) => !entry.ignored && entry.role?.value === role)
+          .map((entry) => [
+            String(entry.name?.value ?? ''),
+            {
+              description: String(entry.description?.value ?? '').trim(),
+              invalid: String(
+                entry.properties?.find((p) => p.name === 'invalid')?.value.value ?? 'false',
+              ),
+            },
+          ]),
+      );
+    };
+    const hint = (text: string) => ({ description: text, invalid: 'false' });
+    const error = { description: 'Make a choice to continue.', invalid: 'true' };
+
+    const boxes = await nodes('checkbox');
+    // The first box also takes the field label, so its name starts with "Toppings".
+    expect(Object.keys(boxes)).toEqual(
+      expect.arrayContaining(['Toppings Cheese', 'Olives', 'Peppers']),
+    );
+    for (const name of ['Toppings Cheese', 'Olives', 'Peppers']) {
+      expect(boxes[name], name).toEqual(hint('Pick one or more.'));
+    }
+    const radios = await nodes('radio');
+    for (const name of ['Free', 'Pro']) {
+      expect(radios[name], name).toEqual(hint('You can change it later.'));
+    }
+
+    await live.getByRole('button', { name: 'Show the errors' }).click();
+    await expect.poll(async () => (await nodes('checkbox'))['Olives']).toEqual(error);
+    const boxesError = await nodes('checkbox');
+    for (const name of ['Toppings Cheese', 'Olives', 'Peppers']) {
+      expect(boxesError[name], name).toEqual(error);
+    }
+    const radiosError = await nodes('radio');
+    for (const name of ['Free', 'Pro']) expect(radiosError[name], name).toEqual(error);
+
+    await live.getByRole('button', { name: 'Clear the errors' }).click();
+    await expect
+      .poll(async () => (await nodes('radio'))['Pro'])
+      .toEqual(hint('You can change it later.'));
   });
 });
