@@ -99,3 +99,74 @@ export function ɵstarLeaveWithClass(
     wait.cancel = ɵstarAfterExit(target, end);
   };
 }
+
+/** Per document: the browser keeps a closing modal `<dialog>` in the top layer (CSS `overlay`). */
+const overlaySupport = new WeakMap<Document, boolean>();
+
+/**
+ * True when the browser can show the exit transition of a `<dialog>` after `close()`: it supports
+ * the CSS `overlay` property, which keeps a closing modal dialog in the top layer (Chromium).
+ * Firefox and WebKit have no `overlay`: a closed dialog goes at once. Without `CSS.supports`
+ * (server, jsdom) it is true, so nothing changes there. Read once per document. Shared by the
+ * entry points; not public API.
+ */
+export function ɵstarDialogExitAfterClose(doc: Document): boolean {
+  let known = overlaySupport.get(doc);
+  if (known === undefined) {
+    const css = doc.defaultView?.CSS;
+    known = typeof css?.supports === 'function' ? css.supports('overlay', 'auto') : true;
+    overlaySupport.set(doc, known);
+  }
+  return known;
+}
+
+/** A close of `ɵstarCloseDialog` that waits for the exit motion. */
+export interface ɵStarDialogClose {
+  /** Ends the motion now: closes the dialog and runs `closed` (a re-open during the exit). */
+  finish(): void;
+  /** Drops the close: the dialog stays as it is and `closed` does not run (a destroy). */
+  cancel(): void;
+}
+
+/**
+ * Closes a native `<dialog>` and then runs `closed`. Where the browser can show the exit after
+ * `close()` (`ɵstarDialogExitAfterClose`), it closes at once and the CSS `allow-discrete`
+ * transition runs. Elsewhere (Firefox, WebKit) it first sets `data-star-closing` on the open
+ * dialog, so the control CSS moves it to its closed look while it is still shown, waits for those
+ * animations (`ɵstarAfterExit`: at once under reduced motion or when nothing runs, 4 s at most),
+ * and then closes. Returns the pending close, or `null` when it closed at once. Shared by the
+ * entry points; not public API.
+ */
+export function ɵstarCloseDialog(
+  dialog: HTMLDialogElement,
+  closed: () => void,
+): ɵStarDialogClose | null {
+  const doc = dialog.ownerDocument;
+  const close = () => {
+    dialog.removeAttribute('data-star-closing');
+    if (dialog.open) dialog.close();
+    closed();
+  };
+  if (!dialog.open || ɵstarDialogExitAfterClose(doc) || starPrefersReducedMotion(doc)) {
+    close();
+    return null;
+  }
+  let done = false;
+  const end = () => {
+    if (done) return;
+    done = true;
+    close();
+  };
+  dialog.setAttribute('data-star-closing', '');
+  ɵstarAfterExit(dialog, end);
+  // Nothing ran (no motion): it closed at once.
+  if (done) return null;
+  return {
+    finish: end,
+    cancel: () => {
+      if (done) return;
+      done = true;
+      dialog.removeAttribute('data-star-closing');
+    },
+  };
+}

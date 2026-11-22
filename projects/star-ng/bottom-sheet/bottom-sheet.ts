@@ -6,6 +6,7 @@ import {
   Component,
   ComponentRef,
   createComponent,
+  DestroyRef,
   DOCUMENT,
   ElementRef,
   EnvironmentInjector,
@@ -17,7 +18,14 @@ import {
   Type,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST, ɵstarAfterExit } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+  ɵstarAfterExit,
+  ɵstarCloseDialog,
+  ɵStarDialogClose,
+} from '@star-ng/ui/core';
 import { StarActionSheet, StarActionSheetItem } from './action-sheet';
 import {
   STAR_BOTTOM_SHEET_DATA,
@@ -80,12 +88,16 @@ export class StarBottomSheetContainer {
   private isOpen = false;
   /** Closed before the first render: the dialog must never open. */
   private cancelled = false;
+  /** A close that waits for the exit motion (browsers without CSS `overlay`). */
+  private closing: ɵStarDialogClose | null = null;
   /** Set by the service: asks the ref to dismiss (Escape, backdrop). */
   dismiss: () => void = () => undefined;
   /** Set by the service: runs once after the sheet closed. */
   hidden: () => void = () => undefined;
 
   constructor() {
+    // Destroyed during the exit motion: no close and no `hidden` from a destroyed sheet.
+    inject(DestroyRef).onDestroy(() => this.closing?.cancel());
     afterNextRender({
       write: () => {
         if (this.cancelled) return;
@@ -116,9 +128,13 @@ export class StarBottomSheetContainer {
       this.hidden();
       return;
     }
-    const element = this.dialog().nativeElement;
-    if (element.open) element.close();
-    this.markHidden();
+    if (this.closing) return;
+    // Where the browser cannot show the exit after close() (no CSS `overlay`), the slide down
+    // runs first; `hidden` follows the close.
+    this.closing = ɵstarCloseDialog(this.dialog().nativeElement, () => {
+      this.closing = null;
+      this.markHidden();
+    });
   }
 
   /** `data-autofocus` first, then the first focusable element, then the sheet itself. */

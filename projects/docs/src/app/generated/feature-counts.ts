@@ -79,7 +79,7 @@ export const FEATURE_COUNTS = {
       "files": 6
     },
     "inject": {
-      "uses": 565,
+      "uses": 567,
       "files": 132
     },
     "takeUntilDestroyed": {
@@ -131,8 +131,8 @@ export const FEATURE_COUNTS = {
       "files": 121
     },
     "destroyRef": {
-      "uses": 109,
-      "files": 45
+      "uses": 113,
+      "files": 47
     },
     "booleanAttribute": {
       "uses": 535,
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 247,
+  "specFiles": 248,
   "pages": 144
 } as const;

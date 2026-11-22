@@ -146,33 +146,49 @@ for (const reduced of [false, true]) {
       await page.getByRole('button', { name: 'Edit note' }).click();
       const dialog = page.getByRole('dialog', { name: 'Edit note' });
       await expect(dialog).toBeVisible();
-      // The contract of the service: the container stays in the DOM while the close motion
-      // that starts at `dialog.close()` runs, and goes when it has ended; with no close motion
-      // it goes at once. The wrapper reads the running animations right after `close()`, the
-      // same moment the service reads them. Whether a closing modal dialog can animate depends
-      // on the browser: without the CSS `overlay` property (Firefox, WebKit) the dialog leaves
-      // the top layer at once and no close transition starts.
+      // The contract: the close motion runs in every browser, and the container stays in the DOM
+      // until it has ended; under reduced motion it goes at once. Where the browser keeps a
+      // closing modal dialog in the top layer (CSS `overlay`, Chromium) the motion is the
+      // transition after `dialog.close()`. Elsewhere (Firefox, WebKit) it runs before close(),
+      // while the dialog has `data-star-closing`. The page reads the running animations at the
+      // start of the motion (whichever comes first), the same moment the library reads them.
       await page.evaluate(() => {
         const host = document.querySelector('star-dialog-container')!;
         const dialog = host.querySelector('dialog')!;
         const state = {
           overlaySupported: CSS.supports('overlay', 'auto'),
-          runningAfterClose: -1,
+          motion: 'none' as 'none' | 'after-close' | 'before-close',
+          running: -1,
           connectedAtClose: null as boolean | null,
-          connectedAfterMotion: null as boolean | null,
+          // Times (ms, performance.now()): when the motion ends, when the container goes.
+          motionEnd: -1,
+          removedAt: -1,
         };
         (window as unknown as { __close: typeof state }).__close = state;
-        const close = dialog.close;
-        dialog.close = function (this: HTMLDialogElement, ...args: [string?]) {
-          close.apply(this, args);
+        const record = (motion: 'after-close' | 'before-close') => {
+          if (state.running >= 0) return;
           const running = host
             .getAnimations({ subtree: true })
             .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
-          state.runningAfterClose = running.length;
-          void Promise.allSettled(running.map((animation) => animation.finished)).then(() => {
-            // The service removes the container in the same turn as the last animation ends.
-            state.connectedAfterMotion = host.isConnected;
+          state.running = running.length;
+          if (running.length) state.motion = motion;
+          const now = performance.now();
+          const left = running.map((animation) => {
+            const timing = animation.effect!.getComputedTiming();
+            return Number(timing.endTime) - Number(timing.localTime ?? 0);
           });
+          state.motionEnd = now + Math.max(0, ...left);
+        };
+        new MutationObserver(() => {
+          if (!host.isConnected && state.removedAt < 0) state.removedAt = performance.now();
+        }).observe(document.body, { childList: true });
+        new MutationObserver(() => {
+          if (dialog.hasAttribute('data-star-closing')) record('before-close');
+        }).observe(dialog, { attributes: true, attributeFilter: ['data-star-closing'] });
+        const close = dialog.close;
+        dialog.close = function (this: HTMLDialogElement, ...args: [string?]) {
+          close.apply(this, args);
+          record('after-close');
         };
         dialog.addEventListener('close', () => (state.connectedAtClose = host.isConnected));
       });
@@ -184,26 +200,28 @@ for (const reduced of [false, true]) {
             window as unknown as {
               __close: {
                 overlaySupported: boolean;
-                runningAfterClose: number;
+                motion: 'none' | 'after-close' | 'before-close';
+                running: number;
                 connectedAtClose: boolean | null;
-                connectedAfterMotion: boolean | null;
+                motionEnd: number;
+                removedAt: number;
               };
             }
           ).__close,
       );
-      expect(state.runningAfterClose).toBeGreaterThanOrEqual(0);
-      // What the browser runs: under reduced motion nothing; where a modal dialog can animate
-      // out of the top layer (`overlay`), the close transition.
-      if (reduced) expect(state.runningAfterClose).toBe(0);
-      else if (state.overlaySupported) expect(state.runningAfterClose).toBeGreaterThan(0);
-      if (state.runningAfterClose > 0) {
-        // The close motion runs: the container is still there when the native close event
-        // fires, and until the last close animation has ended.
-        expect(state.connectedAtClose).toBe(true);
-        expect(state.connectedAfterMotion).toBe(true);
-      } else {
-        // No close motion: the service removes the container at once, before the close event.
+      if (reduced) {
+        // No motion: the service removes the container at once, before the close event.
+        expect(state.running).toBe(0);
         expect(state.connectedAtClose).not.toBe(true);
+      } else {
+        // The close motion runs in every browser, in the form the browser can show.
+        expect(state.running).toBeGreaterThan(0);
+        expect(state.motion).toBe(state.overlaySupported ? 'after-close' : 'before-close');
+        // The container is there until the last close animation has ended (one frame of slack
+        // for the clock of the animation).
+        expect(state.removedAt).toBeGreaterThanOrEqual(state.motionEnd - 17);
+        // With `overlay` the motion runs after close(): the container outlives the close event.
+        if (state.overlaySupported) expect(state.connectedAtClose).toBe(true);
       }
     });
   });

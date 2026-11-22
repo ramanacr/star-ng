@@ -1,4 +1,4 @@
-import { ɵstarAfterExit, ɵstarLeaveWithClass } from './motion';
+import { ɵstarAfterExit, ɵstarCloseDialog, ɵstarLeaveWithClass } from './motion';
 
 /** A fake animation whose `finished` promise the test settles. */
 function fakeAnimation(iterations = 1) {
@@ -168,5 +168,84 @@ describe('ɵstarLeaveWithClass', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('ɵstarCloseDialog', () => {
+  /** A document whose window has (or has not) CSS `overlay`, and an open dialog in it. */
+  function setup(overlay: boolean) {
+    const doc = document.implementation.createHTMLDocument('dialogs');
+    Object.defineProperty(doc, 'defaultView', {
+      value: { CSS: { supports: (property: string) => overlay && property === 'overlay' } },
+    });
+    const dialog = doc.createElement('dialog');
+    dialog.setAttribute('open', '');
+    const close = vi.fn(() => dialog.removeAttribute('open'));
+    Object.assign(dialog, { close });
+    Object.defineProperty(dialog, 'open', { get: () => dialog.hasAttribute('open') });
+    doc.body.append(dialog);
+    return { doc, dialog, close };
+  }
+
+  function fade(dialog: Element) {
+    let finish!: () => void;
+    const finished = new Promise<void>((resolve) => (finish = resolve));
+    const animation = { finished, effect: { getComputedTiming: () => ({ iterations: 1 }) } };
+    (dialog as unknown as { getAnimations: () => unknown[] }).getAnimations = () => [animation];
+    return finish;
+  }
+
+  it('closes at once where the browser has CSS overlay', () => {
+    const { dialog, close } = setup(true);
+    fade(dialog);
+    const closed = vi.fn();
+    expect(ɵstarCloseDialog(dialog, closed)).toBeNull();
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(closed).toHaveBeenCalledTimes(1);
+    expect(dialog.hasAttribute('data-star-closing')).toBe(false);
+  });
+
+  it('without overlay, runs the exit on the open dialog first, then closes once', async () => {
+    const { dialog, close } = setup(false);
+    const finish = fade(dialog);
+    const closed = vi.fn();
+    const pending = ɵstarCloseDialog(dialog, closed);
+    expect(pending).not.toBeNull();
+    expect(dialog.hasAttribute('data-star-closing')).toBe(true);
+    expect(close).not.toHaveBeenCalled();
+    expect(closed).not.toHaveBeenCalled();
+
+    finish();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(closed).toHaveBeenCalledTimes(1);
+    expect(dialog.hasAttribute('data-star-closing')).toBe(false);
+    pending!.finish();
+    expect(closed).toHaveBeenCalledTimes(1);
+  });
+
+  it('finish() ends the exit at once (a re-open) and cancel() drops it (a destroy)', () => {
+    const first = setup(false);
+    fade(first.dialog);
+    const closed = vi.fn();
+    ɵstarCloseDialog(first.dialog, closed)!.finish();
+    expect(first.close).toHaveBeenCalledTimes(1);
+    expect(closed).toHaveBeenCalledTimes(1);
+
+    const second = setup(false);
+    fade(second.dialog);
+    const dropped = vi.fn();
+    ɵstarCloseDialog(second.dialog, dropped)!.cancel();
+    expect(second.close).not.toHaveBeenCalled();
+    expect(dropped).not.toHaveBeenCalled();
+    expect(second.dialog.hasAttribute('data-star-closing')).toBe(false);
+  });
+
+  it('closes at once without overlay when nothing runs', () => {
+    const { dialog, close } = setup(false);
+    const closed = vi.fn();
+    expect(ɵstarCloseDialog(dialog, closed)).toBeNull();
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(closed).toHaveBeenCalledTimes(1);
   });
 });

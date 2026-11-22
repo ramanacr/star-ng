@@ -41,6 +41,14 @@
       opacity: 0;
     }
   }
+  // The closed look while the dialog is still open: browsers without CSS `overlay` (Firefox,
+  // WebKit) run the exit with `data-star-closing` before close() (see ɵstarCloseDialog).
+  &[open][data-star-closing] {
+    translate: var(--star-drawer-from);
+  }
+  &[open][data-star-closing]::backdrop {
+    opacity: 0;
+  }
   .star-dialog__surface {
     height: 100%;
     max-height: none;

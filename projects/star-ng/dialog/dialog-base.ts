@@ -3,6 +3,7 @@ import {
   afterRenderEffect,
   booleanAttribute,
   computed,
+  DestroyRef,
   Directive,
   ElementRef,
   inject,
@@ -11,7 +12,7 @@ import {
   output,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, ɵstarCloseDialog, ɵStarDialogClose } from '@star-ng/ui/core';
 import { STAR_DIALOG_DEFAULTS } from './dialog-defaults';
 
 const FOCUSABLE =
@@ -77,6 +78,8 @@ export abstract class StarDialogBase {
   protected readonly headerId = inject(_IdGenerator).getId('star-dialog-title-');
   protected readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private isOpen = false;
+  /** A close that waits for the exit motion (browsers without CSS `overlay`). */
+  private closing: ɵStarDialogClose | null = null;
 
   /** `aria-labelledby`: the given id, or the header title when it is shown. */
   protected readonly labelledBy = computed(
@@ -91,10 +94,14 @@ export abstract class StarDialogBase {
   protected readonly scrollBlocked = computed(() => this.blockScroll() ?? this.modal());
 
   constructor() {
+    // Destroyed during the exit motion: no close and no `hidden` from a destroyed dialog.
+    inject(DestroyRef).onDestroy(() => this.closing?.cancel());
     afterRenderEffect({
       write: () => {
         const element = this.dialog().nativeElement;
         const visible = this.visible();
+        // Opened again during the exit motion: end it now (close, `hidden`), then open.
+        if (visible && this.closing) this.closing.finish();
         if (visible && !element.open) {
           if (this.modal()) element.showModal?.();
           else element.show?.();
@@ -103,11 +110,14 @@ export abstract class StarDialogBase {
           if (this.focusOnShow()) this.focusInitial(element);
           else element.focus({ preventScroll: true });
           this.shown.emit();
-        } else if (!visible && element.open) {
-          element.close();
+        } else if (!visible && element.open && !this.closing) {
           // Do not wait for the native 'close' event: some hosts (background or embedded
-          // browsers) deliver it late or not at all.
-          this.markHidden();
+          // browsers) deliver it late or not at all. Where the browser cannot show the exit
+          // after close() (no CSS `overlay`), the exit motion runs first.
+          this.closing = ɵstarCloseDialog(element, () => {
+            this.closing = null;
+            this.markHidden();
+          });
         }
       },
     });
@@ -158,6 +168,10 @@ export abstract class StarDialogBase {
 
   /** Browser-initiated close (for example a form with method="dialog"). */
   protected onNativeClose(): void {
+    // The close event of an earlier close, after the dialog opened again (a re-open during the
+    // exit motion closes and opens in one task; the event comes later): not a close.
+    // Our own close at the end of the exit motion handles the state itself.
+    if (this.closing || this.dialog().nativeElement.open) return;
     if (this.visible()) this.visible.set(false);
     this.markHidden();
   }

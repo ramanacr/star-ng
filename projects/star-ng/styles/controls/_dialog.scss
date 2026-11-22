@@ -48,6 +48,15 @@ html:has(dialog.star-dialog--block-scroll[open]) {
       opacity: 0;
     }
   }
+  // The closed look while the dialog is still open: browsers without CSS `overlay` (Firefox,
+  // WebKit) run the exit with `data-star-closing` before close() (see ɵstarCloseDialog).
+  &[open][data-star-closing] {
+    opacity: 0;
+    scale: 0.96;
+  }
+  &[open][data-star-closing]::backdrop {
+    opacity: 0;
+  }
 }
 .star-dialog--sm {
   width: min(26rem, calc(100vw - 2rem));

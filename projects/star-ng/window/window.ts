@@ -19,7 +19,14 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, starIsRtl, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  starIsRtl,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+  ɵstarCloseDialog,
+  ɵStarDialogClose,
+} from '@star-ng/ui/core';
 
 /** State of a `star-window`. */
 export type StarWindowState = 'normal' | 'minimized' | 'maximized';
@@ -265,6 +272,8 @@ export class StarWindow {
   protected readonly moving = signal(false);
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private isOpen = false;
+  /** A close that waits for the exit motion (browsers without CSS `overlay`). */
+  private closing: ɵStarDialogClose | null = null;
 
   constructor() {
     // When a state change hides the focused element (for example the content of a window that
@@ -295,20 +304,29 @@ export class StarWindow {
     });
     // Destroyed while open (for example its page went away): leave the stack, so the order and
     // the cascade of the other windows stay right. No `closed` output from a destroyed component.
-    inject(DestroyRef).onDestroy(() => this.markClosed(false));
+    inject(DestroyRef).onDestroy(() => {
+      this.closing?.cancel();
+      this.markClosed(false);
+    });
     afterRenderEffect({
       write: () => {
         const element = this.dialog().nativeElement;
         const visible = this.visible();
+        // Opened again during the exit motion: end it now (close, `closed`), then open.
+        if (visible && this.closing) this.closing.finish();
         if (visible && !this.isOpen) {
           this.isOpen = true;
           const index = this.stack.openCount();
           this.toFront();
           element.show?.();
           if (!this.position()) this.center(element, index);
-        } else if (!visible && this.isOpen) {
-          if (element.open) element.close();
-          this.markClosed();
+        } else if (!visible && this.isOpen && !this.closing) {
+          // Where the browser cannot show the exit after close() (no CSS `overlay`), the fade
+          // runs first; `closed` follows the close.
+          this.closing = ɵstarCloseDialog(element, () => {
+            this.closing = null;
+            this.markClosed();
+          });
         }
       },
     });
@@ -407,6 +425,9 @@ export class StarWindow {
 
   /** Browser-initiated close, for example a form with method="dialog". */
   protected onNativeClose(): void {
+    // The close event of an earlier close, after the window opened again: not a close.
+    // Our own close at the end of the exit motion handles the state itself.
+    if (this.closing || this.dialog().nativeElement.open) return;
     if (this.visible()) this.visible.set(false);
     this.markClosed();
   }
