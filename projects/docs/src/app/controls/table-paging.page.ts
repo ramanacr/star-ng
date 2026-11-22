@@ -184,6 +184,9 @@ readonly page = httpResource<{ rows: Order[]; total: number }>(() => {
       sortField: event.field ?? '',
       sortOrder: event.order,
       filter: event.filter,
+      // Column filters and all sort columns (multiSort) go as JSON text.
+      filters: JSON.stringify(event.filters),
+      sorts: JSON.stringify(event.sorts),
     },
   };
 });

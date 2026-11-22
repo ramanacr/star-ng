@@ -10,8 +10,11 @@ export interface ɵStarKeyed<T> {
  * occurrence number and the item on each repeat. `@for (entry of entries(); track entry.key)`
  * then gives every row its own key (no NG0955 warning), and a removed item takes its own row
  * with it. The key lives in the entry, so a row keeps the key it was made with (Angular reads
- * the keys of the old rows from their own items). A repeat of an object item is keyed by the
- * index of its first occurrence. Shared by the entry points; not public API.
+ * the keys of the old rows from their own items). Exact repeats are not told apart: when the user
+ * removes the first of two equal tags, the remaining one takes the key (and the row) of the first,
+ * and the row of the repeat key leaves; the value, count and announcement are right. A repeat of
+ * an object item is keyed by the index of its first occurrence. Shared by the entry points; not
+ * public API.
  */
 export function ɵstarKeyed<T>(items: readonly T[]): ɵStarKeyed<T>[] {
   const seen = new Map<unknown, number>();
