@@ -71,21 +71,21 @@ const FEATURES: readonly FeatureRow[] = [
     since: '19 (experimental) to 22',
     library:
       'Used: `resource()` {lib:resource}: the folders of the file manager provider, the child rows of the hierarchical grid (`childData`) and the opt-in `suggestionLoader` of the autocomplete (with an error state). `rxResource` and `httpResource`: not applicable, the library makes no HTTP request and takes plain promise functions.',
-    docs: 'Used: `resource()` {docs:resource} times, for example the lazy autocomplete and listbox examples and the autocomplete loader example.',
+    docs: 'Used: `resource()` {docs:resource} times, for example the lazy autocomplete and listbox examples and the autocomplete loader example. The lazy table example shows the server request as an `httpResource` whose request follows the `lazyLoad` event (code sample).',
   },
   {
     feature: '`debounced()`',
     since: '22.0 (experimental)',
     library:
-      'Not adopted: experimental. The package uses only stable Angular APIs in its public behaviour. The autocomplete debounce is a timer that also sets when `completeMethod` fires.',
+      'Not adopted: `@experimental` in 22.2. The package uses only stable Angular APIs. The autocomplete debounce is a timer that also sets when `completeMethod` fires.',
     docs: 'Not applicable.',
   },
   {
     feature: 'Signal Forms: `FormValueControl`, `FormCheckboxControl`, `[field]`',
     since: '21 (experimental), 22.0 (public)',
     library:
-      'Used: `FormValueControl` {lib:formValueControl}, `FormCheckboxControl` {lib:formCheckboxControl}, imports of `@angular/forms/signals` {lib:signalForms}. No `ControlValueAccessor`.',
-    docs: 'Used: {docs:signalForms} imports of `@angular/forms/signals`; the Forms guide shows Signal Forms and validation.',
+      'Used: `FormValueControl` {lib:formValueControl}, `FormCheckboxControl` {lib:formCheckboxControl}, imports of `@angular/forms/signals` {lib:signalForms}. No `ControlValueAccessor`. The field wrapper (`StarField`) reads `pending()` of a field state: while an async validator runs, the field is `aria-busy` and shows a busy icon.',
+    docs: 'Used: {docs:signalForms} imports of `@angular/forms/signals`; the Forms guide shows Signal Forms and validation, and the Field page an async validator (`validateAsync`).',
   },
   {
     feature: 'Reactive (typed) forms interop',
@@ -105,7 +105,7 @@ const FEATURES: readonly FeatureRow[] = [
     feature: 'Built-in control flow: `@if`, `@for`, `@switch`',
     since: '17',
     library:
-      'Used: `@if` {lib:if}, `@for` {lib:for}, `@switch` {lib:switch}. No `*ngIf`, `*ngFor` or `ngSwitch`.',
+      'Used: `@if` {lib:if}, `@for` {lib:for}, `@switch` {lib:switch}. No `*ngIf`, `*ngFor` or `ngSwitch`. A list whose items the user removes or repeats tracks a stable key, not `$index`: the chips of the tags field, autocomplete and multi-select (a repeated value gets its own key), the rules of the query builder and the table filter menu (an edited rule keeps its key), and the sheet tabs of the spreadsheet. `track $index` stays for static lists.',
     docs: 'Used: `@if` {docs:if} times, `@for` {docs:for} times; no structural directives of `CommonModule`.',
   },
   {
@@ -162,8 +162,21 @@ const FEATURES: readonly FeatureRow[] = [
     docs: 'Used: `inject()` {docs:inject} times.',
   },
   {
-    feature: '`injectAsync`, `onIdle`, `provideIdleServiceWith`',
+    feature: '`@Service()` decorator',
     since: '22.0',
+    library:
+      "Used: every root service of the package is a `@Service()`: the dialog, window, bottom sheet, confirm and toast services, the clock, announcer, clipboard, configuration, direction, filter and theme services, and the drag-and-drop registries. Injection is the same as with `@Injectable({ providedIn: 'root' })`; an application can still provide its own instance.",
+    docs: 'Not applicable: the one docs service is provided by a component (`@Injectable()` in the i18n guide).',
+  },
+  {
+    feature: '`DOCUMENT` from `@angular/core`',
+    since: '20 (`@angular/common` re-exports it)',
+    library: 'Used: every file imports `DOCUMENT` from `@angular/core`.',
+    docs: 'Used: the same.',
+  },
+  {
+    feature: '`injectAsync`, `onIdle`, `provideIdleServiceWith`',
+    since: '22.0 (stable)',
     library:
       'Not adopted: `injectAsync` loads an injectable on demand, but the table loads a component (the query builder of the advanced filter) and creates it in a view container. Prefetching that chunk with `onIdle` would download it on every table page, also when the filter is never opened.',
     docs: 'Not applicable: the docs load no services on demand.',
@@ -193,8 +206,8 @@ const FEATURES: readonly FeatureRow[] = [
     feature: 'Animations: `animate.enter`, `animate.leave`',
     since: '20.2',
     library:
-      'Not adopted. Enter motion is CSS: `@starting-style` for the dialog, drawer, bottom sheet and window, a keyframe for the toast. Exit of top-layer elements is CSS too (`transition-behavior: allow-discrete` on `display` and `overlay`). No control has enter or leave class or timer code that `animate.enter` or `animate.leave` would replace. The toast and the message disappear without an exit animation today; `animate.leave` would add motion, a visual change for a later version. No `@angular/animations`.',
-    docs: 'Not applicable.',
+      '`animate.leave` adopted for elements that leave the DOM: the toast, the banner content, the overlay panels (select, multi-select, autocomplete, multi-column combobox, date, time and color pickers, tree select, popover, tooltip, popup and mega menus), the removed chips of the tags field, autocomplete and multi-select, and a closed tab. The CDK keeps an overlay until its panel has left. The reduced-motion rules turn each leave class off, so Angular then removes the element at once; on the server and in jsdom `animate.leave` does nothing. The service-opened dialog, window and bottom sheet keep their CSS exit transition: the service removes the host only after the running transitions end (at once under reduced motion, 4 s at most). The message is hidden, not removed: it fades with an `allow-discrete` transition. `animate.enter` is not adopted: enter motion stays CSS (`@starting-style`, keyframes); it needs no script, runs on first paint after hydration, and the reduced-motion mixin turns it off. Not adopted for rows (tree, table, tree table, data view, list, virtual scroller) and kanban cards: rows live in virtual windows and drag and drop moves the nodes, so a leave animation would show stale rows during a scroll or a copy during a drop. Not needed for the accordion, panel, fieldset, tab panels and template dialogs: the element stays in the DOM and CSS animates both ways (`grid-template-rows`, `allow-discrete`); tab panels switch at once (WAI-ARIA). No `@angular/animations`.',
+    docs: 'Not applicable: the pages use the router view transitions.',
   },
   {
     feature: 'Router view transitions (`withViewTransitions`)',
@@ -207,6 +220,19 @@ const FEATURES: readonly FeatureRow[] = [
     since: '16',
     library: 'Not applicable: controls are not route components.',
     docs: 'Adopted: the Tabs page reads the query parameter `view` as an input.',
+  },
+  {
+    feature: 'Router `isActive()` signal',
+    since: '21.1',
+    library:
+      "Not adopted: the tab link follows `RouterLinkActive`, so the application's `routerLinkActiveOptions` still apply.",
+    docs: 'Not applicable.',
+  },
+  {
+    feature: 'Route injector clean-up (`withAutoCleanupInjectors`)',
+    since: '22.2',
+    library: 'Not applicable: the router configuration belongs to the application.',
+    docs: 'Not applicable: no docs route has providers.',
   },
   {
     feature: 'Router resources (`withRouterResources`)',
@@ -247,6 +273,19 @@ const FEATURES: readonly FeatureRow[] = [
     since: '21 (developer preview), 22',
     library:
       'Not adopted: the controls implement the WAI-ARIA patterns on the Angular CDK (focus, overlays, menus, drag and drop) and are checked with axe in both themes. A move would rewrite released controls and add a peer dependency without a new feature for users.',
+    docs: 'Not applicable.',
+  },
+  {
+    feature: 'Error boundaries: `@boundary`, `@error`',
+    since: 'Not public in 22.2 (the compiler parses the blocks; no public API)',
+    library: 'Not adopted: no stable public API in 22.2.',
+    docs: 'Not adopted.',
+  },
+  {
+    feature: 'Timers, `NgZone`, `detectChanges`, RxJS subjects',
+    since: 'n/a (kept on purpose)',
+    library:
+      'Kept: the `setTimeout` calls of the library are timers (debounce, message and toast life, long press) and checks after a focus move; `afterNextRender` needs a render, which a blur does not schedule. The editor calls `detectChanges` once to focus its find field in the same key event, `StarClock` ticks outside the zone of a zone-based application, and the menu list uses `ngOnInit` once (reasons in the code). The `Subject` of `StarToastService.closed` is a public event stream, `toSignal` bridges the Transloco text, and the hierarchical grid loader stops an Observable with its abort signal; signals do not replace them. `requestAnimationFrame` drives animation loops only.',
     docs: 'Not applicable.',
   },
   {

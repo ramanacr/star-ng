@@ -43,7 +43,7 @@ export const FEATURE_COUNTS = {
       "files": 88
     },
     "computed": {
-      "uses": 808,
+      "uses": 814,
       "files": 105
     },
     "linkedSignal": {
@@ -103,20 +103,20 @@ export const FEATURE_COUNTS = {
       "files": 27
     },
     "if": {
-      "uses": 811,
+      "uses": 812,
       "files": 105
     },
     "for": {
-      "uses": 236,
-      "files": 72
+      "uses": 249,
+      "files": 74
     },
     "switch": {
       "uses": 11,
       "files": 10
     },
     "let": {
-      "uses": 55,
-      "files": 25
+      "uses": 60,
+      "files": 27
     },
     "host": {
       "uses": 166,
@@ -277,6 +277,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 243,
+  "specFiles": 246,
   "pages": 144
 } as const;

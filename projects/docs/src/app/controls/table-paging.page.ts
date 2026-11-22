@@ -171,19 +171,25 @@ export class TablePagingPage {
 
   protected readonly clientScript = `readonly first = signal(0);
 readonly rows = signal(5);`;
-  protected readonly lazyScript = `readonly lazyRows = signal<readonly Order[]>([]);
-readonly lazyTotal = signal(0);
-readonly lazyLoading = signal(false);
+  protected readonly lazyScript = `// The table asks for a page; httpResource loads it again when the request changes.
+readonly request = signal<StarLazyLoadEvent | null>(null);
+readonly page = httpResource<{ rows: Order[]; total: number }>(() => {
+  const event = this.request();
+  if (!event) return undefined; // nothing to load yet
+  return {
+    url: '/api/orders',
+    params: {
+      first: event.first,
+      rows: event.rows,
+      sortField: event.field ?? '',
+      sortOrder: event.order,
+      filter: event.filter,
+    },
+  };
+});
 
-load(event: StarLazyLoadEvent): void {
-  this.lazyLoading.set(true);
-  // Send event.first, event.rows, event.field, event.order and event.filters to the server.
-  this.api.orders(event).subscribe((page) => {
-    this.lazyRows.set(page.rows);
-    this.lazyTotal.set(page.total);
-    this.lazyLoading.set(false);
-  });
-}`;
+// [value]="page.value()?.rows ?? []" [totalRecords]="page.value()?.total ?? 0"
+// [loading]="page.isLoading()" (lazyLoad)="request.set($event)"`;
 
   protected readonly keyboard: readonly DocsRow[] = [
     {
