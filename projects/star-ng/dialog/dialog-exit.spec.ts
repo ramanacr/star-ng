@@ -6,8 +6,8 @@ import {
   StarBottomSheetRef,
 } from '@star-ng/ui/bottom-sheet';
 import { ɵstarOverrideDialogExit } from '@star-ng/ui/core';
-import { StarDialog } from '@star-ng/ui/dialog';
-import { StarWindow } from '@star-ng/ui/window';
+import { StarDialog, StarDialogRef, StarDialogService } from '@star-ng/ui/dialog';
+import { StarWindow, StarWindowRef, StarWindowService } from '@star-ng/ui/window';
 
 // The exit of the native dialogs in a browser without CSS `overlay` (Firefox, WebKit): the motion
 // runs on the open dialog, then close() follows. The specs share one window with other files
@@ -333,5 +333,48 @@ describe('StarBottomSheet exit without CSS overlay', () => {
     end();
     await turn();
     await expect(ref.afterDismissed()).resolves.toBe('pdf');
+  });
+});
+
+// ------------------------------------------- first close wins (service refs)
+
+@Component({ template: `<p>Content</p>` })
+class ServiceContent {}
+
+describe('service refs: the first close wins in every browser', () => {
+  afterEach(() =>
+    document
+      .querySelectorAll('star-dialog-container, star-window-container')
+      .forEach((node) => node.remove()),
+  );
+
+  it('dialog: Escape, then close("saved") during the exit gives undefined', async () => {
+    const ref: StarDialogRef<string> = TestBed.inject(StarDialogService).open(ServiceContent);
+    await settle();
+    const dialog = document.querySelector<HTMLDialogElement>('star-dialog-container dialog')!;
+    const end = startMotion();
+    dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+    await settle();
+    expect(dialog.hasAttribute('data-star-closing')).toBe(true);
+    ref.close('saved');
+    end();
+    await settle();
+    await expect(ref.closed).resolves.toBeUndefined();
+  });
+
+  it('window: Escape, then close("saved") during the exit gives undefined', async () => {
+    const ref: StarWindowRef<string> = TestBed.inject(StarWindowService).open(ServiceContent, {
+      closeOnEscape: true,
+    });
+    await settle();
+    const dialog = document.querySelector<HTMLDialogElement>('star-window-container dialog')!;
+    const end = startMotion();
+    dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+    await settle();
+    expect(dialog.hasAttribute('data-star-closing')).toBe(true);
+    ref.close('saved');
+    end();
+    await settle();
+    await expect(ref.closed).resolves.toBeUndefined();
   });
 });
