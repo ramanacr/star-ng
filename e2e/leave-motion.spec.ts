@@ -146,29 +146,64 @@ for (const reduced of [false, true]) {
       await page.getByRole('button', { name: 'Edit note' }).click();
       const dialog = page.getByRole('dialog', { name: 'Edit note' });
       await expect(dialog).toBeVisible();
+      // The contract of the service: the container stays in the DOM while the close motion
+      // that starts at `dialog.close()` runs, and goes when it has ended; with no close motion
+      // it goes at once. The wrapper reads the running animations right after `close()`, the
+      // same moment the service reads them. Whether a closing modal dialog can animate depends
+      // on the browser: without the CSS `overlay` property (Firefox, WebKit) the dialog leaves
+      // the top layer at once and no close transition starts.
       await page.evaluate(() => {
         const host = document.querySelector('star-dialog-container')!;
-        const state = { connectedAtClose: null as boolean | null, transitions: -1 };
+        const dialog = host.querySelector('dialog')!;
+        const state = {
+          overlaySupported: CSS.supports('overlay', 'auto'),
+          runningAfterClose: -1,
+          connectedAtClose: null as boolean | null,
+          connectedAfterMotion: null as boolean | null,
+        };
         (window as unknown as { __close: typeof state }).__close = state;
-        host.querySelector('dialog')!.addEventListener('close', () => {
-          state.connectedAtClose = host.isConnected;
-          state.transitions = host.isConnected ? host.getAnimations({ subtree: true }).length : 0;
-        });
+        const close = dialog.close;
+        dialog.close = function (this: HTMLDialogElement, ...args: [string?]) {
+          close.apply(this, args);
+          const running = host
+            .getAnimations({ subtree: true })
+            .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
+          state.runningAfterClose = running.length;
+          void Promise.allSettled(running.map((animation) => animation.finished)).then(() => {
+            // The service removes the container in the same turn as the last animation ends.
+            state.connectedAfterMotion = host.isConnected;
+          });
+        };
+        dialog.addEventListener('close', () => (state.connectedAtClose = host.isConnected));
       });
       await page.keyboard.press('Escape');
       await expect(page.locator('star-dialog-container')).toHaveCount(0);
       const state = await page.evaluate(
         () =>
-          (window as unknown as { __close: { connectedAtClose: boolean; transitions: number } })
-            .__close,
+          (
+            window as unknown as {
+              __close: {
+                overlaySupported: boolean;
+                runningAfterClose: number;
+                connectedAtClose: boolean | null;
+                connectedAfterMotion: boolean | null;
+              };
+            }
+          ).__close,
       );
-      if (reduced) {
-        // No transition: the service removes the host at once. The native close event then
-        // finds it gone, or does not reach a listener at all.
-        expect(state.connectedAtClose).not.toBe(true);
-      } else {
+      expect(state.runningAfterClose).toBeGreaterThanOrEqual(0);
+      // What the browser runs: under reduced motion nothing; where a modal dialog can animate
+      // out of the top layer (`overlay`), the close transition.
+      if (reduced) expect(state.runningAfterClose).toBe(0);
+      else if (state.overlaySupported) expect(state.runningAfterClose).toBeGreaterThan(0);
+      if (state.runningAfterClose > 0) {
+        // The close motion runs: the container is still there when the native close event
+        // fires, and until the last close animation has ended.
         expect(state.connectedAtClose).toBe(true);
-        expect(state.transitions).toBeGreaterThan(0);
+        expect(state.connectedAfterMotion).toBe(true);
+      } else {
+        // No close motion: the service removes the container at once, before the close event.
+        expect(state.connectedAtClose).not.toBe(true);
       }
     });
   });
