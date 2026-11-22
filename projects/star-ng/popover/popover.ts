@@ -74,6 +74,11 @@ const POSITIONS: ConnectedPosition[] = [
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [StarPart, NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarPopover) }],
+  // The host draws nothing in place: the panel opens in the top layer. Without a box it is never
+  // a flex or grid item, so it takes no gap. Inline, so it holds without the stylesheet and in
+  // the unstyled mode; `pt.root.style` can still override it. A consumer who set the display of
+  // the host with a CSS class must now use `pt.root.style`, `[style]` or `!important`.
+  host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-template #panel>
