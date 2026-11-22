@@ -159,3 +159,61 @@ for (const reduced of [false, true]) {
     });
   });
 }
+
+/**
+ * Enter motion under the system setting (`prefers-reduced-motion`), with no
+ * `data-star-motion`: the reduced-motion rules must win over the control rules whatever the order
+ * of the partials. The computed `animation-name` and `transition-duration` do not depend on timing.
+ */
+for (const reduced of [false, true]) {
+  test(`enter motion of overlays, toasts and dialogs, ${reduced ? 'reduced motion' : 'motion'}`, async ({
+    page,
+  }) => {
+    const motion = async (selector: string) =>
+      page.evaluate((s) => {
+        const el = document.querySelector(s)!;
+        const style = getComputedStyle(el);
+        return { animation: style.animationName, transition: style.transitionDuration };
+      }, selector);
+    const none = (value: { animation: string; transition: string }) =>
+      value.animation === 'none' && value.transition.split(',').every((t) => parseFloat(t) === 0);
+
+    await open(page, '/controls/select', reduced);
+    await example(page, 'Objects as options').getByRole('combobox', { name: 'Country' }).click();
+    await expect(page.getByRole('listbox', { name: 'Country', exact: true })).toBeVisible();
+    const panel = await motion('.cdk-overlay-pane .star-panel');
+    expect(reduced ? none(panel) : panel.animation === 'star-panel-in').toBe(true);
+
+    await open(page, '/controls/menu', reduced);
+    await example(page, 'Popup menu').getByRole('button', { name: 'File' }).click();
+    await expect(page.locator('.cdk-overlay-pane').getByRole('menu')).toBeVisible();
+    const menu = await motion('.cdk-overlay-pane .star-menu');
+    expect(reduced ? none(menu) : menu.animation === 'star-panel-in').toBe(true);
+
+    await open(page, '/controls/popover', reduced);
+    await example(page, 'Details popover').getByRole('button', { name: 'Details' }).click();
+    await expect(page.getByRole('dialog', { name: 'Order details' })).toBeVisible();
+    const popover = await motion('.cdk-overlay-pane .star-popover');
+    expect(reduced ? none(popover) : popover.animation === 'star-panel-in').toBe(true);
+
+    await open(page, '/controls/tooltip', reduced);
+    await example(page, 'Positions').getByRole('button', { name: 'Top', exact: true }).hover();
+    await expect(page.getByRole('tooltip')).toBeVisible();
+    const tooltip = await motion('.star-tooltip');
+    expect(reduced ? none(tooltip) : tooltip.animation === 'star-panel-in').toBe(true);
+
+    await open(page, '/controls/toast', reduced);
+    await example(page, 'Sticky and timed messages')
+      .getByRole('button', { name: 'Sticky message' })
+      .click();
+    await expect(page.locator('.star-toast')).toHaveCount(1);
+    const toast = await motion('.star-toast');
+    expect(reduced ? none(toast) : toast.animation === 'star-toast-in').toBe(true);
+
+    await open(page, '/controls/dialog', reduced);
+    await page.getByRole('button', { name: 'Edit order' }).click();
+    await expect(page.getByRole('dialog', { name: 'Edit order' })).toBeVisible();
+    const dialog = await motion('dialog.star-dialog[open]');
+    expect(reduced ? none(dialog) : !none(dialog)).toBe(true);
+  });
+}

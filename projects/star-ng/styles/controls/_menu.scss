@@ -1,5 +1,6 @@
 // Menus: popup menu, mega menu, panel menu, split button and menubar.
 @use '../shared' as *;
+@use '../panel-motion';
 
 // Menu (CDK menu)
 .star-menu-host {
@@ -61,13 +62,6 @@
 .star-menu-host .star-menu-frame--leaving,
 .star-menu-host .star-menu-frame--leaving > .star-menu {
   animation: none;
-}
-// Repeated in each partial that uses it, so a page that loads only this partial has it.
-@keyframes star-panel-out {
-  to {
-    opacity: 0;
-    translate: 0 -4px;
-  }
 }
 .star-menu__start,
 .star-menu__end {
@@ -242,11 +236,6 @@
 @include star-reduced-motion {
   .star-panel-menu__caret {
     transition: none;
-  }
-  .star-menu-frame--leaving,
-  .star-menu-frame--leaving > .star-menu,
-  .star-menu--leaving {
-    animation: none;
   }
 }
 

@@ -86,7 +86,9 @@ textarea.star-input--auto-resize {
   font: var(--star-type-body-sm);
   color: var(--star-text-muted);
 }
-// Busy state: an async validator runs (`pending()` of the field state).
+// Busy state: an async validator runs (`pending()` of the field state). The spin is the busy
+// indicator of `.star-spinner` and the button (`star-spin`, 0.8 s linear): it keeps turning under
+// reduced motion, as those do.
 .star-field__pending {
   display: inline-block;
   margin-inline-end: 0.25rem;

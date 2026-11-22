@@ -40,8 +40,14 @@ table.star-sr-only {
   border: 0;
 }
 
+// Reduced motion for the motion of many controls (see the mixin: these rules win over the control
+// rules whatever the order of the partials). `e2e/leave-motion.spec.ts` checks the enter and leave
+// motion of the overlays, toasts and dialogs under the setting.
 @include star-reduced-motion {
   .star-panel,
+  .star-popover,
+  .star-menu,
+  .star-menu-frame--framed,
   .star-toast,
   .star-tooltip,
   .star-dialog,
@@ -57,7 +63,6 @@ table.star-sr-only {
     animation: none;
   }
   // Leave motion (`animate.leave`): with no animation, Angular removes the element at once.
-  // The control partials repeat these after their own rules, which come later in the bundle.
   .star-toast--leaving,
   .star-banner__inner--leaving,
   .star-panel--leaving,
@@ -67,7 +72,8 @@ table.star-sr-only {
   .star-menu-frame--leaving > .star-menu,
   .star-menu--leaving,
   .star-chip--leaving,
-  .star-tabs__item--leaving {
+  .star-tabs__item--leaving,
+  .star-mention-panel--leaving > .star-panel {
     animation: none;
   }
   .star-message,

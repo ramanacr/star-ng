@@ -3,9 +3,15 @@ $ease: cubic-bezier(0.2, 0, 0, 1);
 
 // Reduced motion: the rules inside apply when the system asks for it (`prefers-reduced-motion`)
 // and when `provideStarNg({ reducedMotion: 'always' })` sets `data-star-motion="reduced"` on <html>.
+// Both forms put `:root` in front of the selectors, so a rule here is one class stronger than the
+// control rule it turns off and wins whatever the order of the partials (the base block comes
+// before the controls in star-ng.css, and the docs load partials per page). Use the mixin at the
+// top level only, with selectors inside.
 @mixin star-reduced-motion {
   @media (prefers-reduced-motion: reduce) {
-    @content;
+    :root {
+      @content;
+    }
   }
   :root[data-star-motion='reduced'] {
     @content;

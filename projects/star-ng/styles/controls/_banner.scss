@@ -77,11 +77,7 @@
 }
 
 @include star-reduced-motion {
-  .star-banner {
-    transition: none;
-  }
-  .star-banner__inner,
-  .star-banner__inner--leaving {
+  .star-banner__inner {
     animation: none;
   }
 }

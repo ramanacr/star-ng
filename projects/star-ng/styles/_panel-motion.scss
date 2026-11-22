@@ -1,0 +1,16 @@
+// Keyframes of the overlay panels (select family, pickers, popover, tooltip, menus). Each partial
+// that uses them loads this module, so they exist wherever a panel partial is loaded (the docs
+// load partials per page); Sass emits a module once per compilation, so star-ng.css has one copy.
+@keyframes star-panel-in {
+  from {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
+// Leave motion (`animate.leave`).
+@keyframes star-panel-out {
+  to {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}

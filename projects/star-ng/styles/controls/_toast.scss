@@ -157,11 +157,3 @@
     outline: 2px solid var(--star-accent);
   }
 }
-
-// After the control rules, so it wins over them under the system setting too.
-@include star-reduced-motion {
-  .star-toast,
-  .star-toast--leaving {
-    animation: none;
-  }
-}
