@@ -102,6 +102,17 @@ export function ɵstarLeaveWithClass(
 
 /** Per `CSS` namespace (one per window): it supports `overlay`. */
 const overlaySupport = new WeakMap<object, boolean>();
+/** Set by `ɵstarOverrideDialogExit`: wins over the feature check. */
+let overlayOverride: boolean | null = null;
+
+/**
+ * Sets the answer of `ɵstarDialogExitAfterClose` (true: the browser shows the exit after
+ * `close()`; false: the exit runs before it), or `null` for the feature check again. For tests,
+ * which cannot change the CSS support of the browser. Not public API.
+ */
+export function ɵstarOverrideDialogExit(value: boolean | null): void {
+  overlayOverride = value;
+}
 
 /**
  * True when the browser can show the exit transition of a `<dialog>` after `close()`: it supports
@@ -111,6 +122,7 @@ const overlaySupport = new WeakMap<object, boolean>();
  * entry points; not public API.
  */
 export function ɵstarDialogExitAfterClose(doc: Document): boolean {
+  if (overlayOverride !== null) return overlayOverride;
   const css = doc.defaultView?.CSS;
   if (typeof css?.supports !== 'function') return true;
   let known = overlaySupport.get(css);

@@ -1,32 +1,48 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { ɵstarOverrideDialogExit } from '@star-ng/ui/core';
 import { StarDialog } from '@star-ng/ui/dialog';
 
 // A browser without CSS `overlay` (Firefox, WebKit): the exit motion runs before close(). The
-// feature check is cached per `CSS` namespace, so a new namespace object gives a fresh check;
-// the original one comes back after this file (the specs share one window).
-const originalCss = Object.getOwnPropertyDescriptor(window, 'CSS');
-beforeAll(() => {
-  const supports = (property: string, value?: string) =>
-    property === 'overlay' ? false : (originalCss?.value?.supports?.(property, value) ?? false);
-  Object.defineProperty(window, 'CSS', { configurable: true, value: { supports } });
+// spec sets the feature answer and the motion setting itself, so the order of the spec files in
+// one shared window (an earlier spec may leave `data-star-motion` or a `matchMedia` stub) does
+// not matter.
+const view = document.defaultView!;
+let realMatchMedia = view.matchMedia;
+beforeEach(() => {
+  realMatchMedia = view.matchMedia;
+  ɵstarOverrideDialogExit(false);
+  document.documentElement.removeAttribute('data-star-motion');
+  view.matchMedia = ((query: string) =>
+    ({ matches: false, media: query }) as MediaQueryList) as typeof view.matchMedia;
 });
-afterAll(() => {
-  if (originalCss) Object.defineProperty(window, 'CSS', originalCss);
-  else delete (window as unknown as { CSS?: unknown }).CSS;
+afterEach(() => {
+  ɵstarOverrideDialogExit(null);
+  view.matchMedia = realMatchMedia;
 });
 
-// jsdom has no HTMLDialogElement methods. Minimal stand-ins (real browsers implement these).
+// jsdom has no HTMLDialogElement methods: stand-ins set for each test, as other spec files in
+// the same window may have put their own on the prototype.
 const dialogProto = HTMLDialogElement.prototype as Partial<HTMLDialogElement>;
-dialogProto.showModal ??= function (this: HTMLDialogElement) {
-  this.setAttribute('open', '');
-};
-dialogProto.show ??= dialogProto.showModal;
-dialogProto.close ??= function (this: HTMLDialogElement) {
-  if (!this.hasAttribute('open')) return;
-  this.removeAttribute('open');
-  this.dispatchEvent(new Event('close'));
-};
+let realDialogMethods: Partial<HTMLDialogElement> = {};
+beforeEach(() => {
+  // What was there before this test (stubs of other files included) comes back after it.
+  realDialogMethods = {
+    showModal: dialogProto.showModal,
+    show: dialogProto.show,
+    close: dialogProto.close,
+  };
+  dialogProto.showModal = function (this: HTMLDialogElement) {
+    this.setAttribute('open', '');
+  };
+  dialogProto.show = dialogProto.showModal;
+  dialogProto.close = function (this: HTMLDialogElement) {
+    if (!this.hasAttribute('open')) return;
+    this.removeAttribute('open');
+    this.dispatchEvent(new Event('close'));
+  };
+});
+afterEach(() => Object.assign(dialogProto, realDialogMethods));
 
 @Component({
   imports: [StarDialog],

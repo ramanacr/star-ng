@@ -21,7 +21,11 @@ function elementWith(animations: Animation[]): HTMLElement {
 
 describe('ɵstarAfterExit', () => {
   beforeEach(() => document.documentElement.removeAttribute('data-star-motion'));
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    // The specs share one window: leave no reduced-motion setting to the next file.
+    document.documentElement.removeAttribute('data-star-motion');
+  });
 
   it('runs at once when the element has no getAnimations (jsdom, server)', () => {
     const done = vi.fn();
