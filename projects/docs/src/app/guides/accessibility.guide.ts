@@ -110,11 +110,11 @@ import { DOCS } from '../shared/docs';
       </p>
       <ul>
         <li>
-          <strong>Pages at rest.</strong> Every page of the navigation (97 pages), in the light
+          <strong>Pages at rest.</strong> Every page of the navigation (143 pages), in the light
           theme and in the dark theme. Contrast differs between the themes.
         </li>
         <li>
-          <strong>Opened states.</strong> 65 states that are hidden at rest, in both themes: panels
+          <strong>Opened states.</strong> 172 states that are hidden at rest, in both themes: panels
           of select, multi-select, cascade select, tree select and autocomplete; the date picker
           popup; menus with a submenu, menubar, context menu and mega menu; dialog, confirm dialog,
           notice, drawer, popover, tooltip and toasts; open accordion, panel and panel menu; an
