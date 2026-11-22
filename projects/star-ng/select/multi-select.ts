@@ -18,6 +18,7 @@ import {
   StarStyled,
   ɵSTAR_PART_HOST,
   ɵstarKeyed,
+  ɵstarLeaveWithClass,
 } from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
 import { StarChipContext } from './select-slots';
@@ -196,7 +197,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         starPart="panel"
         class="star-panel"
         [class]="panelClasses()"
-        animate.leave="star-panel--leaving"
+        (animate.leave)="leavePanel($event)"
         [style]="panelStyle()"
         (mousedown)="onPanelMousedown($event)"
         (keydown)="onPanelKeydown($event)"
@@ -405,6 +406,8 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   extends StarOptionListBase<TOption, TValue>
   implements FormValueControl<readonly TValue[]>
 {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   readonly value = model<readonly TValue[]>([]);
   /** `comma`: "A, B, C". `chip`: removable chips. */
   readonly display = input<'comma' | 'chip'>('comma');
@@ -463,8 +466,20 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
     const known = this.selectedOptions().map((option) => this.valueOf(option));
     return this.value().filter((value) => !known.some((v) => this.equals(v, value)));
   });
-  /** `@for` entries of the chips, keyed by the option, or its occurrence when it repeats. */
-  protected readonly optionEntries = computed(() => ɵstarKeyed(this.selectedOptions()));
+  /**
+   * `@for` entries of the chips, keyed by the chosen value (the entry of `value` that the option
+   * matches with `compareWith`), not by the option object: new option objects with the same
+   * values (a reload, a language switch) keep the chip rows, so no chip leaves and comes back.
+   */
+  protected readonly optionEntries = computed(() => {
+    const options = this.selectedOptions();
+    const chosen = this.value();
+    const values = options.map((option) => {
+      const value = this.valueOf(option);
+      return chosen.find((item) => this.equals(item, value)) ?? value;
+    });
+    return ɵstarKeyed(values).map((entry, i) => ({ key: entry.key, item: options[i] }));
+  });
   protected readonly customEntries = computed(() => ɵstarKeyed(this.customValues()));
   protected readonly selectedCount = computed(
     () => this.selectedOptions().length + this.customValues().length,
