@@ -19,9 +19,9 @@ StarNG is a library of accessible Angular controls. It uses signals, Signal Form
 
 ## What is in the package
 
-About 90 controls in more than 50 entry points. Each control has a docs page with live examples and an API table.
+The package has 90 entry points. The docs have 132 control pages. Each page has live examples and an API table.
 
-Control groups: buttons; forms (field, input, checkbox, radio, switch, number, password, mask, one-time code, tags, slider, rating, knob, color picker, select button); selection (select, multi-select, cascade select, listbox, autocomplete, tree, tree select); date and time; table; menus; overlays (dialog, confirm, drawer, popover, tooltip, toast); panels and navigation; data display and charts; media (file upload, editor, carousel, galleria, image); utilities.
+Control groups: buttons; forms (field, input, checkbox, radio, switch, number, password, mask, one-time code, tags, slider, rating, knob, color picker, select button); selection (select, multi-select, cascade select, listbox, autocomplete, tree, tree select); date and time; table; menus; overlays (dialog, confirm, drawer, popover, tooltip, toast); panels and navigation; data display and charts; media (file upload, editor, carousel, galleria, image); app shell (app bar, app sidebar, bottom navigation); data tools (query builder, pivot grid, hierarchical grid, spreadsheet, scheduler, Gantt chart, kanban); drag and drop (the `starDraggable` and `starDroppable` directives in `@star-ng/ui/drag-drop`); icons (`star-icon` in `@star-ng/ui/icon`); utilities.
 
 ## Requirements
 
@@ -84,6 +84,8 @@ export class Orders {
 }
 ```
 
+`star-icon` (`@star-ng/ui/icon`) draws a Phosphor icon from a `name`, a `weight` and a `size`. It sets `role="img"` when you give it a `label`, and it is decorative without one.
+
 The query model has its own entry point, `@star-ng/ui/query-builder/model`. It holds `starQueryToPredicate`, `starQueryToText`, `starQueryComplete` and the query types, and it does not load the query builder component. Import from it when you only need to turn a query into a row test. `@star-ng/ui/query-builder` exports the same names, so existing imports keep working.
 
 ## Forms
@@ -109,6 +111,28 @@ Override the `--star-*` tokens after the StarNG styles. Put light values on `:ro
 
 `StarThemeService` (`@star-ng/ui/theme`) is an optional helper for a system, light or dark choice. A first-paint script avoids a flash of the wrong theme. See the guides [theming and tokens](https://ramanacr.github.io/star-ng/guides/theming) and [dark mode](https://ramanacr.github.io/star-ng/guides/dark-mode).
 
+## Styling hooks
+
+Each element of a control has a part name in the attribute `data-star-part`. The host element is the part `root`. The part names are public API: a renamed part is a breaking change in the changelog. The API section of each control page lists its parts.
+
+Use the input `pt` (pass-through) to add classes, styles and the attributes `title`, `data-*` and `aria-*` to a part. Use the input `unstyled` to remove the StarNG look of a control and keep its layout and behavior. `provideStarNg({ pt, unstyled })` sets both for all controls.
+
+```html
+<star-select
+  [options]="cities"
+  [(value)]="city"
+  ariaLabel="City"
+  unstyled
+  [pt]="{
+    root: { class: 'relative w-64' },
+    triggerPanel: { class: 'flex items-center rounded-md border border-slate-300 px-3 py-2' },
+    panel: { class: 'rounded-md border border-slate-200 bg-white shadow-lg' },
+  }"
+/>
+```
+
+See the [styling hooks guide](https://ramanacr.github.io/star-ng/guides/styling-hooks).
+
 ## Language packs
 
 The built-in text of the controls is English. The German and Spanish packs are separate entry points. The `locale` inputs of the controls set number and date formats. They do not depend on the pack.
@@ -128,7 +152,7 @@ Set `dir="rtl"` on `<html>`. The styles use logical properties, the arrow keys f
 
 ## Browser support
 
-The tests run in Chromium only (Playwright). Firefox and Safari are not tested. The library uses these modern CSS and platform features. Check them against your browser targets.
+Chromium runs the full end-to-end and visual test suite (Playwright). Firefox and WebKit (the engine of Safari) run a focused subset in the required CI job `e2e-cross-browser`: the tests tagged `@cross-browser`. These tests cover focus return and outside clicks of menus, and the select, popover, dialog service, tooltip and leave motion. The other tests do not run in Firefox or WebKit, and no real Safari is tested. The library uses these modern CSS and platform features. Check them against your browser targets.
 
 - `:has()` and `:dir()`
 - container queries
@@ -140,9 +164,11 @@ The tests run in Chromium only (Playwright). Firefox and Safari are not tested. 
 
 ## Accessibility
 
-The target is WCAG 2.2 level AA. CI runs an automated axe scan on every docs page in the light and dark themes, and on 65 opened states. Unit tests and keyboard tests cover roles, states and key handling.
+The target is WCAG 2.2 level AA. CI runs an automated axe scan on every docs page in the light and dark themes, and on 172 opened states (for example panels, menus, dialogs and a field with an error). Unit tests and keyboard tests cover roles, states and key handling. While an async validator runs, every control that links to a field sets `aria-busy`, and the field says "Checking…" in a polite live region, because most screen readers do not announce `aria-busy`. A test reads the accessibility tree of Chromium for this busy state.
 
-Not tested: screen-reader output, zoom and reflow, forced-colors mode. An automated scan finds only some problems. Your application must also name every control and set the page language. See the [accessibility guide](https://ramanacr.github.io/star-ng/guides/accessibility).
+One manual screen-reader pass exists: Windows Narrator with Chrome, on 22 November 2026, for the busy state of a field with a text box, a select, a date picker, checkboxes and a radio group. The pass found that Narrator did not read the hint and the error of a radio group, and that it did not say "busy". Both are fixed. NVDA, JAWS, VoiceOver, and Narrator with Edge and Firefox are not tested.
+
+Not tested: screen-reader output of all other controls and readers, zoom and reflow, forced-colors mode. An automated scan finds only some problems. Your application must also name every control and set the page language. See the [accessibility guide](https://ramanacr.github.io/star-ng/guides/accessibility).
 
 ## Use with AI coding agents
 
@@ -161,9 +187,9 @@ The package follows semantic versioning. In `0.x` versions, the API can change b
 
 ## Known limits
 
-- Chromium is the only tested browser.
+- Firefox and WebKit run only the focused `@cross-browser` subset. No real Safari is tested.
 - The German and Spanish text packs have no native-speaker review.
-- There are no screen-reader, zoom, reflow or forced-colors tests.
+- Screen-reader output is checked only by the one Narrator pass for the busy state of fields. There are no NVDA, JAWS or VoiceOver tests, and no zoom, reflow or forced-colors tests.
 - The editor and the file upload do not protect your server. See [SECURITY.md](SECURITY.md).
 
 ## Community
