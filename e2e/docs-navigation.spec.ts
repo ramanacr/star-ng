@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { example, openPage } from './support';
+import { example, openPage, skipWithoutActiveViewTransition } from './support';
 
 /**
  * Page changes of the docs with motion on: the router cross-fades the pages with a view
@@ -122,7 +122,13 @@ async function openSchedulerFromNav(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { level: 1, name: 'Scheduler' })).toBeVisible();
 }
 
-test.describe('page changes with a view transition', () => {
+test.describe('page changes with a view transition @cross-browser', () => {
+  // Every test reads `document.activeViewTransition` (the record of each transition, and the
+  // press test). Firefox and WebKit may lack it: there the tests skip with that reason.
+  test.beforeEach(async ({ page }) => {
+    await skipWithoutActiveViewTransition(page);
+  });
+
   test('a nav click shows the new page at the top, with its final layout', async ({ page }) => {
     await openPage(page, '/controls/button', 'Button');
     await page.evaluate(() => window.scrollTo(0, 800));

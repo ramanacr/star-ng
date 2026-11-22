@@ -99,7 +99,7 @@ test.describe('field busy state in the accessibility tree @a11y', () => {
     await input.fill('admin');
     await input.press('Tab');
     await expect
-      .poll(state, { timeout: 2_000 })
+      .poll(state, { timeout: 2_000, intervals: [50] })
       .toEqual({ busy: true, invalid: 'false', description: 'Letters and digits.' });
     expect(await busyIconHidden(cdp)).toBe(true);
 
@@ -117,7 +117,9 @@ test.describe('field busy state in the accessibility tree @a11y', () => {
 
     // A free name: busy again while it runs, then valid, and the hint describes it again.
     await input.fill('ada');
-    await expect.poll(async () => (await state()).busy, { timeout: 2_000 }).toBe(true);
+    await expect
+      .poll(async () => (await state()).busy, { timeout: 2_000, intervals: [50] })
+      .toBe(true);
     await expect
       .poll(state, { timeout: 5_000 })
       .toEqual({ busy: false, invalid: 'false', description: 'Letters and digits.' });

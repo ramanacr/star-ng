@@ -1,5 +1,5 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { example, openPage as openDocsPage } from './support';
+import { example, expectFocusLeftMenu, openPage as openDocsPage } from './support';
 
 /**
  * Opens the Table interaction page and waits until it is hydrated: the page is prerendered, and a
@@ -110,6 +110,20 @@ test.describe('table interaction', () => {
       'Last choice: Open order on ORD-1002, Customer',
     );
     await expect(target).toBeFocused();
+  });
+
+  test('the context menu closes on a click outside and the focus leaves it @cross-browser', async ({
+    page,
+  }) => {
+    await openPage(page);
+    const live = example(page, 'Context menu');
+    const grid = live.getByRole('grid', { name: 'Orders with a context menu' });
+    await cell(grid, 'ORD-1002', 'customer').click();
+    await page.keyboard.press('Shift+F10');
+    await expect(page.getByRole('menu').getByRole('menuitem').first()).toBeFocused();
+
+    await page.getByRole('heading', { level: 1, name: 'Table interaction' }).click();
+    await expectFocusLeftMenu(page);
   });
 
   test('pastes tab-separated text into editable cells', async ({ page, context }) => {

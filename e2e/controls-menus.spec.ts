@@ -1,27 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { example, openPage } from './support';
+import { example, expectFocusLeftMenu, openPage } from './support';
 
 // Popups of the menus live in the CDK overlay container, outside the example area.
 const popup = (page: import('@playwright/test').Page) => page.locator('.cdk-overlay-container');
-
-/**
- * After a click outside an open menu, the menu is gone and the focus is not left on a removed
- * menu item (the menu blurs its item before it fades): the active element is in the document and
- * outside the overlay container, and Tab still moves the focus to a control of the page.
- */
-async function focusLeftMenu(page: import('@playwright/test').Page): Promise<void> {
-  await expect(popup(page).getByRole('menu')).toHaveCount(0);
-  const state = await page.evaluate(() => {
-    const active = document.activeElement;
-    return {
-      connected: !!active?.isConnected,
-      inOverlay: !!active?.closest('.cdk-overlay-container'),
-    };
-  });
-  expect(state).toEqual({ connected: true, inOverlay: false });
-  await page.keyboard.press('Tab');
-  expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true);
-}
 
 test.describe('menu', () => {
   test('opens with Enter, moves with arrows, runs an item and returns the focus @cross-browser', async ({
@@ -84,7 +65,7 @@ test.describe('menu', () => {
 
     await page.getByRole('heading', { level: 1, name: 'Menu' }).click();
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    await focusLeftMenu(page);
+    await expectFocusLeftMenu(page);
     await expect(live.getByRole('status')).toHaveText('Last action: none');
   });
 
@@ -237,6 +218,26 @@ test.describe('menubar', () => {
     await expect(edit).toBeFocused();
   });
 
+  test('closes on a click outside and the focus leaves the menu @cross-browser', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/menubar', 'Menubar');
+    const live = example(page, 'File, edit and view');
+    const file = live
+      .getByRole('menubar', { name: 'Main' })
+      .getByRole('menuitem', { name: 'File' });
+    // A click and Escape put the focus on the item (see the test above); Arrow down opens the
+    // dropdown with the focus on its first item.
+    await file.click();
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('ArrowDown');
+    await expect(popup(page).getByRole('menuitem').first()).toBeFocused();
+
+    await page.getByRole('heading', { level: 1, name: 'Menubar' }).click();
+    await expectFocusLeftMenu(page);
+    await expect(live.getByRole('status')).toHaveText('Last action: none');
+  });
+
   test('opens a nested submenu and runs a leaf with a click', async ({ page }) => {
     await openPage(page, '/controls/menubar', 'Menubar');
     const live = example(page, 'File, edit and view');
@@ -287,6 +288,7 @@ test.describe('context menu', () => {
     await expect(popup(page).getByRole('menu')).toHaveCount(0);
     await expect(live.getByRole('status')).toHaveText('Last action: none');
   });
+
   test('closes on a click outside and the focus leaves the menu @cross-browser', async ({
     page,
   }) => {
@@ -296,7 +298,7 @@ test.describe('context menu', () => {
     await expect(popup(page).getByRole('menuitem', { name: 'Open' })).toBeFocused();
 
     await page.getByRole('heading', { level: 1, name: 'Context menu' }).click();
-    await focusLeftMenu(page);
+    await expectFocusLeftMenu(page);
     await expect(live.getByRole('status')).toHaveText('Last action: none');
   });
 });
