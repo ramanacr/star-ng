@@ -15,6 +15,7 @@ import {
   signal,
   Type,
 } from '@angular/core';
+import { ɵstarAfterExit } from '@star-ng/ui/core';
 import { StarWindow, StarWindowPosition, StarWindowSize, StarWindowState } from './window';
 
 /** Data passed to the component opened by `StarWindowService.open()`. */
@@ -143,7 +144,8 @@ export class StarWindowService {
     host.setInput('contentInjector', contentInjector);
     host.instance.closed = () => {
       ref.settle();
-      this.destroy(host!);
+      // The close transition (`allow-discrete`) needs the element in the DOM: destroy after it.
+      ɵstarAfterExit(host!.location.nativeElement, () => this.destroy(host!));
     };
     this.document.body.appendChild(host.location.nativeElement);
     this.appRef.attachView(host.hostView);

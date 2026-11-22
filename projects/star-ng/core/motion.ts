@@ -9,3 +9,36 @@ export function starPrefersReducedMotion(doc: Document | null | undefined): bool
   if (doc.documentElement?.getAttribute('data-star-motion') === 'reduced') return true;
   return doc.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
 }
+
+/**
+ * Runs `done` when the exit motion of `element` and its subtree has ended: the CSS transitions
+ * and animations that run now (an `allow-discrete` close transition of a `<dialog>`, for
+ * example). A service that removes an element it created calls it after the close, so the exit
+ * shows before the element leaves the DOM. `done` runs at once when nothing runs, under reduced
+ * motion, where the browser has no `getAnimations` (jsdom, server), and for an endless animation
+ * (a spinner in the content) it does not wait. `timeout` (ms) is the fallback for an animation
+ * that never ends (a hidden tab); it is the cap Angular uses for `animate.leave`. Shared by the
+ * entry points; not public API.
+ */
+export function ɵstarAfterExit(element: Element, done: () => void, timeout = 4000): void {
+  const doc = element.ownerDocument;
+  const running =
+    typeof element.getAnimations === 'function' && !starPrefersReducedMotion(doc)
+      ? element
+          .getAnimations({ subtree: true })
+          .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+      : [];
+  if (!running.length) {
+    done();
+    return;
+  }
+  let ended = false;
+  const end = () => {
+    if (ended) return;
+    ended = true;
+    clearTimeout(timer);
+    done();
+  };
+  const timer = setTimeout(end, timeout);
+  void Promise.allSettled(running.map((animation) => animation.finished)).then(end);
+}
