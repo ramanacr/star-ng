@@ -34,6 +34,7 @@ import {
   starSlot,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
 } from '@star-ng/ui/core';
 import { Subscription } from 'rxjs';
 
@@ -85,7 +86,7 @@ const POSITIONS: ConnectedPosition[] = [
       <div
         starPart="surface"
         class="star-popover"
-        animate.leave="star-popover--leaving"
+        (animate.leave)="leavePanel($event)"
         tabindex="-1"
         [id]="panelId"
         [attr.role]="role()"
@@ -105,6 +106,8 @@ const POSITIONS: ConnectedPosition[] = [
   `,
 })
 export class StarPopover {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-popover--leaving');
   private readonly injector = inject(Injector);
   private readonly viewContainer = inject(ViewContainerRef);
   private readonly directionality = inject(Directionality);

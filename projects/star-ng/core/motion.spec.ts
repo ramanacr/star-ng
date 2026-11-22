@@ -87,11 +87,46 @@ describe('ɵstarLeaveWithClass', () => {
     expect(document.activeElement).toBe(item);
     const animationComplete = vi.fn();
 
-    ɵstarLeaveWithClass('x--leaving')({ target: panel, animationComplete });
+    ɵstarLeaveWithClass('x--leaving', { blurFocus: true })({ target: panel, animationComplete });
 
     expect(document.activeElement).toBe(document.body);
     expect(panel.classList).toContain('x--leaving');
     expect(animationComplete).toHaveBeenCalledTimes(1);
     panel.remove();
+  });
+
+  it('keeps the focus without blurFocus', () => {
+    const panel = document.createElement('div');
+    const field = document.createElement('input');
+    panel.append(field);
+    document.body.append(panel);
+    field.focus();
+    ɵstarLeaveWithClass('x--leaving')({ target: panel, animationComplete: vi.fn() });
+    expect(document.activeElement).toBe(field);
+    panel.remove();
+  });
+
+  it('ends the leave at once when a new element comes into the same parent', async () => {
+    const pane = document.createElement('div');
+    const panel = document.createElement('div');
+    pane.append(panel);
+    document.body.append(pane);
+    let finish!: () => void;
+    const finished = new Promise<void>((resolve) => (finish = resolve));
+    const fade = { finished, effect: { getComputedTiming: () => ({ iterations: 1 }) } };
+    (panel as unknown as { getAnimations: () => unknown[] }).getAnimations = () => [fade];
+    const animationComplete = vi.fn();
+
+    ɵstarLeaveWithClass('x--leaving')({ target: panel, animationComplete });
+    await Promise.resolve();
+    expect(animationComplete).not.toHaveBeenCalled();
+
+    pane.append(document.createElement('div')); // the overlay opened again
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(animationComplete).toHaveBeenCalledTimes(1);
+    finish();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(animationComplete).toHaveBeenCalledTimes(1);
+    pane.remove();
   });
 });

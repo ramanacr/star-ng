@@ -178,6 +178,8 @@ export class StarDialogService {
 
   private destroy(host: ComponentRef<StarDialogContainer>): void {
     if (!this.openRefs.delete(host)) return;
+    // Called after the exit motion: the application may have destroyed the view meanwhile.
+    if (host.hostView.destroyed) return;
     this.appRef.detachView(host.hostView);
     host.destroy();
   }

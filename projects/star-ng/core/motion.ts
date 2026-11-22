@@ -43,20 +43,52 @@ export function ɵstarAfterExit(element: Element, done: () => void, timeout = 40
   void Promise.allSettled(running.map((animation) => animation.finished)).then(end);
 }
 
+/** Options of `ɵstarLeaveWithClass`. */
+export interface ɵStarLeaveOptions {
+  /**
+   * Move the focus out of the leaving element first (to the page body), so code that returns the
+   * focus "when it has nowhere else to be" (a context menu that closed) sees that at once, and the
+   * focus is not lost later when the element goes. For menus.
+   */
+  readonly blurFocus?: boolean;
+}
+
 /**
- * An `animate.leave` function (`(animate.leave)="leave($event)"`) that adds `className` and ends
- * the leave when its motion has ended (`ɵstarAfterExit`). Unlike the plain class form, it first
- * moves the focus out of the leaving element (to the page body), so code that returns the focus
- * "when it has nowhere else to be" (a context menu that closed) sees that at once, and the focus
- * is not lost later when the element goes. Shared by the entry points; not public API.
+ * An `animate.leave` function (`(animate.leave)="leave($event)"`) for an overlay panel: it adds
+ * `className` and ends the leave when its motion has ended (`ɵstarAfterExit`, so at once under
+ * reduced motion). When a new element comes into the same parent while the panel leaves (the
+ * overlay opens again within the fade and the CDK attaches the new panel to the same pane), the
+ * old panel goes at once: never two panels, two positions or two sets of ids. Shared by the entry
+ * points; not public API.
  */
 export function ɵstarLeaveWithClass(
   className: string,
+  options: ɵStarLeaveOptions = {},
 ): (event: { target: Element; animationComplete: () => void }) => void {
   return ({ target, animationComplete }) => {
-    const active = target.ownerDocument.activeElement;
-    if (active instanceof HTMLElement && target.contains(active)) active.blur();
+    if (options.blurFocus) {
+      const active = target.ownerDocument.activeElement;
+      if (active instanceof HTMLElement && target.contains(active)) active.blur();
+    }
     target.classList.add(className);
-    ɵstarAfterExit(target, animationComplete);
+    let ended = false;
+    let watch: MutationObserver | null = null;
+    const end = () => {
+      if (ended) return;
+      ended = true;
+      watch?.disconnect();
+      animationComplete();
+    };
+    const parent = target.parentNode;
+    if (parent && typeof MutationObserver !== 'undefined') {
+      watch = new MutationObserver((records) => {
+        const added = records.some((record) =>
+          [...record.addedNodes].some((node) => node !== target && node.nodeType === 1),
+        );
+        if (added) end();
+      });
+      watch.observe(parent, { childList: true });
+    }
+    ɵstarAfterExit(target, end);
   };
 }

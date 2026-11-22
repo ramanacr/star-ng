@@ -160,6 +160,8 @@ export class StarWindowService {
 
   private destroy(host: ComponentRef<StarWindowContainer>): void {
     if (!this.hosts.delete(host)) return;
+    // Called after the exit motion: the application may have destroyed the view meanwhile.
+    if (host.hostView.destroyed) return;
     this.appRef.detachView(host.hostView);
     host.destroy();
   }

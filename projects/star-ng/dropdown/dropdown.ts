@@ -31,7 +31,13 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { StarDirectionService, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  StarDirectionService,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
+} from '@star-ng/ui/core';
 import { Subscription } from 'rxjs';
 
 /** Payload of `selectionChange` of `star-dropdown`. */
@@ -185,7 +191,7 @@ export class StarDropdownItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-template #panel>
-      <div starPart="panel" class="star-panel star-dropdown">
+      <div starPart="panel" class="star-panel star-dropdown" (animate.leave)="leavePanel($event)">
         <div
           data-star-part="optionList"
           class="star-listbox"
@@ -205,6 +211,8 @@ export class StarDropdownItem {
   `,
 })
 export class StarDropdown {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   private readonly injector = inject(Injector);
   private readonly viewContainer = inject(ViewContainerRef);
   private readonly directionality = inject(Directionality);

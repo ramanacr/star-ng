@@ -39,6 +39,7 @@ import {
   StarOptionKey,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
 } from '@star-ng/ui/core';
 
 /** Event of `mentionSearch`: the trigger and the text typed after it. */
@@ -676,6 +677,7 @@ export class StarMentionItemTemplate<T = unknown> {
 /** The suggestion panel of `starMention`. Internal: the directive attaches it at the caret. */
 @Component({
   selector: 'star-mention-panel',
+  host: { '(animate.leave)': 'leave($event)' },
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
@@ -735,6 +737,8 @@ export class StarMentionItemTemplate<T = unknown> {
 })
 export class StarMentionPanel {
   protected readonly text = inject(STAR_UI_TEXT);
+  /** Leave motion (`animate.leave` on the host, the panel inside moves); a re-open ends it. */
+  protected readonly leave = ɵstarLeaveWithClass('star-mention-panel--leaving');
   /** The directive that owns the panel. */
   readonly owner = input.required<StarMention<unknown>>();
 }

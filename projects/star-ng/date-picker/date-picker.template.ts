@@ -81,7 +81,7 @@ export const STAR_DATE_TEMPLATE = `
   <ng-template #panel>
     <div starPart="panel"
       class="star-panel star-date__panel"
-      animate.leave="star-panel--leaving"
+      (animate.leave)="leavePanel($event)"
       [class.star-date__panel--time]="timeEnabled()"
       [class.star-date__panel--months]="numberOfMonths() > 1"
       [class.star-date__panel--sheet]="sheet.active()"

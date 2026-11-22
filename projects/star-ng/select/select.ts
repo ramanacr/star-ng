@@ -12,7 +12,14 @@ import {
   output,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_SLOT_HOST, StarPart, starSlot, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  StarPart,
+  starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
+} from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
 import { StarSelectedContext } from './select-slots';
 import { starSelectionChanging, StarSelectionChangingEvent } from './selection-changing';
@@ -171,7 +178,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         starPart="panel"
         class="star-panel"
         [class]="panelClasses()"
-        animate.leave="star-panel--leaving"
+        (animate.leave)="leavePanel($event)"
         [style]="panelStyle()"
         (mousedown)="onPanelMousedown($event)"
         (keydown)="onPanelKeydown($event)"
@@ -341,6 +348,8 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   extends StarOptionListBase<TOption, TValue>
   implements FormValueControl<TValue | null>
 {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   readonly value = model<TValue | null>(null);
   /**
    * A combobox with a text field (PrimeNG `editable`): the typed text filters the options, and an

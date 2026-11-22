@@ -27,6 +27,7 @@ import {
   StarStyled,
   ɵSTAR_PART_HOST,
   ɵstarKeyed,
+  ɵstarLeaveWithClass,
   type StarEmptyContext,
 } from '@star-ng/ui/core';
 import {
@@ -64,6 +65,8 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   TOption,
   TValue
 > {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   /** Server results. When set, the control shows these instead of filtering `options`. */
   readonly suggestions = input<readonly TOption[] | null>(null);
   readonly minQueryLength = input(1);
@@ -413,7 +416,7 @@ const TEMPLATE = `
     <div starPart="panel"
       class="star-panel"
       [class]="panelClasses()"
-      animate.leave="star-panel--leaving"
+      (animate.leave)="leavePanel($event)"
       [style]="panelStyle()"
       (mousedown)="onPanelMousedown($event)"
       (keydown)="onPanelKeydown($event)"

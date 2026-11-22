@@ -249,7 +249,7 @@ export class StarMegaMenu {
   /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
   private readonly directionSync = inject(StarDirectionService);
   /** Leave motion of a panel; the focus leaves the panel first. */
-  protected readonly leavePanel = ɵstarLeaveWithClass('star-menu--leaving');
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-menu--leaving', { blurFocus: true });
   readonly items = input<readonly StarMenuItem[]>([]);
   readonly ariaLabel = input<string | null>(null);
   /** Id of an element that names the bar, when there is no `ariaLabel`. PrimeNG `ariaLabelledBy`. */

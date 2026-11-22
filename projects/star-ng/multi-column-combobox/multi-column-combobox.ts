@@ -26,6 +26,7 @@ import {
   starSlot,
   StarStyled,
   ɵSTAR_PART_HOST,
+  ɵstarLeaveWithClass,
 } from '@star-ng/ui/core';
 import { StarOptionListBase } from '@star-ng/ui/select';
 
@@ -192,7 +193,7 @@ const ROW_GUESS = 40;
         starPart="panel"
         class="star-panel star-mcc__panel"
         [class]="panelClasses()"
-        animate.leave="star-panel--leaving"
+        (animate.leave)="leavePanel($event)"
         [style]="panelStyle()"
         [style.--star-mcc-columns]="gridColumns()"
         (mousedown)="onPanelMousedown($event)"
@@ -327,6 +328,8 @@ export class StarMultiColumnCombobox<TOption = unknown, TValue = TOption>
   extends StarOptionListBase<TOption, TValue>
   implements FormValueControl<TValue | null>
 {
+  /** Leave motion of the panel (`animate.leave`); a re-open ends it at once. */
+  protected readonly leavePanel = ɵstarLeaveWithClass('star-panel--leaving');
   private readonly doc = inject(DOCUMENT);
 
   readonly value = model<TValue | null>(null);
