@@ -65,4 +65,37 @@ describe('StarPopover and confirm popup', () => {
     [...popup.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Archive')!.click();
     await expect(result).resolves.toBe(true);
   });
+
+  it('has a host without a box, so a closed popover takes no gap in a flex or grid', async () => {
+    const fixture = TestBed.createComponent(PopoverHost);
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector('star-popover') as HTMLElement;
+    // Inline, so it holds without the stylesheet and in the unstyled mode.
+    expect(host.style.display).toBe('contents');
+    expect(host.getAttribute('data-star-part')).toBe('root');
+  });
+
+  it('keeps pt on the panel and lets pt.root.style override the host display', async () => {
+    @Component({
+      imports: [StarPopover],
+      template: `
+        <button type="button" id="anchor" (click)="pop.toggle($event)">Info</button>
+        <star-popover
+          #pop
+          ariaLabel="Info"
+          [pt]="{ root: { style: { display: 'inline-block' } }, surface: { class: 'my-panel' } }"
+          ><button type="button">OK</button></star-popover
+        >
+      `,
+    })
+    class PtHost {}
+    const fixture = TestBed.createComponent(PtHost);
+    await fixture.whenStable();
+    const host = fixture.nativeElement.querySelector('star-popover') as HTMLElement;
+    expect(host.style.display).toBe('inline-block');
+    (document.getElementById('anchor') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(document.querySelector('.star-popover')?.classList.contains('my-panel')).toBe(true);
+  });
 });

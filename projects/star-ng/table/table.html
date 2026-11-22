@@ -23,7 +23,7 @@
         {{ text.columns }}
       </star-button>
     }
-    <star-popover #columnsPanel class="star-table__columns-popover" [ariaLabel]="text.columns">
+    <star-popover #columnsPanel [ariaLabel]="text.columns">
       <ul data-star-part="columnList" class="star-table__columns">
         @for (column of orderedColumns(); track column.field) {
           <li data-star-part="columnItem">

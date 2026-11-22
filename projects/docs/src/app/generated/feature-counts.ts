@@ -119,8 +119,8 @@ export const FEATURE_COUNTS = {
       "files": 25
     },
     "host": {
-      "uses": 165,
-      "files": 119
+      "uses": 166,
+      "files": 120
     },
     "onPush": {
       "uses": 165,

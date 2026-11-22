@@ -387,11 +387,6 @@ star-select.star-table__filter {
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
-// The host of the Columns popover draws nothing in place (the panel opens in the top layer).
-// Without a box it is not a flex item, so it takes no gap after the last button.
-.star-table__columns-popover {
-  display: contents;
-}
 .star-table__columns {
   display: grid;
   gap: 0.25rem;
