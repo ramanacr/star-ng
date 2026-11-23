@@ -27,6 +27,7 @@ import {
 } from '@star-ng/ui/core';
 import { StarPopover } from '@star-ng/ui/popover';
 import { StarDialog } from './dialog';
+import { STAR_DIALOG_DEFAULTS, StarConfirmButtonOrder } from './dialog-defaults';
 
 export interface StarConfirmOptions {
   /**
@@ -47,6 +48,12 @@ export interface StarConfirmOptions {
   readonly rejectVisible?: boolean;
   /** `reject` (default) puts first focus on the safe choice. */
   readonly defaultFocus?: 'accept' | 'reject';
+  /**
+   * Order of the buttons: `reject-first` (default) or `accept-first`. The DOM order changes, so
+   * the Tab order follows the visual order. Default: `confirmButtonOrder` of
+   * `provideStarDialogDefaults`, else `reject-first`. `defaultFocus` does not change.
+   */
+  readonly buttonOrder?: StarConfirmButtonOrder;
   /**
    * Anchor element: shows a small popup next to it (PrimeNG `p-confirmpopup`) instead of a
    * modal dialog. Use for low-risk confirmations on a row or button.
@@ -204,12 +211,37 @@ export class StarConfirmService {
         ></span>
       }
     </ng-template>
+    <!-- The accept button: before or after the reject button (buttonOrder). -->
+    <ng-template #acceptButton let-options let-size="size" let-focus="focus">
+      <star-button
+        [size]="size"
+        [variant]="acceptVariant(options)"
+        [attr.data-autofocus]="focus ? '' : null"
+        (pressed)="answer(true)"
+      >
+        @if (parts().get('acceptIcon'); as custom) {
+          <span data-star-part="buttonIcon" class="star-confirm__button-icon" aria-hidden="true">
+            <ng-container *ngTemplateOutlet="custom; context: context(options)" />
+          </span>
+        }
+        {{ options.acceptLabel ?? text.accept }}
+      </star-button>
+    </ng-template>
     <!-- The buttons of the popup and the dialog (or the footer slot). -->
     <ng-template #actions let-options let-size="size">
       @if (parts().get('footer'); as custom) {
         <ng-container *ngTemplateOutlet="custom; context: context(options)" />
       } @else {
         @let accept = focusAccept(options);
+        @let acceptFirst = buttonOrder(options) === 'accept-first';
+        @if (acceptFirst) {
+          <ng-container
+            *ngTemplateOutlet="
+              acceptButton;
+              context: { $implicit: options, size: size, focus: accept }
+            "
+          />
+        }
         @if (options.rejectVisible !== false) {
           <star-button
             [size]="size"
@@ -229,19 +261,14 @@ export class StarConfirmService {
             {{ options.rejectLabel ?? text.reject }}
           </star-button>
         }
-        <star-button
-          [size]="size"
-          [variant]="acceptVariant(options)"
-          [attr.data-autofocus]="accept ? '' : null"
-          (pressed)="answer(true)"
-        >
-          @if (parts().get('acceptIcon'); as custom) {
-            <span data-star-part="buttonIcon" class="star-confirm__button-icon" aria-hidden="true">
-              <ng-container *ngTemplateOutlet="custom; context: context(options)" />
-            </span>
-          }
-          {{ options.acceptLabel ?? text.accept }}
-        </star-button>
+        @if (!acceptFirst) {
+          <ng-container
+            *ngTemplateOutlet="
+              acceptButton;
+              context: { $implicit: options, size: size, focus: accept }
+            "
+          />
+        }
       }
     </ng-template>
     <ng-template #message let-options>
@@ -317,6 +344,7 @@ export class StarConfirmService {
 export class StarConfirmHost {
   protected readonly confirm = inject(StarConfirmService);
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly defaults = inject(STAR_DIALOG_DEFAULTS);
   private readonly popover = viewChild.required(StarPopover);
   protected readonly popupMessageId = inject(_IdGenerator).getId('star-confirm-message-');
   private readonly slots = contentChildren(StarSlot, { descendants: true });
@@ -369,6 +397,11 @@ export class StarConfirmHost {
   /** The reject button gets the first focus, unless `defaultFocus` is `accept` or it is hidden. */
   protected focusAccept(options: StarConfirmOptions): boolean {
     return options.defaultFocus === 'accept' || options.rejectVisible === false;
+  }
+
+  /** `buttonOrder` of the request, else `confirmButtonOrder` of the dialog defaults. */
+  protected buttonOrder(options: StarConfirmOptions): StarConfirmButtonOrder {
+    return options.buttonOrder ?? this.defaults.confirmButtonOrder ?? 'reject-first';
   }
 
   protected acceptVariant(options: StarConfirmOptions): StarButtonVariant {

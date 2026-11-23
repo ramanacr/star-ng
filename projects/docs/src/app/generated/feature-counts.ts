@@ -79,7 +79,7 @@ export const FEATURE_COUNTS = {
       "files": 6
     },
     "inject": {
-      "uses": 570,
+      "uses": 571,
       "files": 132
     },
     "takeUntilDestroyed": {
@@ -107,7 +107,7 @@ export const FEATURE_COUNTS = {
       "files": 27
     },
     "if": {
-      "uses": 812,
+      "uses": 814,
       "files": 105
     },
     "for": {
@@ -119,7 +119,7 @@ export const FEATURE_COUNTS = {
       "files": 10
     },
     "let": {
-      "uses": 60,
+      "uses": 61,
       "files": 27
     },
     "host": {
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 248,
+  "specFiles": 249,
   "pages": 144
 } as const;

@@ -46,6 +46,17 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Accept button first"
+        source="confirm/button-order"
+        [script]="orderScript"
+        note="buttonOrder accept-first puts the accept button before the reject button. The DOM order changes, so the Tab order follows the visual order. The first focus stays on reject. To set the order for the whole app, use provideStarDialogDefaults with confirmButtonOrder."
+      >
+        <div class="docs-row">
+          <star-button variant="secondary" (pressed)="saveDraft()">Save draft</star-button>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Confirm popup"
         source="confirm/popup"
         [script]="popupScript"
@@ -188,6 +199,17 @@ export class ConfirmPage {
     this.result.set('acknowledged');
   }
 
+  protected async saveDraft(): Promise<void> {
+    const accepted = await this.confirm.ask({
+      header: 'Save the draft?',
+      message: 'You can edit the draft later.',
+      icon: 'ph-bold ph-floppy-disk',
+      acceptLabel: 'Save',
+      buttonOrder: 'accept-first',
+    });
+    this.result.set(accepted ? 'saved' : 'not saved');
+  }
+
   protected async archive(event: MouseEvent): Promise<void> {
     const accepted = await this.confirm.ask({
       header: 'Archive order ORD-1042?',
@@ -245,6 +267,19 @@ async acknowledge(): Promise<void> {
   });
   this.result.set('acknowledged');
 }`;
+  protected readonly orderScript = `async saveDraft(): Promise<void> {
+  const accepted = await this.confirm.ask({
+    header: 'Save the draft?',
+    message: 'You can edit the draft later.',
+    icon: 'ph-bold ph-floppy-disk',
+    acceptLabel: 'Save',
+    buttonOrder: 'accept-first',
+  });
+  this.result.set(accepted ? 'saved' : 'not saved');
+}
+
+// For the whole app, in the providers of the application:
+provideStarDialogDefaults({ confirmButtonOrder: 'accept-first' });`;
   protected readonly popupScript = `readonly popupResult = signal('none');
 
 async archive(event: MouseEvent): Promise<void> {
@@ -305,6 +340,11 @@ async deleteInvoice(id: string, event: MouseEvent): Promise<void> {
     {
       name: 'options.defaultFocus',
       description: 'accept or reject (default). The button that gets the first focus.',
+    },
+    {
+      name: 'options.buttonOrder',
+      description:
+        'reject-first (default) or accept-first. The order of the two buttons in the DOM, so also the Tab order. The default comes from confirmButtonOrder of provideStarDialogDefaults. defaultFocus does not change.',
     },
     {
       name: 'options.target',

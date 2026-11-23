@@ -2,6 +2,12 @@ import { InjectionToken, Provider } from '@angular/core';
 import type { StarDialogSize } from './dialog-base';
 
 /**
+ * Order of the two buttons of the confirm dialog and popup. `reject-first` (default): reject, then
+ * accept. `accept-first`: accept, then reject. The DOM order changes, so the Tab order follows.
+ */
+export type StarConfirmButtonOrder = 'reject-first' | 'accept-first';
+
+/**
  * App-wide defaults of `star-dialog` and `star-drawer` (both extend `StarDialogBase`). Material
  * `MAT_DIALOG_DEFAULT_OPTIONS`; PrimeNG: none. Only the inputs that apps commonly set once:
  *
@@ -9,6 +15,8 @@ import type { StarDialogSize } from './dialog-base';
  * - `closable`: shows the close button.
  * - `closeOnEscape`: Escape closes.
  * - `dismissableMask`: a click on the backdrop closes.
+ * - `confirmButtonOrder`: order of the buttons of `star-confirm-host` (dialog and popup). The
+ *   `buttonOrder` option of `StarConfirmService.ask()` wins over it.
  *
  * Precedence: input in the template, then this token, then the built-in default.
  */
@@ -17,6 +25,7 @@ export interface StarDialogDefaults {
   readonly closable?: boolean;
   readonly closeOnEscape?: boolean;
   readonly dismissableMask?: boolean;
+  readonly confirmButtonOrder?: StarConfirmButtonOrder;
 }
 
 /** Defaults of dialogs and drawers. Set it with `provideStarDialogDefaults`. */

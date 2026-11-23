@@ -2,6 +2,14 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+#### Confirm
+
+- Confirm: the option `buttonOrder` of `StarConfirmService.ask()` (`StarConfirmButtonOrder`: `reject-first`, the default, or `accept-first`) and the app-wide default `confirmButtonOrder` of `provideStarDialogDefaults`. The option of the request wins. It applies to the confirm dialog and the confirm popup. The DOM order changes, so the Tab order follows the visual order. `defaultFocus`, the accept variant, the labels, `rejectVisible` and the icon slots do not change ([#133](https://github.com/ramanacr/star-ng/issues/133)).
+
 ## [0.5.0] - 2026-11-22
 
 ### Added

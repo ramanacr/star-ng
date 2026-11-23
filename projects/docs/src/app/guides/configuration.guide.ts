@@ -517,7 +517,8 @@ readonly files = [
     },
     {
       name: 'STAR_DIALOG_DEFAULTS, provideStarDialogDefaults',
-      description: 'size, closable, closeOnEscape, dismissableMask. Dialog and drawer.',
+      description:
+        'size, closable, closeOnEscape, dismissableMask. Dialog and drawer. confirmButtonOrder: order of the confirm buttons.',
     },
     {
       name: 'STAR_TOAST_DEFAULTS, provideStarToastDefaults',
