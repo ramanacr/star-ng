@@ -554,6 +554,24 @@ test.describe('confirm', () => {
     await expect(confirm).toBeHidden();
   });
 
+  test('buttonOrder accept-first changes the DOM and Tab order, not the first focus', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/confirm', 'Confirm');
+    const live = example(page, 'Accept button first');
+    const confirm = page.getByRole('alertdialog');
+
+    await live.getByRole('button', { name: 'Save draft' }).click();
+    const footer = confirm.locator('.star-dialog__footer');
+    await expect(footer.getByRole('button')).toHaveText(['Save', 'Cancel']);
+    await expect(confirm.getByRole('button', { name: 'Cancel' })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(confirm.getByRole('button', { name: 'Save' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(confirm).toBeHidden();
+    await expect(example(page, 'Confirm dialog').getByRole('status')).toHaveText('Result: saved');
+  });
+
   test('a confirm popup opens next to the button, takes the focus and resolves', async ({
     page,
   }) => {

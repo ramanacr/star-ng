@@ -117,6 +117,7 @@
   "dialog": [
     "STAR_DIALOG_DATA",
     "STAR_DIALOG_DEFAULTS",
+    "StarConfirmButtonOrder",
     "StarConfirmHost",
     "StarConfirmMessageContext",
     "StarConfirmMessageTemplate",
