@@ -20181,6 +20181,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarTableInteraction"
       },
       {
+        "name": "selectionColumn",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The selection column of row selection (`selectionMode` `'single'` or `'multiple'`). Default `true`. With `false` the table has no check box or radio column: the rows show the selection by their style only, and the row itself selects. A click selects only that row, Ctrl / Cmd + click toggles it, Shift + click selects a range (`'multiple'`). The rows are one tab stop (with cell navigation, the cells): Arrow Up / Down move between rows, Space or Enter on the focused row selects it (`'multiple'`: toggles it), Shift + Space and Shift + Arrow extend the range. Clicks on buttons, links, inputs and editors in a cell do not select the row. There is no header check box: use `selection` to select all rows.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
         "name": "cellNavigation",
         "type": "boolean | undefined",
         "default": "undefined",
@@ -20415,6 +20423,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "Meta-key selection (PrimeNG `metaKeySelection`): a click selects only that row, Ctrl / Cmd + click toggles it, Shift + click selects a range. Rows become focusable (one tab stop): Arrow Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range (a range only grows; Shift + Arrow back toward the anchor does not clear rows). The Arrow keys move between rendered rows: with virtual scroll, only within the rendered window. Default off: only single mode selects on a click."
+      },
+      {
+        "name": "selectOnFocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Arrow Up / Down move the selection with the focus, as in a list box (`selectionMode` `'single'`, when the rows take the focus: `metaKeySelection`, or `selectionColumn` off). Not with cell navigation. Default off: the arrow keys only move the focus, and Space or Enter selects."
       },
       {
         "name": "selectionPageOnly",
@@ -21134,6 +21149,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`. `'column'` selects whole columns (`columnSelection`): each header gets a select button; a click selects that column, Ctrl / Cmd + click adds or removes it, Shift + click selects the columns from the last clicked one. Ctrl+C copies the selected columns of all filtered rows (sort order, all pages) as tab-separated text, with the headers when `copyHeaders` is set. Ignite UI `columnSelection`."
+      },
+      {
+        "name": "selectionColumn",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The selection column of row selection (`selectionMode` `'single'` or `'multiple'`). Default `true`. With `false` the table has no check box or radio column: the rows show the selection by their style only, and the row itself selects. A click selects only that row, Ctrl / Cmd + click toggles it, Shift + click selects a range (`'multiple'`). The rows are one tab stop (with cell navigation, the cells): Arrow Up / Down move between rows, Space or Enter on the focused row selects it (`'multiple'`: toggles it), Shift + Space and Shift + Arrow extend the range. Clicks on buttons, links, inputs and editors in a cell do not select the row. There is no header check box: use `selection` to select all rows."
       },
       {
         "name": "cellNavigation",
@@ -24290,6 +24312,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-selection/columns": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columnPickColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column selection\"\n      selectionMode=\"column\"\n      [(columnSelection)]=\"pickedColumns\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Columns: {{ pickedColumns().join(', ') || 'none' }}\n  </p>\n</div>",
   "table-selection/meta": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 8)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with meta-key selection\"\n      selectionMode=\"multiple\"\n      metaKeySelection\n      [(selection)]=\"metaSelected\"\n      (rowSelect)=\"lastEvent.set('Selected ' + $event.row.id)\"\n      (rowUnselect)=\"lastEvent.set('Cleared ' + $event.row.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ metaSelected().length }} selected. {{ lastEvent() }}\n  </p>\n</div>",
   "table-selection/multiple": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selectOpen()\">\n      Select open orders\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selected.set([])\">\n      Clear selection\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with checkboxes\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
+  "table-selection/row": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 6)\"\n      [columns]=\"rowColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders without a selection column\"\n      selectionMode=\"single\"\n      [selectionColumn]=\"false\"\n      selectOnFocus\n      [(selection)]=\"rowSelected\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    @if (rowSelected()[0]; as order) {\n      {{ order.id }}: {{ order.customer }}, {{ order.region }}, {{ order.status }}\n    } @else {\n      No order selected\n    }\n  </p>\n</div>",
   "table-selection/single": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with one choice\"\n      selectionMode=\"single\"\n      [(selection)]=\"chosen\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen()[0]?.id ?? 'none' }}</p>\n</div>",
   "table-sort-filter/advanced": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with an advanced filter\"\n      advancedFilter\n      [(advancedQuery)]=\"advancedQuery\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Rules: {{ advancedQuery().rules.length }}</p>\n</div>",
   "table-sort-filter/columns": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"filtered.clearFilters()\">\n    Clear filters\n  </star-button>\n  <docs-fill>\n    <star-table\n      #filtered\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column filters\"\n      [(filters)]=\"filters\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Filters: {{ filterText() }}</p>\n</div>",

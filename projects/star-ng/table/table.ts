@@ -534,6 +534,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     '[class.star-table--variable]': 'variableHeights()',
     '[class.star-table--virtual-columns]': 'virtualColumns()',
     '[class.star-table--stack]': "responsiveLayout() === 'stack'",
+    '[class.star-table--row-selection]': 'rowSelectionMode() && !selectionColumn()',
     '[style.--star-table-row-height.px]': 'virtualScroll() ? virtualRowHeight() : null',
     '[style.--star-table-head-height.px]':
       'pinnedTop().length && stickyHeader() ? headHeight() : null',
@@ -704,6 +705,13 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
    * mode selects on a click.
    */
   readonly metaKeySelection = input(false, { transform: booleanAttribute });
+  /**
+   * Arrow Up / Down move the selection with the focus, as in a list box (`selectionMode`
+   * `'single'`, when the rows take the focus: `metaKeySelection`, or `selectionColumn` off). Not
+   * with cell navigation. Default off: the arrow keys only move the focus, and Space or Enter
+   * selects.
+   */
+  readonly selectOnFocus = input(false, { transform: booleanAttribute });
   /**
    * The header check box selects the rows of the current page only (PrimeNG `selectionPageOnly`).
    * Default `true`, so a paginated table keeps its page-only header check box. Set it to `false`
@@ -981,7 +989,17 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   );
   protected readonly expandable = computed(() => !!this.expansion());
   protected readonly radioName = `star-table-${Math.random().toString(36).slice(2)}`;
-  protected readonly clickable = computed(() => this.selectionMode() === 'single');
+  protected readonly clickable = computed(
+    () =>
+      this.selectionMode() === 'single' || (!!this.rowSelectionMode() && !this.selectionColumn()),
+  );
+  /**
+   * The rows themselves select: `metaKeySelection`, or row selection without the selection
+   * column. The rows (or, with cell navigation, the cells) then take the focus.
+   */
+  protected readonly rowFocusSelection = computed(
+    () => this.metaKeySelection() || !this.selectionColumn(),
+  );
 
   /** Groups above each column field (`columnGroups`). */
   private readonly groupPaths = computed(() => groupPaths(this.columnGroups()));
@@ -1809,7 +1827,7 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
       this.renderedColumns().length +
       (this.columnWindow().first ? 1 : 0) +
       (this.columnWindow().last ? 1 : 0) +
-      (this.rowSelectionMode() ? 1 : 0) +
+      (this.selectionCellMode() ? 1 : 0) +
       (this.expandable() ? 1 : 0) +
       (this.reorderableRows() ? 1 : 0) +
       (this.rowEditMode() ? 1 : 0),
@@ -2317,7 +2335,7 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     const lead =
       (this.reorderableRows() ? 1 : 0) +
       (this.expandable() ? 1 : 0) +
-      (this.rowSelectionMode() ? 1 : 0);
+      (this.selectionCellMode() ? 1 : 0);
     return new Map(this.visibleColumns().map((column, index) => [column.field, lead + index + 1]));
   });
 
@@ -3410,7 +3428,9 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     selection: this.selection,
     selectionKeys: this.selectionKeys,
     selectAll: this.selectAll,
-    metaKeySelection: this.metaKeySelection,
+    metaKeySelection: this.rowFocusSelection,
+    rowOnly: computed(() => !this.selectionColumn()),
+    selectOnFocus: computed(() => this.selectOnFocus() && !this.cellMode()),
     pageOnly: this.selectionPageOnly,
     rowSelectable: this.rowSelectable,
     keyOf: (row) => this.trackKey(row),
@@ -3454,7 +3474,7 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     const rows = this.pageRows();
     return top.length || bottom.length ? [...top, ...rows, ...bottom] : rows;
   });
-  /** Key of the row that is the tab stop with `metaKeySelection` (default: the first row). */
+  /** Key of the row that is the tab stop when the rows select (default: the first row). */
   private readonly activeRow = signal<{ readonly key: unknown } | null>(null);
 
   protected isSelected(row: T): boolean {
@@ -3473,7 +3493,10 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     return label ? this.text.selectRowOf(label) : this.text.selectRow;
   }
 
-  /** `tabindex` of a row: rows are one tab stop with `metaKeySelection`, else not focusable. */
+  /**
+   * `tabindex` of a row: rows are one tab stop when they select (`metaKeySelection`, or no
+   * selection column), else not focusable.
+   */
   protected rowTabIndex(row: T): number | null {
     const stop = this.tabStop();
     if (!stop) return null;
@@ -3485,7 +3508,7 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
    * rendered row (with virtual scroll, the first row of the window).
    */
   private readonly tabStop = computed<{ readonly key: unknown } | null>(() => {
-    if (!this.metaKeySelection() || !this.rowSelectionMode() || this.cellMode()) return null;
+    if (!this.rowFocusSelection() || !this.rowSelectionMode() || this.cellMode()) return null;
     const rows = this.renderedRows();
     const active = this.activeRow();
     if (active && rows.some((row) => Object.is(this.trackKey(row), active.key))) return active;
@@ -3493,7 +3516,7 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   });
 
   protected onRowFocus(row: T): void {
-    if (this.metaKeySelection()) this.activeRow.set({ key: this.trackKey(row) });
+    if (this.rowFocusSelection()) this.activeRow.set({ key: this.trackKey(row) });
   }
 
   /** True while a cancelled change puts a check box back: its `checkedChange` is not a toggle. */
@@ -3578,14 +3601,32 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
 
   /** Space, Shift + Space and the Arrow keys on a row or on its selection control. */
   protected onSelectionKey(row: T, event: KeyboardEvent): void {
+    if (this.cellMode() && !this.selectionColumn()) {
+      if (!this.rowSelectionMode()) return;
+      this.onCellSelectionKey(row, event);
+      return;
+    }
     this.select.keydown(row, event, (tr) => {
       const key = tr.dataset['selectKey'];
       const next = this.pageRows().find((item) => this.rowKeyText(item) === key);
-      if (next !== undefined && this.metaKeySelection()) {
+      if (next !== undefined && this.rowFocusSelection()) {
         this.activeRow.set({ key: this.trackKey(next) });
       }
       return next;
     });
+  }
+
+  /**
+   * Cell navigation without the selection column: Space on a focused cell (not on a control in
+   * it) selects the row of the cell, Shift + Space extends the range.
+   */
+  private onCellSelectionKey(row: T, event: KeyboardEvent): void {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key !== ' ' && event.key !== 'Spacebar') return;
+    const target = event.target as HTMLElement;
+    if (!target.matches('td[data-field]') || target.dataset['field']?.startsWith('$')) return;
+    event.preventDefault();
+    this.select.keyToggle(row, event, event.shiftKey);
   }
 
   protected emitLazy(): void {

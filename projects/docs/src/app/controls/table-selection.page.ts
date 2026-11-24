@@ -131,6 +131,35 @@ import { DocsFill, formatMoney, Order, orderColumns, ORDERS, STATUS_SEVERITY } f
       </docs-example>
 
       <docs-example
+        heading="Selection without the column"
+        source="table-selection/row"
+        [script]="rowScript"
+        note="selectionColumn false removes the radio or checkbox column: the selected row shows a tint and an edge on its start side, and the row itself selects. A click selects the row; with selectionMode multiple, Ctrl or Cmd + click adds or removes a row and Shift + click selects a range. The rows are one tab stop: Arrow up and Arrow down move between them, and Space or Enter selects the focused row. With selectOnFocus (single mode) the arrow keys move the selection, as in a list box. Here the selection fills a details panel."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="orders.slice(0, 6)"
+              [columns]="rowColumns"
+              dataKey="id"
+              ariaLabel="Orders without a selection column"
+              selectionMode="single"
+              [selectionColumn]="false"
+              selectOnFocus
+              [(selection)]="rowSelected"
+            />
+          </docs-fill>
+          <p class="docs-output" role="status">
+            @if (rowSelected()[0]; as order) {
+              {{ order.id }}: {{ order.customer }}, {{ order.region }}, {{ order.status }}
+            } @else {
+              No order selected
+            }
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Row click"
         source="table-selection/click"
         [script]="clickScript"
@@ -256,6 +285,13 @@ export class TableSelectionPage {
   protected readonly lastEvent = signal('');
   protected readonly opened = signal<string | null>(null);
 
+  protected readonly rowSelected = signal<readonly Order[]>([]);
+  protected readonly rowColumns: StarColumn<Order>[] = [
+    { field: 'id', header: 'Order' },
+    { field: 'customer', header: 'Customer' },
+    { field: 'total', header: 'Total', align: 'end', format: (row) => formatMoney(row.total) },
+  ];
+
   protected readonly actionOrders = signal<readonly Order[]>(ORDERS.slice(0, 5));
   protected readonly actionSelection = signal<readonly Order[]>([]);
   protected readonly actionColumns: StarColumn<Order>[] = [
@@ -286,6 +322,12 @@ limit(event: StarTableSelectionChangingEvent<Order>): void {
   protected readonly metaScript = `readonly metaSelected = signal<readonly Order[]>([]);
 readonly lastEvent = signal('');`;
   protected readonly singleScript = `readonly chosen = signal<readonly Order[]>([]);`;
+  protected readonly rowScript = `readonly rowSelected = signal<readonly Order[]>([]);
+readonly rowColumns: StarColumn<Order>[] = [
+  { field: 'id', header: 'Order' },
+  { field: 'customer', header: 'Customer' },
+  { field: 'total', header: 'Total', align: 'end', format: (row) => formatMoney(row.total) },
+];`;
   protected readonly clickScript = `readonly opened = signal<string | null>(null);`;
   protected readonly actionsScript = `// Import StarCellTemplate, StarTag and StarButton in the component imports.
 readonly actionOrders = signal<readonly Order[]>(ORDERS.slice(0, 5));
@@ -311,21 +353,27 @@ cancel(order: Order): void {
     {
       name: 'Space',
       description:
-        'On a row checkbox or radio button: selects or clears the row. On the header checkbox: selects or clears the rows of the page (the whole filter result with selectionPageOnly false). On a focused row (metaKeySelection): toggles the row.',
+        'On a row checkbox or radio button: selects or clears the row. On the header checkbox: selects or clears the rows of the page (the whole filter result with selectionPageOnly false). On a focused row (metaKeySelection or selectionColumn false): toggles the row; in single mode without the selection column it selects the row.',
+    },
+    {
+      name: 'Enter (selectionColumn false)',
+      description:
+        'On a focused row: selects the row (multiple: toggles it). On a button or link in a cell, Enter runs that control.',
     },
     {
       name: 'Shift + Space',
       description:
-        'On a row checkbox, or on a focused row with metaKeySelection: selects the rows from the last toggled row to this row.',
+        'On a row checkbox, or on a focused row (metaKeySelection or selectionColumn false): selects the rows from the last toggled row to this row.',
     },
     {
       name: 'Shift + Arrow up / Shift + Arrow down',
       description:
-        'On a row checkbox, or on a focused row with metaKeySelection: moves to the previous or next row and extends the range.',
+        'On a row checkbox, or on a focused row (metaKeySelection or selectionColumn false): moves to the previous or next row and extends the range.',
     },
     {
-      name: 'Arrow up / Arrow down (metaKeySelection)',
-      description: 'On a focused row: moves the focus to the previous or next row.',
+      name: 'Arrow up / Arrow down (metaKeySelection or selectionColumn false)',
+      description:
+        'On a focused row: moves the focus to the previous or next row. With selectOnFocus in single mode, the selection moves with the focus.',
     },
     {
       name: 'Arrow up / Arrow down',

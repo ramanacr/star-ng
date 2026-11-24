@@ -1323,6 +1323,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with a row selected without the selection column',
+    path: 'controls/table-selection',
+    open: async (page) => {
+      const live = example(page, 'Selection without the column');
+      const row = live.locator('tbody tr.star-table__row').nth(1);
+      await row.locator('td').first().click();
+      await expect(row).toHaveAttribute('aria-selected', 'true');
+    },
+  },
+  {
     name: 'table with the header check box mixed and an unselectable row',
     path: 'controls/table-selection',
     open: async (page) => {

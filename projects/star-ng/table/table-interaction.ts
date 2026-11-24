@@ -203,6 +203,18 @@ export abstract class StarTableInteraction<T> {
   readonly selectionMode = input<'single' | 'multiple' | 'cell' | 'range' | 'column' | null>(null);
 
   /**
+   * The selection column of row selection (`selectionMode` `'single'` or `'multiple'`). Default
+   * `true`. With `false` the table has no check box or radio column: the rows show the selection
+   * by their style only, and the row itself selects. A click selects only that row, Ctrl / Cmd +
+   * click toggles it, Shift + click selects a range (`'multiple'`). The rows are one tab stop
+   * (with cell navigation, the cells): Arrow Up / Down move between rows, Space or Enter on the
+   * focused row selects it (`'multiple'`: toggles it), Shift + Space and Shift + Arrow extend the
+   * range. Clicks on buttons, links, inputs and editors in a cell do not select the row. There
+   * is no header check box: use `selection` to select all rows.
+   */
+  readonly selectionColumn = input(true, { transform: booleanAttribute });
+
+  /**
    * Selected cells with `selectionMode` `'cell'` or `'range'`: a list of `{ rowKey, field }` (the
    * cells of a range, row by row in display order). Two-way. A key is the `dataKey` value, else
    * the row object.
@@ -308,6 +320,11 @@ export abstract class StarTableInteraction<T> {
     const mode = this.selectionMode();
     return mode === 'single' || mode === 'multiple' ? mode : null;
   });
+
+  /** Row selection mode when the table shows the selection column, else `null`. */
+  protected readonly selectionCellMode = computed(() =>
+    this.selectionColumn() ? this.rowSelectionMode() : null,
+  );
 
   /** Cell selection mode (`cell`, `range`), or `null`. */
   protected readonly cellSelectionMode = computed(() => {
@@ -440,7 +457,7 @@ export abstract class StarTableInteraction<T> {
   private readonly leadFields = computed(() => [
     ...(this.reorderableRows() ? ['$reorder'] : []),
     ...(this.expandable() ? ['$expander'] : []),
-    ...(this.rowSelectionMode() ? ['$select'] : []),
+    ...(this.selectionCellMode() ? ['$select'] : []),
   ]);
 
   /** Trail cells (after the data columns): the row actions of row edit mode. */
