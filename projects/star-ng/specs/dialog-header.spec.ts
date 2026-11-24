@@ -67,7 +67,7 @@ describe('StarDialog header', () => {
     host.icon.set('file-text');
     host.tone.set('info');
     await fixture.whenStable();
-    const tile = dialog.querySelector<HTMLElement>('[data-star-part="headerIconPanel"]')!;
+    const tile = dialog.querySelector<HTMLElement>('[data-star-part="iconPanel"]')!;
     expect(tile.getAttribute('aria-hidden')).toBe('true');
     expect(tile.classList).toContain('star-dialog__icon');
     expect(tile.classList).toContain('star-dialog__icon--info');
@@ -122,7 +122,7 @@ describe('StarDialog header', () => {
     const controls = dialog.querySelector('[data-star-part="controlsPanel"]')!;
     const action = controls.querySelector('.header-action')!;
     expect(action.nextElementSibling?.classList).toContain('star-dialog__close');
-    const text = dialog.querySelector('[data-star-part="headingTextPanel"]')!;
+    const text = dialog.querySelector('[data-star-part="headingContentPanel"]')!;
     expect(text.querySelector('.extra')).not.toBeNull();
   });
 });

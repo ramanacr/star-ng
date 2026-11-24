@@ -133,14 +133,14 @@ function starDialogIconClass(icon: string | null | undefined): string | null {
             >
               @if (iconClass(); as glyph) {
                 <span
-                  data-star-part="headerIconPanel"
+                  data-star-part="iconPanel"
                   aria-hidden="true"
                   [class]="'star-dialog__icon star-dialog__icon--' + iconTone()"
                 >
                   <i data-star-part="headerIcon" [class]="glyph"></i>
                 </span>
               }
-              <div data-star-part="headingTextPanel" class="star-dialog__heading-text">
+              <div data-star-part="headingContentPanel" class="star-dialog__heading-text">
                 @if (header() || subheader()) {
                   <div data-star-part="titleLinePanel" class="star-dialog__title-line">
                     @if (header()) {
