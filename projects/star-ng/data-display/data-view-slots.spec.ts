@@ -107,9 +107,10 @@ describe('data view slots', () => {
 
   it('keeps default text unchanged without slots', async () => {
     const { el } = await setup();
-    expect(el.querySelector('.plain-empty .star-table__empty')?.textContent).toBe(
-      ' No records found ',
-    );
+    const empty = el.querySelector('.plain-empty .star-table__empty')!;
+    expect(empty.textContent?.trim()).toBe('No records found');
+    // The default empty template is a star-empty-state with a plain-text title (no heading).
+    expect(empty.querySelector('star-empty-state .star-empty-state__title')?.tagName).toBe('P');
     const plain = el.querySelector('.plain')!;
     expect(plain.querySelector('.star-data-view__item')?.textContent).toBe('a');
     expect(plain.querySelector('.star-data-view__header')?.textContent?.trim()).toBe('');

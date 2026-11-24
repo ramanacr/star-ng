@@ -19,7 +19,7 @@ StarNG is a library of accessible Angular controls. It uses signals, Signal Form
 
 ## What is in the package
 
-The package has 90 entry points. The docs have 132 control pages. Each page has live examples and an API table.
+The package has 92 entry points. The docs have 134 control pages. Each page has live examples and an API table.
 
 Control groups: buttons; forms (field, input, checkbox, radio, switch, number, password, mask, one-time code, tags, slider, rating, knob, color picker, select button); selection (select, multi-select, cascade select, listbox, autocomplete, tree, tree select); date and time; table; menus; overlays (dialog, confirm, drawer, popover, tooltip, toast); panels and navigation; data display and charts; media (file upload, editor, carousel, galleria, image); app shell (app bar, app sidebar, bottom navigation); data tools (query builder, pivot grid, hierarchical grid, spreadsheet, scheduler, Gantt chart, kanban); drag and drop (the `starDraggable` and `starDroppable` directives in `@star-ng/ui/drag-drop`); icons (`star-icon` in `@star-ng/ui/icon`); utilities.
 

@@ -611,11 +611,14 @@
         } @empty {
           <tr data-star-part="scrollBodyRow">
             <td data-star-part="emptyCell" class="star-table__empty" [attr.colspan]="colspan()">
-              <i data-star-part="emptyIcon" class="ph-bold ph-tray" aria-hidden="true"></i>
               @if (emptySlot(); as custom) {
-                <ng-container *ngTemplateOutlet="custom; context: { $implicit: globalFilter() }" />
+                <star-empty-state [headingLevel]="null">
+                  <ng-container
+                    *ngTemplateOutlet="custom; context: { $implicit: globalFilter() }"
+                  />
+                </star-empty-state>
               } @else {
-                {{ emptyMessage() ?? text.noData }}
+                <star-empty-state [headingLevel]="null" [title]="emptyMessage() ?? text.noData" />
               }
             </td>
           </tr>

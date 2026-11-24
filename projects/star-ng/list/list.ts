@@ -27,6 +27,7 @@ import {
   ɵSTAR_PART_HOST,
   type StarEmptyContext,
 } from '@star-ng/ui/core';
+import { StarEmptyState } from '@star-ng/ui/empty-state';
 
 /**
  * How the items of `star-list` behave:
@@ -213,7 +214,7 @@ export class StarListItem {
   selector: 'star-list',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, StarEmptyState],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarList) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -230,7 +231,9 @@ export class StarListItem {
     @if (!hasItems()) {
       @if (emptySlot(); as custom) {
         <div data-star-part="emptyPanel" class="star-list__empty">
-          <ng-container *ngTemplateOutlet="custom; context: { $implicit: '' }" />
+          <star-empty-state size="sm" [headingLevel]="null">
+            <ng-container *ngTemplateOutlet="custom; context: { $implicit: '' }" />
+          </star-empty-state>
         </div>
       }
     }

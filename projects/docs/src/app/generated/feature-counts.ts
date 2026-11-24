@@ -3,12 +3,12 @@
 export const FEATURE_COUNTS = {
   "lib": {
     "input": {
-      "uses": 1310,
-      "files": 127
+      "uses": 1326,
+      "files": 129
     },
     "inputRequired": {
-      "uses": 84,
-      "files": 45
+      "uses": 85,
+      "files": 46
     },
     "model": {
       "uses": 146,
@@ -19,32 +19,32 @@ export const FEATURE_COUNTS = {
       "files": 1
     },
     "output": {
-      "uses": 259,
-      "files": 90
+      "uses": 260,
+      "files": 91
     },
     "viewChild": {
-      "uses": 90,
-      "files": 51
+      "uses": 91,
+      "files": 52
     },
     "viewChildren": {
-      "uses": 2,
-      "files": 2
+      "uses": 3,
+      "files": 3
     },
     "contentChild": {
       "uses": 23,
       "files": 18
     },
     "contentChildren": {
-      "uses": 69,
-      "files": 57
+      "uses": 70,
+      "files": 58
     },
     "signal": {
-      "uses": 331,
-      "files": 88
+      "uses": 332,
+      "files": 89
     },
     "computed": {
-      "uses": 841,
-      "files": 105
+      "uses": 843,
+      "files": 107
     },
     "linkedSignal": {
       "uses": 30,
@@ -59,28 +59,28 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "untracked": {
-      "uses": 72,
-      "files": 32
+      "uses": 77,
+      "files": 33
     },
     "effect": {
       "uses": 69,
       "files": 40
     },
     "afterRenderEffect": {
-      "uses": 27,
-      "files": 21
+      "uses": 28,
+      "files": 22
     },
     "afterNextRender": {
-      "uses": 93,
-      "files": 53
+      "uses": 94,
+      "files": 54
     },
     "afterEveryRender": {
       "uses": 7,
       "files": 6
     },
     "inject": {
-      "uses": 571,
-      "files": 132
+      "uses": 575,
+      "files": 134
     },
     "takeUntilDestroyed": {
       "uses": 7,
@@ -107,40 +107,40 @@ export const FEATURE_COUNTS = {
       "files": 27
     },
     "if": {
-      "uses": 814,
-      "files": 105
+      "uses": 823,
+      "files": 107
     },
     "for": {
-      "uses": 249,
-      "files": 74
+      "uses": 250,
+      "files": 75
     },
     "switch": {
-      "uses": 11,
-      "files": 10
+      "uses": 12,
+      "files": 11
     },
     "let": {
       "uses": 61,
       "files": 27
     },
     "host": {
-      "uses": 167,
-      "files": 120
+      "uses": 169,
+      "files": 122
     },
     "onPush": {
-      "uses": 165,
-      "files": 121
+      "uses": 168,
+      "files": 123
     },
     "destroyRef": {
-      "uses": 113,
-      "files": 47
+      "uses": 115,
+      "files": 48
     },
     "booleanAttribute": {
-      "uses": 535,
-      "files": 98
+      "uses": 540,
+      "files": 100
     },
     "numberAttribute": {
-      "uses": 62,
-      "files": 23
+      "uses": 64,
+      "files": 24
     }
   },
   "docs": {
@@ -181,8 +181,8 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 938,
-      "files": 122
+      "uses": 943,
+      "files": 123
     },
     "computed": {
       "uses": 35,
@@ -249,8 +249,8 @@ export const FEATURE_COUNTS = {
       "files": 18
     },
     "if": {
-      "uses": 39,
-      "files": 24
+      "uses": 41,
+      "files": 25
     },
     "for": {
       "uses": 55,
@@ -269,8 +269,8 @@ export const FEATURE_COUNTS = {
       "files": 2
     },
     "onPush": {
-      "uses": 181,
-      "files": 149
+      "uses": 183,
+      "files": 151
     },
     "destroyRef": {
       "uses": 22,
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 249,
-  "pages": 144
+  "specFiles": 251,
+  "pages": 146
 } as const;

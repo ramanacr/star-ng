@@ -5,6 +5,7 @@
 // 2. The docs layout again: in styles.scss it comes after the library.
 @use '../../../../star-ng/styles/controls/field';
 @use '../../../../star-ng/styles/controls/tag';
+@use '../../../../star-ng/styles/controls/icon';
 @use '../../../../star-ng/styles/controls/fluid';
 @use '../../../../star-ng/styles/controls/select';
 @use '../../../../star-ng/styles/controls/select-button';
@@ -15,6 +16,7 @@
 @use '../../../../star-ng/styles/controls/toast';
 @use '../../../../star-ng/styles/controls/paginator';
 @use '../../../../star-ng/styles/controls/skeleton';
+@use '../../../../star-ng/styles/controls/empty-state';
 @use '../../../../star-ng/styles/controls/data-display';
 @use '../../../../star-ng/styles/controls/table';
 @use '../../../../star-ng/styles/controls/utility';

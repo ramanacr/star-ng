@@ -726,7 +726,12 @@ star-select.star-table__editor {
   color: var(--star-text-muted);
   text-align: center !important;
 
-  i {
+  // The table and the data view show a `star-empty-state`, which has its own padding.
+  &:has(> star-empty-state) {
+    padding: 0 !important;
+  }
+
+  > i {
     display: block;
     margin: 0 auto 0.5rem;
     font-size: 1.75rem;

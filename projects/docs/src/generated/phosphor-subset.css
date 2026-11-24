@@ -4,7 +4,7 @@
  * Rules and fonts: @phosphor-icons/web (MIT licence, see THIRD_PARTY_NOTICES.md).
  */
 
-/* bold: 208 of 1530 icons */
+/* bold: 209 of 1530 icons */
 @font-face {
   font-family: "Phosphor-Bold";
   src: url("../../../../node_modules/@phosphor-icons/web/src/bold/Phosphor-Bold.woff2") format("woff2");
@@ -181,6 +181,9 @@
 }
 .ph-bold.ph-chart-line:before {
   content: "\e154";
+}
+.ph-bold.ph-chat-circle:before {
+  content: "\e168";
 }
 .ph-bold.ph-chat-text:before {
   content: "\e17a";
@@ -663,7 +666,7 @@
   content: "\e4f8";
 }
 
-/* fill: 13 of 1530 icons */
+/* fill: 14 of 1530 icons */
 @font-face {
   font-family: "Phosphor-Fill";
   src: url("../../../../node_modules/@phosphor-icons/web/src/fill/Phosphor-Fill.woff2") format("woff2");
@@ -705,6 +708,9 @@
 }
 .ph-fill.ph-cloud-warning:before {
   content: "\ea98";
+}
+.ph-fill.ph-flag:before {
+  content: "\e244";
 }
 .ph-fill.ph-funnel:before {
   content: "\e266";

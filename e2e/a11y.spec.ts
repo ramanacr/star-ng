@@ -952,6 +952,24 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'empty state that replaced loading content',
+    path: 'controls/empty-state',
+    open: async (page) => {
+      const live = example(page, 'Heading level and status region');
+      await live.getByRole('button', { name: 'Load messages' }).click();
+      await expect(live.getByRole('status')).toContainText('No messages');
+    },
+  },
+  {
+    name: 'description list tooltip of a cut value',
+    path: 'controls/description-list',
+    open: async (page) => {
+      const live = example(page, 'Long values');
+      await live.locator('.star-description-list__text[tabindex="0"]').first().focus();
+      await expect(page.getByRole('tooltip')).toBeVisible();
+    },
+  },
+  {
     name: 'toasts of every severity',
     path: 'controls/toast',
     open: async (page) => {

@@ -36,6 +36,7 @@ import {
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
+import { StarEmptyState } from '@star-ng/ui/empty-state';
 import {
   StarPageEvent,
   StarPaginator,
@@ -102,7 +103,7 @@ export interface StarDataViewLazyLoadEvent {
   selector: 'star-data-view',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [NgTemplateOutlet, StarPaginator, StarPaginatorOption],
+  imports: [NgTemplateOutlet, StarEmptyState, StarPaginator, StarPaginatorOption],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDataView) }],
   host: {
@@ -165,11 +166,12 @@ export interface StarDataViewLazyLoadEvent {
       } @empty {
         @if (!loading()) {
           <li data-star-part="emptyItem" class="star-table__empty">
-            <i data-star-part="emptyIcon" class="ph-bold ph-tray" aria-hidden="true"></i>
             @if (emptySlot(); as custom) {
-              <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+              <star-empty-state [headingLevel]="null">
+                <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+              </star-empty-state>
             } @else {
-              {{ emptyMessage() ?? text.noData }}
+              <star-empty-state [headingLevel]="null" [title]="emptyMessage() ?? text.noData" />
             }
           </li>
         }

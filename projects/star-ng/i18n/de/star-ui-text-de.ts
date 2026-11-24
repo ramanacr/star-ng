@@ -68,6 +68,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   pageReport: (first, last, total) => `${first}–${last} von ${total}`,
   noData: 'Keine Datensätze gefunden',
   missingData: 'Keine Daten',
+  emptyValue: '—',
+  noValue: 'Kein Wert',
   selectRow: 'Zeile auswählen',
   selectAllRows: 'Alle Zeilen auswählen',
   selectRowOf: (label) => `Zeile ${label} auswählen`,

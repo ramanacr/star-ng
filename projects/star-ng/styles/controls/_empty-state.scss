@@ -1,0 +1,113 @@
+// Empty state (StarEmptyState): icon tile or image, title, description and actions.
+// Tokens: `--star-empty-state-icon-color`, `--star-empty-state-icon-surface`,
+// `--star-empty-state-title-color` and `--star-empty-state-description-color`. Set them on
+// `.star-empty-state` (or a parent) to change every empty state, the ones of the table, the data
+// view and the list included.
+
+.star-empty-state {
+  --star-empty-state-icon-color: var(--star-text-muted);
+  --star-empty-state-icon-surface: var(--star-surface-muted);
+  --star-empty-state-title-color: var(--star-text-strong);
+  --star-empty-state-description-color: var(--star-text-muted);
+  --star-empty-state-tile-size: 3rem;
+  --star-empty-state-icon-size: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--star-space-2);
+  padding: var(--star-space-8) var(--star-space-4);
+  text-align: center;
+}
+.star-empty-state--error {
+  --star-empty-state-icon-color: var(--star-danger);
+  --star-empty-state-icon-surface: var(--star-danger-soft);
+}
+.star-empty-state--success {
+  --star-empty-state-icon-color: var(--star-success);
+  --star-empty-state-icon-surface: var(--star-success-soft);
+}
+.star-empty-state--sm {
+  --star-empty-state-tile-size: 2.5rem;
+  --star-empty-state-icon-size: 1.25rem;
+  gap: var(--star-space-1);
+  padding: var(--star-space-4) var(--star-space-3);
+}
+.star-empty-state--lg {
+  --star-empty-state-tile-size: 4rem;
+  --star-empty-state-icon-size: 2rem;
+  gap: var(--star-space-3);
+  padding: var(--star-space-12) var(--star-space-6);
+}
+.star-empty-state__graphic {
+  display: flex;
+  justify-content: center;
+  margin-block-end: var(--star-space-1);
+
+  &:empty {
+    display: none;
+  }
+  // An image or an illustration in the image slot keeps its size, up to the width of the area.
+  > img,
+  > svg {
+    max-inline-size: 100%;
+    block-size: auto;
+  }
+}
+.star-empty-state__tile {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--star-empty-state-tile-size);
+  block-size: var(--star-empty-state-tile-size);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-empty-state-icon-surface);
+  color: var(--star-empty-state-icon-color);
+  font-size: var(--star-empty-state-icon-size);
+}
+.star-empty-state__title {
+  margin: 0;
+  color: var(--star-empty-state-title-color);
+  font: var(--star-type-title-sm);
+}
+.star-empty-state__description {
+  max-inline-size: 36rem;
+  margin: 0;
+  color: var(--star-empty-state-description-color);
+  font: var(--star-type-body);
+}
+.star-empty-state__content {
+  color: var(--star-empty-state-description-color);
+  font: var(--star-type-body);
+
+  &:empty {
+    display: none;
+  }
+}
+.star-empty-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--star-space-2);
+  margin-block-start: var(--star-space-2);
+
+  &:empty {
+    display: none;
+  }
+}
+.star-empty-state--sm {
+  .star-empty-state__title {
+    font: var(--star-type-label);
+  }
+  .star-empty-state__description,
+  .star-empty-state__content {
+    font: var(--star-type-body-sm);
+  }
+}
+.star-empty-state--lg {
+  .star-empty-state__title {
+    font: var(--star-type-title);
+  }
+  .star-empty-state__description,
+  .star-empty-state__content {
+    font: var(--star-type-body-lg);
+  }
+}

@@ -493,3 +493,77 @@ test.describe('data display pages', () => {
     expect(errors).toEqual([]);
   });
 });
+
+test.describe('empty state', () => {
+  test('shows the variants, emits retry and announces the state that replaces loading', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page);
+    await openPage(page, '/controls/empty-state', 'Empty state');
+    const variants = example(page, 'Variants');
+    await expect(
+      variants.getByRole('heading', { level: 3, name: 'No orders found' }),
+    ).toBeVisible();
+    await expect(
+      variants.getByRole('heading', { level: 3, name: "You're all caught up" }),
+    ).toBeVisible();
+    await variants.getByRole('button', { name: 'Retry' }).click();
+    await expect(variants.getByText('Retry pressed 1 times.')).toBeVisible();
+
+    const status = example(page, 'Heading level and status region');
+    await status.getByRole('button', { name: 'Load messages' }).click();
+    const region = status.getByRole('status');
+    await expect(region).toContainText('No messages');
+    await expect(region.getByRole('heading', { level: 3, name: 'No messages' })).toBeVisible();
+
+    // The table shows the empty state as plain text in its single cell.
+    const table = example(page, 'In a table').getByRole('table', { name: 'Orders of today' });
+    await expect(table.locator('.star-table__empty star-empty-state')).toHaveText(
+      'No orders today.',
+    );
+    await expect(table.getByRole('heading')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('description list', () => {
+  test('renders dl pairs, the placeholder and the tooltip of a cut value', async ({ page }) => {
+    const errors = collectErrors(page);
+    await openPage(page, '/controls/description-list', 'Description list');
+    const stacked = example(page, 'Label and value pairs');
+    const pairs = stacked.locator('dl > div');
+    await expect(pairs).toHaveCount(4);
+    await expect(pairs.nth(0).locator('dt')).toHaveText('Organization');
+    await expect(pairs.nth(0).locator('dd')).toHaveText('Example Trading');
+    await expect(pairs.nth(3).locator('dd [aria-hidden="true"]')).toHaveText('—');
+    await expect(pairs.nth(3).locator('dd')).toContainText('No value');
+
+    // Projected items render in the dl; their element is not in the page.
+    const content = example(page, 'Content as the value');
+    await expect(content.locator('star-description-item')).toHaveCount(0);
+    await expect(content.locator('dd a[href="mailto:orders@example.com"]')).toBeVisible();
+    await expect(content.locator('dl > div').nth(3).locator('dd')).toContainText('No value');
+
+    // Columns flow into three columns on a wide page.
+    const columns = example(page, 'Columns').locator('dl');
+    await expect(columns).toHaveCSS('column-count', '3');
+
+    const long = example(page, 'Long values');
+    const [wrapped, cut] = [
+      long.locator('star-description-list').nth(0),
+      long.locator('star-description-list').nth(1),
+    ];
+    await expect(wrapped.locator('[tabindex]')).toHaveCount(0);
+    const value = cut.locator('.star-description-list__text[tabindex="0"]').first();
+    await value.focus();
+    const tooltip = page.getByRole('tooltip');
+    await expect(tooltip).toHaveText(
+      'Unit 4, North Industrial Park, 1200 Harbor Road, Example City',
+    );
+    await expect(value).toHaveAttribute('aria-describedby', (await tooltip.getAttribute('id'))!);
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toHaveCount(0);
+    await expect(cut.locator('dl > div').nth(2).locator('dd')).toHaveText('Not set');
+    expect(errors).toEqual([]);
+  });
+});

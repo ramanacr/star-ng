@@ -1,0 +1,95 @@
+// Description list (StarDescriptionList): read-only label and value pairs in `<dl>`.
+// Tokens: `--star-description-list-label-color`, `--star-description-list-label-weight`,
+// `--star-description-list-value-color`, `--star-description-list-gap` (between the pairs),
+// `--star-description-list-label-width` (inline layout) and `--star-description-list-columns`
+// (columns layout, set by the `columns` input).
+
+.star-description-list {
+  --star-description-list-label-color: var(--star-text-muted);
+  --star-description-list-label-weight: 500;
+  --star-description-list-value-color: var(--star-text);
+  --star-description-list-gap: var(--star-space-4);
+  --star-description-list-label-width: 10rem;
+  --star-description-list-label-font: var(--star-type-body);
+  --star-description-list-value-font: var(--star-type-body-lg);
+  display: block;
+  min-inline-size: 0;
+}
+.star-description-list--sm {
+  --star-description-list-gap: var(--star-space-2);
+  --star-description-list-label-font: var(--star-type-body-sm);
+  --star-description-list-value-font: var(--star-type-body);
+}
+.star-description-list__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--star-description-list-gap);
+  margin: 0;
+  padding: 0;
+}
+.star-description-list__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-inline-size: 0;
+}
+.star-description-list__label {
+  margin: 0;
+  color: var(--star-description-list-label-color);
+  font: var(--star-description-list-label-font);
+  font-weight: var(--star-description-list-label-weight);
+}
+.star-description-list__value {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  margin: 0;
+  color: var(--star-description-list-value-color);
+  font: var(--star-description-list-value-font);
+  // Long words and addresses wrap instead of widening the list.
+  overflow-wrap: anywhere;
+}
+.star-description-list__text:empty {
+  display: none;
+}
+.star-description-list__placeholder {
+  color: var(--star-text-muted);
+}
+.star-description-list__hint {
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+}
+
+// Inline: label and value in one row; the label column has a fixed width.
+.star-description-list--inline .star-description-list__item {
+  display: grid;
+  grid-template-columns: var(--star-description-list-label-width) minmax(0, 1fr);
+  column-gap: var(--star-space-4);
+  align-items: baseline;
+}
+
+// Columns: the stacked pairs flow into the columns, top to bottom. A column is at least 12rem
+// wide, so a narrow list shows fewer columns.
+.star-description-list--columns .star-description-list__list {
+  display: block;
+  columns: var(--star-description-list-columns, 2) 12rem;
+  column-gap: var(--star-space-8);
+}
+.star-description-list--columns .star-description-list__item {
+  break-inside: avoid;
+  padding-block-end: var(--star-description-list-gap);
+}
+
+// Truncate: one line per value; a cut value has the full text in a tooltip and takes the focus.
+.star-description-list--truncate .star-description-list__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
+
+  &:focus-visible {
+    outline: none;
+    border-radius: var(--star-radius-xs);
+    box-shadow: var(--star-focus-ring);
+  }
+}
