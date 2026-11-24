@@ -75,6 +75,56 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Popup position"
+        source="menu/position"
+        note="starMenuPosition on the trigger sets where the popup opens: below-start (the default), below-end, above-start or above-end. Start and end follow the reading direction. When there is no room, the popup moves to the other edge, then to the other side of the trigger."
+      >
+        <div class="docs-row">
+          <star-button variant="secondary" [starMenuTrigger]="placeMenu">Below start</star-button>
+          <star-button
+            variant="secondary"
+            starMenuPosition="below-end"
+            [starMenuTrigger]="placeMenu"
+            >Below end</star-button
+          >
+          <star-button
+            variant="secondary"
+            starMenuPosition="above-start"
+            [starMenuTrigger]="placeMenu"
+            >Above start</star-button
+          >
+          <star-button
+            variant="secondary"
+            starMenuPosition="above-end"
+            [starMenuTrigger]="placeMenu"
+            >Above end</star-button
+          >
+        </div>
+        <star-menu #placeMenu [items]="fileItems" />
+      </docs-example>
+
+      <docs-example
+        heading="Heading in a popup"
+        source="menu/heading"
+        [script]="headingScript"
+        note="An item with header is a plain heading, for example the record that the actions apply to. It takes no focus, the arrow keys and the typeahead skip it, and it names the menu. The row action opens below-end, so the popup stays inside the row. A theme styles the heading with the header part."
+      >
+        <div class="docs-row">
+          <span class="docs-output">REC-2026-0001</span>
+          <button
+            type="button"
+            class="star-btn star-btn--secondary star-btn--icon"
+            aria-label="Actions for REC-2026-0001"
+            starMenuPosition="below-end"
+            [starMenuTrigger]="recordMenu"
+          >
+            <i class="ph-bold ph-dots-three-vertical" aria-hidden="true"></i>
+          </button>
+        </div>
+        <star-menu #recordMenu [items]="recordItems" />
+      </docs-example>
+
+      <docs-example
         heading="Inline menu"
         source="menu/inline"
         note="With inline, the menu renders in place. Use an ariaLabel to name it."
@@ -115,8 +165,9 @@ import { DOCS, DocsRow } from '../shared/docs';
       <p>
         Submenus open toward the start side of the menu: to the left in a right-to-left page. Arrow
         left opens a submenu and Arrow right closes it, and the submenu arrow turns around. A popup
-        is aligned with the start edge of its trigger. The menu follows a change of
-        <code>dir</code> at run time. See the Right-to-left guide.
+        is aligned with the start edge of its trigger, so <code>below-end</code> puts it at the left
+        edge of the trigger. The menu follows a change of <code>dir</code> at run time. See the
+        Right-to-left guide.
       </p>
 
       <docs-api
@@ -171,6 +222,23 @@ export class MenuPage {
       items: [{ label: 'Single column' }, { label: 'Two columns' }, { label: 'Grid' }],
     },
   ];
+
+  protected readonly recordItems: readonly StarMenuItem[] = [
+    { label: 'REC-2026-0001', header: true },
+    { label: 'Preview', icon: 'ph-bold ph-eye' },
+    { label: 'Open', icon: 'ph-bold ph-arrow-square-out' },
+    { label: 'Copy link', icon: 'ph-bold ph-link' },
+    { separator: true },
+    { label: 'Delete', icon: 'ph-bold ph-trash', danger: true },
+  ];
+  protected readonly headingScript = `readonly recordItems: readonly StarMenuItem[] = [
+  { label: 'REC-2026-0001', header: true },
+  { label: 'Preview', icon: 'ph-bold ph-eye' },
+  { label: 'Open', icon: 'ph-bold ph-arrow-square-out' },
+  { label: 'Copy link', icon: 'ph-bold ph-link' },
+  { separator: true },
+  { label: 'Delete', icon: 'ph-bold ph-trash', danger: true },
+];`;
 
   protected readonly groupItems: readonly StarMenuItem[] = [
     { label: 'Search', icon: 'ph-bold ph-magnifying-glass' },
@@ -246,11 +314,15 @@ readonly fileItems: readonly StarMenuItem[] = [
     { name: '--star-shadow-lg', description: 'Shadow of the popup.' },
     { name: '--star-surface-muted', description: 'Background of the active item.' },
     { name: '--star-danger', description: 'Text color of a danger item.' },
+    { name: '--star-text-muted', description: 'Text color of a header item and a group heading.' },
     { name: '--star-accent', description: 'Focus ring of an item.' },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
     { name: 'Enter / Space / Arrow down', description: 'On the trigger: opens the menu.' },
-    { name: 'Arrow up / Arrow down', description: 'Moves between items. The focus wraps around.' },
+    {
+      name: 'Arrow up / Arrow down',
+      description: 'Moves between items. The focus wraps around. A header item is skipped.',
+    },
     { name: 'Home / End', description: 'Moves to the first or the last item.' },
     {
       name: 'Letter keys',

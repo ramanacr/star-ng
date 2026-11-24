@@ -12560,6 +12560,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "startPanel",
       "itemList",
       "separator",
+      "header",
       "groupPanel",
       "submenuHeader",
       "item",
@@ -12702,7 +12703,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "[starMenuTrigger]",
     "entry": "@star-ng/ui/menu",
-    "description": "Opens an `star-menu` as a popup from any element (button, icon button, row action). Adds `aria-haspopup`, `aria-expanded`, Arrow Down / Enter / Space to open.",
+    "description": "Opens an `star-menu` as a popup from any element (button, icon button, row action). Adds `aria-haspopup`, `aria-expanded`, Arrow Down / Enter / Space to open. `starMenuPosition` sets where the popup opens (default `'below-start'`).",
     "inputs": [
       {
         "name": "starMenuTrigger",
@@ -12710,6 +12711,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": true,
         "description": ""
+      },
+      {
+        "name": "starMenuPosition",
+        "type": "StarMenuPosition",
+        "default": "'below-start'",
+        "required": false,
+        "description": "Where the popup opens: `'below-start'` (default), `'below-end'`, `'above-start'` or `'above-end'`. `start` and `end` follow the reading direction. When there is no room, the popup moves to the other edge, then to the other side of the trigger."
       }
     ],
     "models": [],
@@ -24140,11 +24148,13 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "mention/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assign to\" hint=\"Type @ and a name\">\n    <input\n      starInput\n      [formField]=\"f.assignee\"\n      starMention\n      [suggestions]=\"people\"\n      optionLabel=\"name\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Model: {{ model().assignee || '(empty)' }}</p>\n</div>",
   "mention/triggers": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Message\"\n    placeholder=\"Type @ for people or # for topics\"\n    starMention\n    #message=\"starMention\"\n    [triggers]=\"['@', '#']\"\n    [suggestions]=\"search\"\n    [optionLabel]=\"label\"\n    (mentionSearch)=\"query.set($event)\"\n  ></textarea>\n  <ng-template [starMentionItem]=\"message\" let-item>\n    @if ($any(item).tag) {\n      <span>#{{ $any(item).tag }}</span>\n    } @else {\n      <span class=\"person\">\n        <span>{{ $any(item).name }}</span>\n        <small>{{ $any(item).team }}</small>\n      </span>\n    }\n  </ng-template>\n  <p class=\"docs-output\" role=\"status\">\n    Search: {{ query() ? query()!.trigger + query()!.query : 'none' }}\n  </p>\n</div>",
   "menu/groups": "<star-menu inline ariaLabel=\"Workspace menu\" [items]=\"groupItems\">\n  <ng-template starMenuTemplate=\"start\">\n    <span class=\"docs-output\">Workspace: Orders</span>\n  </ng-template>\n  <ng-template starMenuTemplate=\"submenuHeader\" let-item>\n    {{ item.label }} actions\n  </ng-template>\n  <ng-template starMenuTemplate=\"end\">\n    <span class=\"docs-output\">2 people online</span>\n  </ng-template>\n</star-menu>",
+  "menu/heading": "<div class=\"docs-row\">\n  <span class=\"docs-output\">REC-2026-0001</span>\n  <button\n    type=\"button\"\n    class=\"star-btn star-btn--secondary star-btn--icon\"\n    aria-label=\"Actions for REC-2026-0001\"\n    starMenuPosition=\"below-end\"\n    [starMenuTrigger]=\"recordMenu\"\n  >\n    <i class=\"ph-bold ph-dots-three-vertical\" aria-hidden=\"true\"></i>\n  </button>\n</div>\n<star-menu #recordMenu [items]=\"recordItems\" />",
   "menu/icon-trigger": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Row actions\"\n  [starMenuTrigger]=\"rowMenu\"\n>\n  <i class=\"ph-bold ph-dots-three-vertical\" aria-hidden=\"true\"></i>\n</button>\n<star-menu #rowMenu [items]=\"fileItems\" />",
   "menu/icons": "<star-button variant=\"secondary\" [starMenuTrigger]=\"editMenu\">Edit</star-button>\n<star-menu #editMenu [items]=\"editItems\" />",
   "menu/inline": "<star-menu inline ariaLabel=\"Inline menu\" [items]=\"viewItems\" />",
   "menu/nested": "<star-button variant=\"secondary\" [starMenuTrigger]=\"viewMenu\">View</star-button>\n<star-menu #viewMenu [items]=\"viewItems\" />",
   "menu/popup": "<div class=\"docs-stack\">\n  <star-button variant=\"secondary\" [starMenuTrigger]=\"fileMenu\">File</star-button>\n  <star-menu #fileMenu [items]=\"fileItems\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "menu/position": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" [starMenuTrigger]=\"placeMenu\">Below start</star-button>\n  <star-button\n    variant=\"secondary\"\n    starMenuPosition=\"below-end\"\n    [starMenuTrigger]=\"placeMenu\"\n    >Below end</star-button\n  >\n  <star-button\n    variant=\"secondary\"\n    starMenuPosition=\"above-start\"\n    [starMenuTrigger]=\"placeMenu\"\n    >Above start</star-button\n  >\n  <star-button\n    variant=\"secondary\"\n    starMenuPosition=\"above-end\"\n    [starMenuTrigger]=\"placeMenu\"\n    >Above end</star-button\n  >\n</div>\n<star-menu #placeMenu [items]=\"fileItems\" />",
   "menu/states": "<star-button variant=\"secondary\" [starMenuTrigger]=\"orderMenu\">Order actions</star-button>\n<star-menu #orderMenu [items]=\"orderItems\" />",
   "menubar/basic": "<div class=\"docs-stack\">\n  <star-menubar ariaLabel=\"Main\" [items]=\"nav\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "menubar/end": "<star-menubar ariaLabel=\"Main with action\" [items]=\"nav\">\n  <star-button starMenubarEnd size=\"sm\" variant=\"ghost\" leadingIcon=\"ph-bold ph-plus\"\n    >New</star-button\n  >\n</star-menubar>",

@@ -76,6 +76,14 @@
   font: var(--star-type-label);
   color: var(--star-text-muted);
 }
+// A `header` item: plain text at the top of a list, not a menu item (no hover, no pointer).
+.star-menu__header {
+  padding: 0.375rem 0.75rem 0.25rem;
+  overflow-wrap: anywhere;
+  font: var(--star-type-label);
+  color: var(--star-text-muted);
+  cursor: default;
+}
 .star-menu__item {
   display: flex;
   align-items: center;
