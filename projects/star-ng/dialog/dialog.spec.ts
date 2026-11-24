@@ -370,6 +370,58 @@ describe('StarDialog position', () => {
   template: `
     <star-dialog
       [(visible)]="open"
+      header="Sheet"
+      [sheet]="sheet()"
+      [position]="position()"
+      width="58rem"
+    >
+      <p>Body</p>
+    </star-dialog>
+  `,
+})
+class SheetHost {
+  readonly open = signal(true);
+  readonly sheet = signal(true);
+  readonly position = signal<StarDialogPosition>('center');
+}
+
+describe('StarDialog sheet', () => {
+  it('sits at the end edge, at the start edge with position start, and ignores other positions', async () => {
+    const fixture = TestBed.createComponent(SheetHost);
+    await fixture.whenStable();
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    const positions = () => [...dialog.classList].filter((name) => name.includes('--at-'));
+    expect(dialog.classList).toContain('star-dialog--sheet');
+    expect(positions()).toEqual(['star-dialog--at-end']);
+    expect(dialog.style.width).toBe('58rem');
+
+    fixture.componentInstance.position.set('start');
+    await fixture.whenStable();
+    expect(positions()).toEqual(['star-dialog--at-start']);
+
+    for (const position of ['top', 'bottom-start', 'end'] as const) {
+      fixture.componentInstance.position.set(position);
+      await fixture.whenStable();
+      expect(positions()).toEqual(['star-dialog--at-end']);
+    }
+  });
+
+  it('is a normal dialog without sheet: the position class follows position', async () => {
+    const fixture = TestBed.createComponent(SheetHost);
+    fixture.componentInstance.sheet.set(false);
+    fixture.componentInstance.position.set('top');
+    await fixture.whenStable();
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    expect(dialog.classList).not.toContain('star-dialog--sheet');
+    expect(dialog.classList).toContain('star-dialog--at-top');
+  });
+});
+
+@Component({
+  imports: [StarDialog],
+  template: `
+    <star-dialog
+      [(visible)]="open"
       header="Scroll and focus"
       width="40rem"
       [modal]="modal()"

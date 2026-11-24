@@ -64,8 +64,13 @@ export interface StarDialogConfig<D = unknown> {
   readonly role?: 'dialog' | 'alertdialog';
   /** Accessible name when there is no header. */
   readonly ariaLabel?: string;
-  /** Place in the window. Default `'center'`. */
+  /** Place in the window. Default `'center'`. With `sheet`, only `'start'` changes the edge. */
   readonly position?: StarDialogPosition;
+  /**
+   * Full-height side sheet at the end edge (`position: 'start'`: the start edge), with a gap from
+   * the window edges. `width` or `size` set its width. Default false.
+   */
+  readonly sheet?: boolean;
   /** Drag by the header, and Alt + arrow keys on the move button. Default false. */
   readonly draggable?: boolean;
   /** Corner handle that resizes the dialog. Default false. */
@@ -146,6 +151,7 @@ export class StarDialogRef<R = unknown> {
       [role]="c.role ?? 'dialog'"
       [ariaLabel]="c.ariaLabel ?? null"
       [position]="c.position ?? 'center'"
+      [sheet]="c.sheet ?? false"
       [draggable]="c.draggable ?? false"
       [resizable]="c.resizable ?? false"
       [maximizable]="c.maximizable ?? false"
@@ -196,7 +202,9 @@ export class StarDialogContainer {
  * ```
  * Inside the opened component: `inject(STAR_DIALOG_DATA)` and `inject(StarDialogRef)`.
  * Put its action buttons in an element with class `star-dialog__footer`. `headerAction` puts one
- * button in the header, for example a Close button with `closable: false`.
+ * button in the header, for example a Close button with `closable: false`. `sheet: true` opens a
+ * full-height side sheet; a dialog or sheet opened from an open one stacks above it, and Escape
+ * closes only the top one.
  */
 @Service()
 export class StarDialogService {

@@ -82,6 +82,9 @@ function starDialogIconClass(icon: string | null | undefined): string | null {
  * `starDialogHeader` goes under the title; content with `starDialogHeaderActions` (for example a
  * button) goes before the header buttons.
  *
+ * `sheet` turns the dialog into a full-height side sheet at the end edge (or the start edge with
+ * `position="start"`): the body fills the height and scrolls.
+ *
  * The exit motion must run on the dialog element itself (or its `::backdrop`): an animation
  * on a child of the dialog does not hold the close.
  */
@@ -97,7 +100,8 @@ function starDialogIconClass(icon: string | null | undefined): string | null {
       data-star-part="frame"
       #dialog
       class="star-dialog"
-      [class]="'star-dialog--' + size() + ' star-dialog--at-' + position()"
+      [class]="'star-dialog--' + size() + ' star-dialog--at-' + placement()"
+      [class.star-dialog--sheet]="sheet()"
       [class.star-dialog--modal]="modal()"
       [class.star-dialog--block-scroll]="scrollBlocked()"
       [attr.tabindex]="focusOnShow() ? null : -1"
@@ -250,6 +254,15 @@ export class StarDialog extends StarDialogBase {
    */
   readonly position = input<StarDialogPosition>('center');
   /**
+   * Full-height side sheet: the dialog sits at the end edge, a small gap from the top, the end and
+   * the bottom of the window, and slides in from that edge. `position="start"` puts it at the start
+   * edge; other positions are ignored. Both follow the writing direction. `width` and `size` set
+   * the width, up to the window width minus a gap. The body fills the height and scrolls, so the
+   * content can grow with `flex: 1`. Tokens: `--star-dialog-sheet-gap`,
+   * `--star-dialog-sheet-reserve` and `--star-dialog-sheet-radius`.
+   */
+  readonly sheet = input(false, { transform: booleanAttribute });
+  /**
    * Widths per window size (PrimeNG `breakpoints`): `{ '<max-width>': '<width>' }`, for example
    * `{ '960px': '75vw', '640px': '100vw' }`. The smallest matching max-width wins over `width`
    * and `size`.
@@ -305,6 +318,12 @@ export class StarDialog extends StarDialogBase {
   protected readonly subheaderId = inject(_IdGenerator).getId('star-dialog-subtitle-');
   /** Class of the icon in the header tile, or `null` without an icon. */
   protected readonly iconClass = computed(() => starDialogIconClass(this.icon()));
+
+  /** Position class: a sheet is at the start or the end edge only. */
+  protected readonly placement = computed<StarDialogPosition>(() => {
+    if (!this.sheet()) return this.position();
+    return this.position() === 'start' ? 'start' : 'end';
+  });
 
   /** Not maximized: the drag and resize geometry applies. */
   protected readonly free = computed(() => !this.maximized());

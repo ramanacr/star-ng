@@ -451,6 +451,80 @@ test.describe('dialog drag, resize, maximize and position', () => {
   });
 });
 
+test.describe('dialog side sheet', () => {
+  test('is full height at the end edge with the gap, and its body scrolls', async ({ page }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    await example(page, 'Side sheet').getByRole('button', { name: 'Open activity' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Activity ORD-1042' });
+    await expect(sheet).toBeVisible();
+    await settled(sheet);
+    const viewport = page.viewportSize()!;
+    // Gap 12px (--star-dialog-sheet-gap) from the top, the end (right in LTR) and the bottom.
+    const box = await rounded(sheet);
+    expect(box.y).toBe(12);
+    expect(box.x + box.width).toBe(viewport.width - 12);
+    expect(box.height).toBe(viewport.height - 24);
+    const body = sheet.locator('.star-dialog__body');
+    expect(
+      await body.evaluate((el) => ({
+        scrolls: el.scrollHeight > el.clientHeight,
+        overflow: getComputedStyle(el).overflowY,
+      })),
+    ).toEqual({ scrolls: true, overflow: 'auto' });
+    expect(await sheet.evaluate((el) => el.matches(':modal'))).toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+  });
+
+  test('stacks above the dialog that opened it, and Escape closes only the top one @cross-browser', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    const live = example(page, 'Side sheet');
+    const trigger = live.getByRole('button', { name: 'Open order ORD-2207' });
+    await trigger.click();
+    const order = page.getByRole('dialog', { name: 'Order ORD-2207' });
+    await expect(order).toBeVisible();
+    const write = order.getByRole('button', { name: 'Write message' });
+    await write.click();
+    const sheet = page.getByRole('dialog', { name: 'Message to the customer' });
+    await expect(sheet).toBeVisible();
+    await settled(sheet);
+    // The sheet is the top element where it is: the browser put it above the order dialog.
+    const box = await rounded(sheet);
+    expect(
+      await page.evaluate(
+        ([x, y]) => !!document.elementFromPoint(x, y)?.closest('star-dialog-container'),
+        [box.x + box.width / 2, box.y + box.height / 2],
+      ),
+    ).toBe(true);
+    // The message field takes the free height of the body (flex: 1).
+    const message = sheet.getByRole('textbox', { name: 'Message' });
+    expect((await message.boundingBox())!.height).toBeGreaterThan(box.height / 3);
+    await expect(message).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    await expect(order).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(order).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Message: none');
+  });
+
+  test('gives the sent message back to the page', async ({ page }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    const live = example(page, 'Side sheet');
+    await live.getByRole('button', { name: 'Open order ORD-2207' }).click();
+    await page.getByRole('button', { name: 'Write message' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Message to the customer' });
+    await sheet.getByRole('textbox', { name: 'Message' }).fill('Ready at noon.');
+    await sheet.getByRole('button', { name: 'Send' }).click();
+    await expect(sheet).toBeHidden();
+    await expect(page.getByRole('dialog', { name: 'Order ORD-2207' })).toBeVisible();
+    await expect(live.getByRole('status')).toHaveText('Message: Ready at noon.');
+  });
+});
+
 test.describe('popups inside a modal dialog', () => {
   const openOrderDialog = async (page: Page) => {
     await openPage(page, '/controls/dialog', 'Dialog');
