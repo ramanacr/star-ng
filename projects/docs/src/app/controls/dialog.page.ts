@@ -18,6 +18,7 @@ import { StarContextMenu, StarMenu, StarMenuItem, StarMenuTrigger } from '@star-
 import { StarCascadeSelect } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 import { EditNoteData, EditNoteDialog } from './edit-note-dialog';
+import { RecordPreviewData, RecordPreviewDialog } from './record-preview-dialog';
 
 interface Place {
   readonly name: string;
@@ -81,6 +82,60 @@ const POSITIONS: readonly StarDialogPosition[] = [
             <star-button variant="ghost" (pressed)="basicOpen.set(false)">Cancel</star-button>
             <star-button (pressed)="basicOpen.set(false)">Save</star-button>
           </div>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
+        heading="Header icon, subheader and actions"
+        source="dialog/header"
+        [script]="headerScript"
+        note="icon puts a Phosphor icon in a tile before the title, and iconTone colors the tile: primary (default), info, warn, danger or success. The icon is decorative. subheader adds a text after the title, for example a record number; it is part of the accessible name. headerDivider draws a line under the header. Content with starDialogHeaderActions goes into the header, before the header buttons: here a Close button takes the place of the close icon (closable=false). StarDialogService takes the same options, and headerAction puts one button in the header that closes the dialog with its result."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Header action result: {{ previewResult() }}</p>
+          <div class="docs-row">
+            <star-button variant="secondary" (pressed)="restoreOpen.set(true)">
+              Restore record
+            </star-button>
+            <star-button variant="secondary" (pressed)="previewOpen.set(true)">
+              Preview record
+            </star-button>
+            <star-button variant="secondary" (pressed)="openPreview()">
+              Preview from code
+            </star-button>
+          </div>
+        </div>
+        <star-dialog
+          [(visible)]="restoreOpen"
+          header="Restore record"
+          subheader="REC-2041"
+          icon="ph-bold ph-arrow-counter-clockwise"
+          iconTone="warn"
+          headerDivider
+        >
+          <p>The record comes back with its notes and attachments.</p>
+          <div starDialogFooter class="star-dialog__footer">
+            <star-button variant="ghost" (pressed)="restoreOpen.set(false)">Cancel</star-button>
+            <star-button (pressed)="restoreOpen.set(false)">Restore</star-button>
+          </div>
+        </star-dialog>
+        <star-dialog
+          [(visible)]="previewOpen"
+          header="Preview"
+          subheader="REC-2041"
+          icon="ph-bold ph-file-text"
+          iconTone="info"
+          headerDivider
+          [closable]="false"
+        >
+          <star-button
+            starDialogHeaderActions
+            size="sm"
+            variant="secondary"
+            (pressed)="previewOpen.set(false)"
+            >Close</star-button
+          >
+          <p>The printer on the second floor jams on thick paper.</p>
         </star-dialog>
       </docs-example>
 
@@ -450,6 +505,9 @@ export class DialogPage {
   protected readonly responsiveOpen = signal(false);
   protected readonly scrollOpen = signal(false);
   protected readonly headlessOpen = signal(false);
+  protected readonly restoreOpen = signal(false);
+  protected readonly previewOpen = signal(false);
+  protected readonly previewResult = signal('none');
   protected readonly note = signal('Call the customer before delivery.');
   protected readonly place = signal<string | null>(null);
   protected readonly lastAction = signal('none');
@@ -505,7 +563,52 @@ export class DialogPage {
     if (saved !== undefined) this.note.set(saved);
   }
 
+  protected async openPreview(): Promise<void> {
+    const ref = this.dialogs.open<RecordPreviewDialog, RecordPreviewData, string>(
+      RecordPreviewDialog,
+      {
+        header: 'Preview',
+        subheader: 'REC-2041',
+        icon: 'ph-bold ph-file-text',
+        iconTone: 'info',
+        headerDivider: true,
+        closable: false,
+        headerAction: { label: 'Close', variant: 'secondary', result: 'closed' },
+        data: {
+          description: 'The printer on the second floor jams on thick paper.',
+          resolution: 'The paper tray was set to thick paper.',
+        },
+      },
+    );
+    this.previewResult.set((await ref.closed) ?? 'dismissed');
+  }
+
   protected readonly basicScript = `readonly basicOpen = signal(false);`;
+  protected readonly headerScript = `private readonly dialogs = inject(StarDialogService);
+readonly restoreOpen = signal(false);
+readonly previewOpen = signal(false);
+readonly previewResult = signal('none');
+
+// The same header from code: one header action closes the dialog with its result.
+async openPreview(): Promise<void> {
+  const ref = this.dialogs.open<RecordPreviewDialog, RecordPreviewData, string>(
+    RecordPreviewDialog,
+    {
+      header: 'Preview',
+      subheader: 'REC-2041',
+      icon: 'ph-bold ph-file-text',
+      iconTone: 'info',
+      headerDivider: true,
+      closable: false,
+      headerAction: { label: 'Close', variant: 'secondary', result: 'closed' },
+      data: {
+        description: 'The printer on the second floor jams on thick paper.',
+        resolution: 'The paper tray was set to thick paper.',
+      },
+    },
+  );
+  this.previewResult.set((await ref.closed) ?? 'dismissed');
+}`;
   protected readonly sizesScript = `readonly sizes: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
 readonly sizeOpen = signal(false);
 readonly size = signal<StarDialogSize>('md');
@@ -588,7 +691,12 @@ readonly actionItems: readonly StarMenuItem[] = [
     {
       name: 'open(component, config?, injector?)',
       description:
-        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, size, width, data, closable, closeOnEscape, dismissableMask, role, ariaLabel, position, draggable, resizable, maximizable, keepInViewport, breakpoints, blockScroll and focusOnShow.',
+        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, subheader, icon, iconTone, headerDivider, headerAction, size, width, data, closable, closeOnEscape, dismissableMask, role, ariaLabel, position, draggable, resizable, maximizable, keepInViewport, breakpoints, blockScroll and focusOnShow.',
+    },
+    {
+      name: 'StarDialogHeaderAction',
+      description:
+        'config.headerAction: one button in the header. label, variant (default secondary), icon, ariaLabel and result. A press closes the dialog, and closed resolves with result. With closable: false it takes the place of the close icon.',
     },
     { name: 'closeAll()', description: 'Closes every dialog that the service opened.' },
     {
@@ -612,7 +720,12 @@ readonly actionItems: readonly StarMenuItem[] = [
 
   protected readonly slots: readonly DocsRow[] = [
     { name: '(default)', description: 'The body of the dialog.' },
-    { name: '[starDialogHeader]', description: 'Extra header content, next to the title.' },
+    { name: '[starDialogHeader]', description: 'Extra header content, under the title.' },
+    {
+      name: '[starDialogHeaderActions]',
+      description:
+        'Header actions, for example a button, before the move, maximize and close buttons.',
+    },
     {
       name: '[starDialogFooter]',
       description: 'The footer. Use the class star-dialog__footer for the standard button row.',
@@ -625,6 +738,37 @@ readonly actionItems: readonly StarMenuItem[] = [
     { name: '--star-scrim-modal', description: 'Color of the backdrop of a modal dialog.' },
     { name: '--star-text-strong', description: 'Color of the title.' },
     { name: '--star-border', description: 'Line above the footer.' },
+    {
+      name: '--star-dialog-icon-tile-size',
+      description: 'Width and height of the header icon tile. Default 2.375rem.',
+    },
+    { name: '--star-dialog-icon-size', description: 'Size of the header icon. Default 1.25rem.' },
+    {
+      name: '--star-dialog-icon-radius',
+      description: 'Corner radius of the header icon tile. Default --star-radius-md.',
+    },
+    {
+      name: '--star-dialog-icon-color',
+      description: 'Color of the header icon. Set by iconTone; set it on .star-dialog__icon.',
+    },
+    {
+      name: '--star-dialog-icon-surface',
+      description:
+        'Background of the header icon tile. Set by iconTone; set it on .star-dialog__icon.',
+    },
+    {
+      name: '--star-dialog-subheader-color',
+      description: 'Color of the subheader. Default --star-text-muted.',
+    },
+    {
+      name: '--star-dialog-subheader-font',
+      description:
+        'Font of the subheader. Default --star-type-body-lg; set a monospace font for record numbers.',
+    },
+    {
+      name: '--star-dialog-header-divider-color',
+      description: 'Line under the header with headerDivider. Default --star-border.',
+    },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
     { name: 'Escape', description: 'Closes the dialog, unless closeOnEscape is false.' },

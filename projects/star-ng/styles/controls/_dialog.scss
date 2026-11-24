@@ -1,4 +1,8 @@
 // Dialog: native <dialog> surface, header, body, footer, and the confirm content.
+// Header tokens: `--star-dialog-icon-tile-size`, `--star-dialog-icon-size`,
+// `--star-dialog-icon-radius`, `--star-dialog-icon-color`, `--star-dialog-icon-surface`,
+// `--star-dialog-subheader-color`, `--star-dialog-subheader-font` and
+// `--star-dialog-header-divider-color`. Set them on `.star-dialog` (or a parent).
 @use '../shared' as *;
 
 // Block scroll: on by default for a modal dialog or drawer (blockScroll input).
@@ -6,6 +10,12 @@ html:has(dialog.star-dialog--block-scroll[open]) {
   overflow: hidden;
 }
 .star-dialog {
+  --star-dialog-icon-tile-size: 2.375rem;
+  --star-dialog-icon-size: 1.25rem;
+  --star-dialog-icon-radius: var(--star-radius-md);
+  --star-dialog-subheader-color: var(--star-text-muted);
+  --star-dialog-subheader-font: var(--star-type-body-lg);
+  --star-dialog-header-divider-color: var(--star-border);
   width: min(32rem, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
   padding: 0;
@@ -90,6 +100,75 @@ html:has(dialog.star-dialog--block-scroll[open]) {
   margin: 0;
   font: var(--star-type-title);
   color: var(--star-text-strong);
+}
+// Title and subheader on one line; the subheader wraps under the title when there is no room.
+.star-dialog__title-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--star-space-2);
+}
+.star-dialog__subheader {
+  min-width: 0;
+  color: var(--star-dialog-subheader-color);
+  font: var(--star-dialog-subheader-font);
+  overflow-wrap: anywhere;
+}
+// Icon tile before the title (`icon` input).
+.star-dialog__heading--icon {
+  display: flex;
+  align-items: center;
+  gap: var(--star-space-3);
+}
+// The header buttons line up with the middle of the icon tile.
+.star-dialog__header:has(> .star-dialog__heading--icon) {
+  align-items: center;
+
+  > .star-dialog__controls {
+    margin-block: 0;
+  }
+}
+.star-dialog__heading-text {
+  flex: 1;
+  min-width: 0;
+}
+.star-dialog__icon {
+  --star-dialog-icon-color: var(--star-primary-text);
+  --star-dialog-icon-surface: var(--star-primary-soft);
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--star-dialog-icon-tile-size);
+  block-size: var(--star-dialog-icon-tile-size);
+  border-radius: var(--star-dialog-icon-radius);
+  background: var(--star-dialog-icon-surface);
+  color: var(--star-dialog-icon-color);
+  font-size: var(--star-dialog-icon-size);
+}
+.star-dialog__icon--info {
+  --star-dialog-icon-color: var(--star-accent);
+  --star-dialog-icon-surface: var(--star-accent-soft);
+}
+.star-dialog__icon--warn {
+  --star-dialog-icon-color: var(--star-warning);
+  --star-dialog-icon-surface: var(--star-warning-soft);
+}
+.star-dialog__icon--danger {
+  --star-dialog-icon-color: var(--star-danger);
+  --star-dialog-icon-surface: var(--star-danger-soft);
+}
+.star-dialog__icon--success {
+  --star-dialog-icon-color: var(--star-success);
+  --star-dialog-icon-surface: var(--star-success-soft);
+}
+// Line under the header (`headerDivider` input), like the line above the footer.
+.star-dialog__header--divided {
+  padding-block-end: var(--star-space-4);
+  border-block-end: 1px solid var(--star-dialog-header-divider-color);
+
+  + .star-dialog__body {
+    padding-block-start: var(--star-space-5);
+  }
 }
 .star-dialog__close {
   margin-block: -0.375rem 0;

@@ -147,6 +147,37 @@ test.describe('dialog', () => {
     await expect(dialog).toBeHidden();
   });
 
+  test('a header with an icon, a subheader and a header action', async ({ page }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    const live = example(page, 'Header icon, subheader and actions');
+
+    // Template dialog: the subheader is part of the name; the icon tile is decorative.
+    await live.getByRole('button', { name: 'Restore record' }).click();
+    let dialog = page.getByRole('dialog', { name: 'Restore record REC-2041' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.star-dialog__icon--warn')).toHaveAttribute('aria-hidden', 'true');
+    await expect(dialog.locator('header')).toHaveClass(/star-dialog__header--divided/);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+
+    // A Close button in the header takes the place of the close icon.
+    await live.getByRole('button', { name: 'Preview record' }).click();
+    dialog = page.getByRole('dialog', { name: 'Preview REC-2041' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.star-dialog__close')).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(dialog).toBeHidden();
+
+    // From code: the header action closes the dialog with its result.
+    await live.getByRole('button', { name: 'Preview from code' }).click();
+    dialog = page.getByRole('dialog', { name: 'Preview REC-2041' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.star-dialog__close')).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(dialog).toBeHidden();
+    await expect(live.getByText('Header action result: closed')).toBeVisible();
+  });
+
   test('a non-modal dialog does not block the page', async ({ page }) => {
     await openPage(page, '/controls/dialog', 'Dialog');
     const live = example(page, 'Close rules');

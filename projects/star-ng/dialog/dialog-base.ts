@@ -83,7 +83,7 @@ export abstract class StarDialogBase {
 
   /** `aria-labelledby`: the given id, or the header title when it is shown. */
   protected readonly labelledBy = computed(
-    () => this.ariaLabelledby() ?? (this.header() && this.titleShown() ? this.headerId : null),
+    () => this.ariaLabelledby() ?? (this.header() && this.titleShown() ? this.titleIds() : null),
   );
   /** `aria-label` when nothing labels the dialog by id: `ariaLabel`, or the hidden `header`. */
   protected readonly label = computed(() =>
@@ -130,6 +130,11 @@ export abstract class StarDialogBase {
   /** The header with its title is rendered. */
   protected titleShown(): boolean {
     return this.showHeader();
+  }
+
+  /** Ids of the header elements that name the dialog when its title is shown. */
+  protected titleIds(): string {
+    return this.headerId;
   }
 
   /** Runs once after each open, before the focus moves and `shown` is emitted. */
