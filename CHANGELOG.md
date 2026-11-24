@@ -2,7 +2,7 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
-## [Unreleased]
+## [0.6.0] - 2026-11-24
 
 ### Added
 
@@ -38,6 +38,13 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 ### Fixed
 
 - Screen-reader text in a scroll area: the hidden text (`.star-sr-only`) in the part of the content that is scrolled out of view was not clipped, because the scroll area was not its containing block. A wide table in a right-to-left page gave the page a sideways scroll, and the chat and the file manager tree could make the page taller. Each scroll area of the controls is now a containing block (`position: relative`, without specificity, so a control rule that sets `position` wins) ([#39](https://github.com/ramanacr/star-ng/issues/39)).
+
+### Migrating from 0.5
+
+Read this list when you update from `0.5.x` to `0.6.0`. Each item is a change that can break code, tests or styles. The items are in the `Changed` and `Fixed` sections above.
+
+1. Table, data view and list: the default empty content is now a `star-empty-state`. The `emptyIcon` styling part of the table and the data view is gone. Move a `pt` entry or a selector for it to the pass-through of `star-empty-state` (part `iconPanel`). A test that reads the empty text should look for the title of the empty state. The list adds a small icon around its `starEmpty` template.
+2. Scroll areas: the scroll areas of the controls (for example `.star-table__scroll`, `.star-dialog__body`, `.star-tree__list`, `.star-kanban`) now have `position: relative`. An element with `position: absolute` that you put inside one of them is now placed by that scroll area, not by an outer element. A rule of your own that sets `position` on the scroll area still wins.
 
 ## [0.5.0] - 2026-11-22
 
