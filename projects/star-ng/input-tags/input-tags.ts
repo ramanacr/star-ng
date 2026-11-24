@@ -60,6 +60,35 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
   }
 }
 
+/** Context of the trailing action slot of `star-input-tags`. */
+export interface StarInputTagsActionContext {
+  /** The control is disabled. */
+  readonly disabled: boolean;
+  /** The control is read-only. */
+  readonly readonly: boolean;
+}
+
+/**
+ * Trailing action inside the box of `star-input-tags`, for example an icon button that opens an
+ * address book: `<ng-template starInputTagsAction let-disabled="disabled">…</ng-template>`. It
+ * sits at the inline end (after the clear button), vertically centred; the chips and the input
+ * wrap before it. A click on it does not move the focus to the input.
+ */
+@Directive({
+  selector: 'ng-template[starInputTagsAction]',
+  providers: [{ provide: StarSlot, useExisting: StarInputTagsActionTemplate }],
+})
+export class StarInputTagsActionTemplate extends StarSlot<StarInputTagsActionContext> {
+  readonly name = 'inputTagsAction';
+
+  static ngTemplateContextGuard(
+    _dir: StarInputTagsActionTemplate,
+    _ctx: unknown,
+  ): _ctx is StarInputTagsActionContext {
+    return true;
+  }
+}
+
 /**
  * Free-text tag field (PrimeNG `p-inputtags` / chips): type a value and press Enter, a
  * separator (default comma) or Tab to add it as a chip. Pasting "a, b; c" adds several.
@@ -67,10 +96,18 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
  * Optional `validate` (for example an e-mail check), duplicate prevention, `maxTags` count and
  * per-tag `maxLength`. A live region announces added, removed and rejected tags.
  *
+ * With `keepInvalid`, text that fails `validate` becomes a chip marked invalid (danger colours,
+ * a warning icon, `aria-invalid`) instead of staying in the field. Invalid chips are part of
+ * `value` (the control shows what the user typed); `invalidTags` lists them. To block submit, give
+ * the form field a validator with the same check, for example
+ * `validate(p.to, ({ value }) => (value().every(isEmail) ? undefined : { kind: 'email' }))`.
+ * Backspace in the empty field puts the text of a last invalid chip back into the field to fix it.
+ *
  * `<star-input-tags [formField]="form.cc" [validate]="isEmail" placeholder="Add e-mail" ariaLabel="CC" />`
  *
- * Slots: `starInputTag` (the text of each chip), `<ng-template starIcon="remove">` (the remove
- * icon of a chip) and `starIcon="clear"` (the clear icon).
+ * Slots: `starInputTag` (the text of each chip), `starInputTagsAction` (a trailing action inside
+ * the box), `<ng-template starIcon="remove">` (the remove icon of a chip) and `starIcon="clear"`
+ * (the clear icon).
  */
 @Component({
   selector: 'star-input-tags',
@@ -82,7 +119,7 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
   host: {
     class: 'star-select star-tags',
     '[class.star-select--disabled]': 'disabled()',
-    '[class.star-select--invalid]': '(invalid() && touched()) || !!rejection()',
+    '[class.star-select--invalid]': 'showInvalid()',
   },
   template: `
     <!-- Pointer convenience only: keyboard users reach the input directly. -->
@@ -90,7 +127,7 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
     <div
       data-star-part="controlPanel"
       class="star-select__control star-ac__control star-tags__control"
-      (click)="focus()"
+      (click)="onControlClick($event)"
     >
       <div data-star-part="mainPanel" class="star-ac__main">
         <ul
@@ -101,15 +138,28 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
         >
           @for (entry of tagEntries(); track entry.key; let i = $index) {
             @let tag = entry.item;
+            @let bad = invalidSet().has(tag);
             <li
               data-star-part="chipItem"
               class="star-chip star-chip--sm"
               animate.leave="star-chip--leaving"
+              [class.star-chip--invalid]="bad"
+              [attr.aria-invalid]="bad || null"
             >
+              @if (bad) {
+                <i
+                  data-star-part="invalidIcon"
+                  class="ph-bold ph-warning-circle star-chip__status"
+                  aria-hidden="true"
+                ></i>
+              }
               @if (tagSlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: { $implicit: tag, index: i }" />
               } @else {
                 {{ tag }}
+              }
+              @if (bad) {
+                <span class="star-sr-only">({{ text.tagNotValid }})</span>
               }
               @if (!disabled() && !readonly()) {
                 <button
@@ -150,7 +200,7 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
           [attr.aria-required]="required() || null"
           [attr.aria-describedby]="describedBy()"
           [attr.aria-busy]="fieldBusy()"
-          [attr.aria-invalid]="(invalid() && touched()) || !!rejection() || null"
+          [attr.aria-invalid]="showInvalid() || null"
           (input)="onInput(input)"
           (keydown)="onKeydown($event)"
           (paste)="onPaste($event)"
@@ -174,6 +224,11 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
           }
         </button>
       }
+      @if (actionSlot(); as action) {
+        <div #actionPanel data-star-part="actionPanel" class="star-tags__action">
+          <ng-container *ngTemplateOutlet="action; context: actionContext()" />
+        </div>
+      }
     </div>
     <p class="star-sr-only" [id]="hintId">{{ text.tagsHint }}</p>
     <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
@@ -195,8 +250,18 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
   readonly placeholder = input<string | null>(null);
   /** Characters that end a tag while typing or split pasted text (Enter always adds). */
   readonly separators = input<readonly string[]>([',', ';']);
-  /** Returns true for a valid tag. Invalid text stays in the field with an error. */
+  /**
+   * Returns true for a valid tag. Invalid text stays in the field with an error, or becomes an
+   * invalid chip with `keepInvalid`.
+   */
   readonly validate = input<((tag: string) => boolean) | null>(null);
+  /**
+   * Adds text that fails `validate` as a chip marked invalid (danger colours, `aria-invalid`, a
+   * live announcement) instead of keeping it in the field. The chip is in `value`; `invalidTags`
+   * lists it. The duplicate and limit rules still reject. Default `false`: invalid text stays in
+   * the field.
+   */
+  readonly keepInvalid = input(false, { transform: booleanAttribute });
   readonly allowDuplicates = input(false, { transform: booleanAttribute });
   /** Maximum number of tags (0 = no limit). */
   readonly maxTags = input(0);
@@ -225,7 +290,17 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
   protected readonly hintId = this.ids.getId('star-tags-hint-');
   private readonly slots = contentChildren(StarSlot, { descendants: true });
   protected readonly tagSlot = starSlot<StarInputTagContext>(this.slots, this, 'inputTag');
+  protected readonly actionSlot = starSlot<StarInputTagsActionContext>(
+    this.slots,
+    this,
+    'inputTagsAction',
+  );
   protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly actionContext = computed<StarInputTagsActionContext>(() => ({
+    disabled: this.disabled(),
+    readonly: this.readonly(),
+  }));
+  private readonly actionPanel = viewChild<ElementRef<HTMLElement>>('actionPanel');
   protected readonly noState: StarIconContext = {};
   /** The hint of the keys, and the hint or error of a parent `star-field`. */
   protected readonly describedBy = computed(() =>
@@ -237,6 +312,21 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
   protected readonly rejection = signal<{ tag: string; reason: StarTagRejection } | null>(null);
   protected readonly announcement = signal('');
   private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
+
+  /**
+   * The tags that fail `validate`, in order, when `keepInvalid` is on (empty otherwise). A form
+   * can block submit while it has entries.
+   */
+  readonly invalidTags = computed<readonly string[]>(() => {
+    const check = this.validate();
+    if (!this.keepInvalid() || !check) return [];
+    return this.value().filter((tag) => !check(tag));
+  });
+  protected readonly invalidSet = computed(() => new Set(this.invalidTags()));
+  /** Error state of the box and the input: a form error after touch, a rejection, invalid chips. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.rejection() || this.invalidTags().length > 0,
+  );
 
   protected readonly atLimit = computed(
     () => this.maxTags() > 0 && this.value().length >= this.maxTags(),
@@ -255,11 +345,13 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
     const next = [...this.value()];
     const leftover: string[] = [];
     let lastRejection: { tag: string; reason: StarTagRejection } | null = null;
+    const check = this.validate();
     for (const tag of raw.map((t) => t.trim()).filter(Boolean)) {
       const lower = tag.toLocaleLowerCase();
+      const bad = !!check && !check(tag);
       let reason: StarTagRejection | null = null;
       if (this.maxTags() > 0 && next.length >= this.maxTags()) reason = 'limit';
-      else if (this.validate() && !this.validate()!(tag)) reason = 'invalid';
+      else if (bad && !this.keepInvalid()) reason = 'invalid';
       else if (!this.allowDuplicates() && next.some((t) => t.toLocaleLowerCase() === lower))
         reason = 'duplicate';
       if (reason) {
@@ -270,7 +362,7 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
       }
       next.push(tag);
       this.added.emit(tag);
-      this.announcement.set(this.text.tagAdded(tag));
+      this.announcement.set(bad ? this.text.tagAddedInvalid(tag) : this.text.tagAdded(tag));
     }
     if (next.length !== this.value().length) this.value.set(next);
     this.rejection.set(lastRejection);
@@ -284,6 +376,21 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
     this.removed.emit(tag);
     this.announcement.set(this.text.tagRemoved(tag));
     this.rejection.set(null);
+    this.focus();
+  }
+
+  /**
+   * Removes the tag at `index` and puts its text into the field, so the user can fix it.
+   * Backspace in the empty field calls it for a last invalid chip (`keepInvalid`).
+   */
+  editAt(index: number): void {
+    const tag = this.value()[index];
+    if (tag === undefined || this.disabled() || this.readonly()) return;
+    this.value.update((tags) => tags.filter((_, i) => i !== index));
+    this.removed.emit(tag);
+    this.announcement.set(this.text.tagEdit(tag));
+    this.rejection.set(null);
+    this.setDraft(tag);
     this.focus();
   }
 
@@ -325,7 +432,9 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
       this.setDraft(leftover[0] ?? '');
     } else if (event.key === 'Backspace' && !this.draft() && this.value().length) {
       event.preventDefault();
-      this.removeAt(this.value().length - 1);
+      const last = this.value().length - 1;
+      if (this.invalidSet().has(this.value()[last])) this.editAt(last);
+      else this.removeAt(last);
     } else if (event.key === 'Escape' && this.draft()) {
       this.setDraft('');
       this.rejection.set(null);
@@ -346,6 +455,13 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
       this.setDraft(leftover[0] ?? '');
     }
     this.touch.emit();
+  }
+
+  /** A click in the box focuses the input, except a click in the trailing action. */
+  protected onControlClick(event: MouseEvent): void {
+    const panel = this.actionPanel()?.nativeElement;
+    if (panel && event.target instanceof Node && panel.contains(event.target)) return;
+    this.focus();
   }
 
   focus(options?: FocusOptions): void {

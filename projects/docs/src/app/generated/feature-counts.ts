@@ -3,7 +3,7 @@
 export const FEATURE_COUNTS = {
   "lib": {
     "input": {
-      "uses": 1333,
+      "uses": 1334,
       "files": 129
     },
     "inputRequired": {
@@ -23,7 +23,7 @@ export const FEATURE_COUNTS = {
       "files": 91
     },
     "viewChild": {
-      "uses": 91,
+      "uses": 92,
       "files": 52
     },
     "viewChildren": {
@@ -43,7 +43,7 @@ export const FEATURE_COUNTS = {
       "files": 89
     },
     "computed": {
-      "uses": 846,
+      "uses": 850,
       "files": 107
     },
     "linkedSignal": {
@@ -107,7 +107,7 @@ export const FEATURE_COUNTS = {
       "files": 27
     },
     "if": {
-      "uses": 827,
+      "uses": 830,
       "files": 108
     },
     "for": {
@@ -119,7 +119,7 @@ export const FEATURE_COUNTS = {
       "files": 11
     },
     "let": {
-      "uses": 61,
+      "uses": 62,
       "files": 27
     },
     "host": {
@@ -135,7 +135,7 @@ export const FEATURE_COUNTS = {
       "files": 48
     },
     "booleanAttribute": {
-      "uses": 543,
+      "uses": 544,
       "files": 100
     },
     "numberAttribute": {
@@ -181,7 +181,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 951,
+      "uses": 953,
       "files": 123
     },
     "computed": {

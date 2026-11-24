@@ -48,6 +48,12 @@ export interface StarUiText {
   readonly tagInvalid: (label: string) => string;
   readonly tagDuplicate: (label: string) => string;
   readonly tagLimit: (max: number) => string;
+  /** Live announcement of an invalid chip that `keepInvalid` added. */
+  readonly tagAddedInvalid: (label: string) => string;
+  /** Visually hidden state text after the text of an invalid chip. */
+  readonly tagNotValid: string;
+  /** Live announcement when Backspace puts the text of an invalid chip back into the field. */
+  readonly tagEdit: (label: string) => string;
   readonly notifications: string;
   readonly accept: string;
   readonly reject: string;
@@ -966,6 +972,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   tagInvalid: (label) => `${label} is not valid.`,
   tagDuplicate: (label) => `${label} is already added.`,
   tagLimit: (max) => `You can add up to ${max} items.`,
+  tagAddedInvalid: (label) => `${label} added, not valid`,
+  tagNotValid: 'not valid',
+  tagEdit: (label) => `${label} moved to the field to edit`,
   notifications: 'Notifications',
   accept: 'Confirm',
   reject: 'Cancel',
@@ -1712,6 +1721,8 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   tagInvalid: ['label'],
   tagDuplicate: ['label'],
   tagLimit: ['max'],
+  tagAddedInvalid: ['label'],
+  tagEdit: ['label'],
   selectedItems: ['count'],
   resultsAvailable: ['count'],
   addCustomValue: ['label'],

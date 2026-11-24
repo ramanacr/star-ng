@@ -39,6 +39,9 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   tagDuplicate: (label) => `${label}: ya está en la lista.`,
   tagLimit: (max) =>
     `${forCount(max, 'Se permite hasta', 'Se permiten hasta')} ${max} ${forCount(max, 'elemento', 'elementos')}.`,
+  tagAddedInvalid: (label) => `Se añadió ${label}, no válido`,
+  tagNotValid: 'no válido',
+  tagEdit: (label) => `${label} pasó al campo para editarlo`,
   notifications: 'Notificaciones',
   accept: 'Confirmar',
   reject: 'Cancelar',
