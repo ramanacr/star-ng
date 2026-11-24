@@ -39,6 +39,49 @@ table.star-sr-only {
   white-space: nowrap;
   border: 0;
 }
+// The box of `.star-sr-only` is placed by its containing block: the nearest positioned ancestor.
+// A scroll area that is not positioned does not clip that box. Text in the part of the content
+// that is scrolled out of view then sticks out of the scroll area and gives the page a scroll bar
+// (in right-to-left, a sideways scroll). Each scroll area of the controls is therefore a
+// containing block. `:where()` has no specificity, so a control rule that sets `position` wins.
+// `e2e/sr-only-containment.spec.ts` checks this on every docs page in both directions.
+:where(
+  .star-app-sidebar__body,
+  .star-bottom-sheet__body,
+  .star-carousel__track,
+  .star-chat__scroll,
+  .star-command-palette__list,
+  .star-date__panel,
+  .star-dialog__body,
+  .star-fm__details,
+  .star-fm__tree,
+  .star-galleria__thumb-list,
+  .star-galleria__thumbs,
+  .star-image-editor__list,
+  .star-image-editor__stage,
+  .star-image__stage,
+  .star-kanban,
+  .star-listbox,
+  .star-md__pre,
+  .star-org__scroll,
+  .star-pivot-filter__list,
+  .star-pivot__scroller,
+  .star-ribbon__tabs,
+  .star-scroll-panel,
+  .star-splitter__pane,
+  .star-spreadsheet__tabs,
+  .star-table-filter,
+  .star-table-filter__choices,
+  .star-table__scroll,
+  .star-tabs__list,
+  .star-terminal__log,
+  .star-time__column,
+  .star-timeline__list,
+  .star-tree__list,
+  .star-window__body
+) {
+  position: relative;
+}
 
 // Reduced motion for the motion of many controls (see the mixin: these rules win over the control
 // rules whatever the order of the partials). `e2e/leave-motion.spec.ts` checks the enter and leave
