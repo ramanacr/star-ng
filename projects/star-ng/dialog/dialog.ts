@@ -1,3 +1,4 @@
+import { _IdGenerator } from '@angular/cdk/a11y';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -45,6 +46,20 @@ export type StarDialogPosition =
   | 'bottom-start'
   | 'bottom-end';
 
+/** Color of the icon tile in the dialog header. */
+export type StarDialogIconTone = 'primary' | 'info' | 'warn' | 'danger' | 'success';
+
+/**
+ * Class of a header icon: a full class (with a space) stays as it is; a name gets the bold
+ * weight. `null` for an empty value.
+ */
+function starDialogIconClass(icon: string | null | undefined): string | null {
+  const value = icon?.trim();
+  if (!value) return null;
+  if (/\s/.test(value)) return value;
+  return `ph-bold ph-${value.replace(/^ph-/, '')}`;
+}
+
 /**
  * Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering,
  * focus trap, focus restore and Escape handling come from the browser. Entry / exit animate
@@ -61,6 +76,11 @@ export type StarDialogPosition =
  * ```
  * Put `autofocus` (native elements) or `data-autofocus` (components) on the element that
  * should receive focus first.
+ *
+ * Header: `icon` and `iconTone` put a decorative icon tile before the title, `subheader` adds a
+ * text after it, and `headerDivider` draws a line under the header. Content with
+ * `starDialogHeader` goes under the title; content with `starDialogHeaderActions` (for example a
+ * button) goes before the header buttons.
  *
  * The exit motion must run on the dialog element itself (or its `::backdrop`): an animation
  * on a child of the dialog does not hold the close.
@@ -103,17 +123,46 @@ export type StarDialogPosition =
             data-star-part="header"
             class="star-dialog__header"
             [class.star-dialog__header--draggable]="canDrag()"
+            [class.star-dialog__header--divided]="headerDivider()"
             (pointerdown)="onDragStart($event)"
           >
-            <div data-star-part="headingPanel" class="star-dialog__heading">
-              @if (header()) {
-                <h2 data-star-part="titleText" class="star-dialog__title" [id]="headerId">
-                  {{ header() }}
-                </h2>
+            <div
+              data-star-part="headingPanel"
+              class="star-dialog__heading"
+              [class.star-dialog__heading--icon]="iconClass()"
+            >
+              @if (iconClass(); as glyph) {
+                <span
+                  data-star-part="iconPanel"
+                  aria-hidden="true"
+                  [class]="'star-dialog__icon star-dialog__icon--' + iconTone()"
+                >
+                  <i data-star-part="headerIcon" [class]="glyph"></i>
+                </span>
               }
-              <ng-content select="[starDialogHeader]" />
+              <div data-star-part="headingContentPanel" class="star-dialog__heading-text">
+                @if (header() || subheader()) {
+                  <div data-star-part="titleLinePanel" class="star-dialog__title-line">
+                    @if (header()) {
+                      <h2 data-star-part="titleText" class="star-dialog__title" [id]="headerId">
+                        {{ header() }}
+                      </h2>
+                    }
+                    @if (subheader()) {
+                      <span
+                        data-star-part="subheaderText"
+                        class="star-dialog__subheader"
+                        [id]="subheaderId"
+                        >{{ subheader() }}</span
+                      >
+                    }
+                  </div>
+                }
+                <ng-content select="[starDialogHeader]" />
+              </div>
             </div>
             <div data-star-part="controlsPanel" class="star-dialog__controls">
+              <ng-content select="[starDialogHeaderActions]" />
               @if (canDrag()) {
                 <button
                   data-star-part="moveButton"
@@ -180,6 +229,22 @@ export class StarDialog extends StarDialogBase {
   private readonly document = inject(DOCUMENT);
 
   /**
+   * Icon in a tinted tile before the title. A Phosphor icon name (`file-text` or
+   * `ph-file-text`, bold weight) or a full icon class (`ph-fill ph-info`). Decorative: it is
+   * hidden from assistive technology. Empty or `null` shows no tile.
+   */
+  readonly icon = input<string | null>(null);
+  /** Color of the icon tile: `primary` (default), `info`, `warn`, `danger` or `success`. */
+  readonly iconTone = input<StarDialogIconTone>('primary');
+  /**
+   * Text after the title on the same line, for example a record number. It is part of the
+   * accessible name of the dialog, after the title.
+   */
+  readonly subheader = input('');
+  /** A line under the header separates it from the body, like the line above the footer. */
+  readonly headerDivider = input(false, { transform: booleanAttribute });
+
+  /**
    * Place in the window (PrimeNG `position`): `center` (default), an edge or a corner, 1rem from
    * the window edge. Logical: `start` and `end` change sides in right-to-left.
    */
@@ -237,6 +302,10 @@ export class StarDialog extends StarDialogBase {
   protected readonly sized = signal<StarDialogDimensions | null>(null);
 
   private readonly viewportWidth = starViewportWidth(() => this.breakpoints() !== null);
+  protected readonly subheaderId = inject(_IdGenerator).getId('star-dialog-subtitle-');
+  /** Class of the icon in the header tile, or `null` without an icon. */
+  protected readonly iconClass = computed(() => starDialogIconClass(this.icon()));
+
   /** Not maximized: the drag and resize geometry applies. */
   protected readonly free = computed(() => !this.maximized());
   protected readonly canDrag = computed(() => this.draggable() && this.free());
@@ -317,6 +386,11 @@ export class StarDialog extends StarDialogBase {
 
   protected override titleShown(): boolean {
     return this.showHeader() && !this.headless();
+  }
+
+  /** The title, then the subheader, name the dialog. */
+  protected override titleIds(): string {
+    return this.subheader() ? `${this.headerId} ${this.subheaderId}` : this.headerId;
   }
 
   protected override afterClose(): void {

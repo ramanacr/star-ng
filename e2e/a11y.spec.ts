@@ -607,6 +607,26 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'dialog with a header icon, subheader and header action',
+    path: 'controls/dialog',
+    open: async (page) => {
+      await example(page, 'Header icon, subheader and actions')
+        .getByRole('button', { name: 'Preview record' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Preview REC-2041' })).toBeVisible();
+    },
+  },
+  {
+    name: 'dialog with a header action opened from code',
+    path: 'controls/dialog',
+    open: async (page) => {
+      await example(page, 'Header icon, subheader and actions')
+        .getByRole('button', { name: 'Preview from code' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Preview REC-2041' })).toBeVisible();
+    },
+  },
+  {
     name: 'dialog with a select and a menu inside',
     path: 'controls/dialog',
     open: async (page) => {

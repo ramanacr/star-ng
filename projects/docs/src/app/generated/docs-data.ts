@@ -6188,6 +6188,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarDialogBase"
       },
       {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon in a tinted tile before the title. A Phosphor icon name (`file-text` or `ph-file-text`, bold weight) or a full icon class (`ph-fill ph-info`). Decorative: it is hidden from assistive technology. Empty or `null` shows no tile."
+      },
+      {
+        "name": "iconTone",
+        "type": "StarDialogIconTone",
+        "default": "'primary'",
+        "required": false,
+        "description": "Color of the icon tile: `primary` (default), `info`, `warn`, `danger` or `success`."
+      },
+      {
+        "name": "subheader",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Text after the title on the same line, for example a record number. It is part of the accessible name of the dialog, after the title."
+      },
+      {
+        "name": "headerDivider",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A line under the header separates it from the body, like the line above the footer."
+      },
+      {
         "name": "position",
         "type": "StarDialogPosition",
         "default": "'center'",
@@ -6329,7 +6357,12 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "surface",
       "header",
       "headingPanel",
+      "iconPanel",
+      "headerIcon",
+      "headingContentPanel",
+      "titleLinePanel",
       "titleText",
+      "subheaderText",
       "controlsPanel",
       "moveButton",
       "moveIcon",
@@ -23965,6 +23998,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "dialog/drag": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last position: {{ dragNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"dragOpen.set(true)\">\n      Open movable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"dragOpen\"\n  header=\"Movable dialog\"\n  draggable\n  (dragEnd)=\"dragNote.set($event.x + ', ' + $event.y)\"\n>\n  <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>\n</star-dialog>",
   "dialog/focus": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"defaultFocusOpen.set(true)\">\n    First focusable\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"markedFocusOpen.set(true)\">\n    Marked field\n  </star-button>\n</div>\n<star-dialog [(visible)]=\"defaultFocusOpen\" header=\"Default focus\">\n  <p>The focus starts on the close button.</p>\n  <star-field label=\"Reference\"><input starInput value=\"ORD-1042\" /></star-field>\n</star-dialog>\n<star-dialog [(visible)]=\"markedFocusOpen\" header=\"Marked focus\">\n  <star-field label=\"Reference\">\n    <input starInput value=\"ORD-1042\" data-autofocus />\n  </star-field>\n</star-dialog>",
+  "dialog/header": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Header action result: {{ previewResult() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"restoreOpen.set(true)\">\n      Restore record\n    </star-button>\n    <star-button variant=\"secondary\" (pressed)=\"previewOpen.set(true)\">\n      Preview record\n    </star-button>\n    <star-button variant=\"secondary\" (pressed)=\"openPreview()\">\n      Preview from code\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"restoreOpen\"\n  header=\"Restore record\"\n  subheader=\"REC-2041\"\n  icon=\"ph-bold ph-arrow-counter-clockwise\"\n  iconTone=\"warn\"\n  headerDivider\n>\n  <p>The record comes back with its notes and attachments.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"restoreOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"restoreOpen.set(false)\">Restore</star-button>\n  </div>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"previewOpen\"\n  header=\"Preview\"\n  subheader=\"REC-2041\"\n  icon=\"ph-bold ph-file-text\"\n  iconTone=\"info\"\n  headerDivider\n  [closable]=\"false\"\n>\n  <star-button\n    starDialogHeaderActions\n    size=\"sm\"\n    variant=\"secondary\"\n    (pressed)=\"previewOpen.set(false)\"\n    >Close</star-button\n  >\n  <p>The printer on the second floor jams on thick paper.</p>\n</star-dialog>",
   "dialog/headless": "<star-button variant=\"secondary\" (pressed)=\"headlessOpen.set(true)\">\n  Open headless dialog\n</star-button>\n<star-dialog [(visible)]=\"headlessOpen\" headless ariaLabelledby=\"docs-headless-title\">\n  <div class=\"docs-stack docs-headless\">\n    <h2 id=\"docs-headless-title\">Shipping label for ORD-1042</h2>\n    <p>Your content draws its own heading, padding and buttons.</p>\n    <div class=\"docs-row\">\n      <star-button (pressed)=\"headlessOpen.set(false)\">Done</star-button>\n    </div>\n  </div>\n</star-dialog>",
   "dialog/maximize": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Maximized: {{ maximizedState() ? 'yes' : 'no' }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"maximizeOpen.set(true)\">\n      Open order lines\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"maximizeOpen\"\n  [(maximized)]=\"maximizedState\"\n  header=\"Order lines\"\n  size=\"lg\"\n  maximizable\n>\n  <p>ORD-1042 has 12 lines. Maximize the dialog to see more of them at once.</p>\n</star-dialog>",
   "dialog/popups": "<star-button variant=\"secondary\" (pressed)=\"popupsOpen.set(true)\">\n  Open order dialog\n</star-button>\n<star-dialog [(visible)]=\"popupsOpen\" header=\"Order ORD-1042\" size=\"md\">\n  <div class=\"docs-stack\">\n    <star-field label=\"Shipping city\" hint=\"Menus and cascade selects open above the modal\">\n      <star-cascade-select\n        [options]=\"places\"\n        optionLabel=\"name\"\n        optionValue=\"code\"\n        [(value)]=\"place\"\n        ariaLabel=\"Dialog city\"\n        showPath\n      />\n    </star-field>\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" [starMenuTrigger]=\"actionsMenu\">\n        More actions\n      </star-button>\n      <star-menu\n        #actionsMenu\n        [items]=\"actionItems\"\n        (itemClick)=\"lastAction.set($event.label ?? '')\"\n      />\n      <span class=\"docs-output\" tabindex=\"0\" [starContextMenu]=\"actionsMenu\">\n        Last action: {{ lastAction() }}\n      </span>\n    </div>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"popupsOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>",

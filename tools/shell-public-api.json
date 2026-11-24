@@ -133,6 +133,8 @@
     "StarDialogDefaults",
     "StarDialogDimensions",
     "StarDialogFrame",
+    "StarDialogHeaderAction",
+    "StarDialogIconTone",
     "StarDialogPoint",
     "StarDialogPosition",
     "StarDialogRef",
