@@ -376,6 +376,21 @@ test.describe('right-to-left controls', () => {
       await expect(layout).toBeFocused();
     });
 
+    test('menu: starMenuPosition below-end aligns the popup with the left edge of the trigger', async ({
+      page,
+    }) => {
+      await openPage(page, '/controls/menu', 'Menu');
+      const trigger = example(page, 'Popup position').getByRole('button', { name: 'Below end' });
+      await trigger.click();
+      const menu = popup(page).getByRole('menu');
+      await expect(menu).toBeVisible();
+      const root = await settledBox(menu);
+      const triggerBox = await box(trigger);
+      // `end` is the left edge in a right-to-left page.
+      expect(Math.abs(root.x - triggerBox.x)).toBeLessThan(2);
+      expect(root.y).toBeGreaterThanOrEqual(triggerBox.y + triggerBox.height);
+    });
+
     test('menubar: Arrow left moves to the next item and a dropdown starts at the right edge', async ({
       page,
     }) => {

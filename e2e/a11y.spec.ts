@@ -491,6 +491,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'menu with a header item',
+    path: 'controls/menu',
+    open: async (page) => {
+      await example(page, 'Heading in a popup')
+        .getByRole('button', { name: 'Actions for REC-2026-0001' })
+        .click();
+      await expect(popup(page).getByRole('menu', { name: 'REC-2026-0001' })).toBeVisible();
+    },
+  },
+  {
     name: 'menu with a submenu',
     path: 'controls/menu',
     open: async (page) => {

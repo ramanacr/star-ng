@@ -141,6 +141,72 @@ test.describe('menu', () => {
     const inline = example(page, 'Inline menu').getByRole('menu', { name: 'Inline menu' });
     await expect(inline.getByRole('menuitem')).toHaveCount(3);
   });
+
+  test('starMenuPosition places the popup at the chosen edge and side of the trigger', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/menu', 'Menu');
+    const live = example(page, 'Popup position');
+    const menu = popup(page).getByRole('menu');
+    const cases: [string, 'below' | 'above', 'start' | 'end'][] = [
+      ['Below start', 'below', 'start'],
+      ['Below end', 'below', 'end'],
+      ['Above start', 'above', 'start'],
+      ['Above end', 'above', 'end'],
+    ];
+    for (const [name, side, edge] of cases) {
+      const trigger = live.getByRole('button', { name });
+      // Room above and below the trigger, so no fallback position is used.
+      await trigger.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+      await trigger.click();
+      await expect(menu).toBeVisible();
+      // The popup is placed after it renders: poll until it is next to the trigger.
+      await expect
+        .poll(async () => {
+          const t = (await trigger.boundingBox())!;
+          const m = (await menu.boundingBox())!;
+          const placed = side === 'below' ? m.y >= t.y + t.height : m.y + m.height <= t.y;
+          const aligned =
+            edge === 'start'
+              ? Math.abs(m.x - t.x) < 2
+              : Math.abs(m.x + m.width - (t.x + t.width)) < 2;
+          return placed && aligned;
+        })
+        .toBe(true);
+      await page.keyboard.press('Escape');
+      await expect(menu).toHaveCount(0);
+    }
+  });
+
+  test('a header item names the menu and the keys skip it @cross-browser', async ({ page }) => {
+    await openPage(page, '/controls/menu', 'Menu');
+    const trigger = example(page, 'Heading in a popup').getByRole('button', {
+      name: 'Actions for REC-2026-0001',
+    });
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    const menu = popup(page).getByRole('menu', { name: 'REC-2026-0001' });
+    await expect(menu).toBeVisible();
+    await expect(popup(page).locator('[data-star-part=header]')).toHaveText('REC-2026-0001');
+    const items = menu.getByRole('menuitem');
+    await expect(items).toHaveText(['Preview', 'Open', 'Copy link', 'Delete']);
+    await expect(items.first()).toBeFocused();
+    // Arrow up wraps to the last item, not to the heading.
+    await page.keyboard.press('ArrowUp');
+    await expect(menu.getByRole('menuitem', { name: 'Delete' })).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(menu.getByRole('menuitem', { name: 'Preview' })).toBeFocused();
+    // Below-end: the end edges of the popup and the trigger line up.
+    const t = (await trigger.boundingBox())!;
+    await expect
+      .poll(async () => {
+        const m = (await menu.boundingBox())!;
+        return Math.abs(m.x + m.width - (t.x + t.width)) < 2 && m.y >= t.y + t.height;
+      })
+      .toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+  });
 });
 
 test.describe('split button', () => {
