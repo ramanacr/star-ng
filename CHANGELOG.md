@@ -22,6 +22,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Table, data view and list: the default empty template is now a `star-empty-state` (plain-text title, no heading). The `starEmpty` template and `emptyMessage` work as before. The list wraps its `starEmpty` template in a small empty state with an icon. Breaking for `pt` users: the `emptyIcon` styling part of the table and the data view is removed; the icon is now the icon tile of the empty state, so style it with the pass-through of `star-empty-state` ([#137](https://github.com/ramanacr/star-ng/issues/137)).
 
+### Fixed
+
+- Screen-reader text in a scroll area: the hidden text (`.star-sr-only`) in the part of the content that is scrolled out of view was not clipped, because the scroll area was not its containing block. A wide table in a right-to-left page gave the page a sideways scroll, and the chat and the file manager tree could make the page taller. Each scroll area of the controls is now a containing block (`position: relative`, without specificity, so a control rule that sets `position` wins) ([#39](https://github.com/ramanacr/star-ng/issues/39)).
+
 ## [0.5.0] - 2026-11-22
 
 ### Added
