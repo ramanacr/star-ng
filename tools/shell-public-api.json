@@ -148,6 +148,7 @@
     "StarMenuInDialog",
     "StarMenuItem",
     "StarMenuItemContext",
+    "StarMenuPosition",
     "StarMenuSlotName",
     "StarMenuTemplate",
     "StarMenuTrigger",

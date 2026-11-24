@@ -6,7 +6,11 @@ import {
   CdkMenuItem,
   CdkMenuTrigger,
 } from '@angular/cdk/menu';
-import { ConnectedPosition, FlexibleConnectedPositionStrategy } from '@angular/cdk/overlay';
+import {
+  ConnectedPosition,
+  FlexibleConnectedPositionStrategy,
+  OverlayRef,
+} from '@angular/cdk/overlay';
 import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
@@ -75,6 +79,14 @@ export interface StarMenuItem {
    * submenu. PrimeNG `p-menu` shows every item with `items` this way (`#submenuheader`).
    */
   readonly group?: boolean;
+  /**
+   * `star-menu` only: a plain heading (`label`) in the list, for example the record that the
+   * actions apply to. It is not a menu item: it takes no focus, and the arrow keys and the
+   * typeahead skip it. It is hidden from assistive technology; the first heading of a list names
+   * that list (`aria-labelledby`) when the menu has no `ariaLabel` and no `ariaLabelledBy`.
+   * Put it at the top of the list. Part `header`.
+   */
+  readonly header?: boolean;
 }
 
 /** Context of the `itemTemplate` of `star-menu` and of the `starMenuTemplate` slots. */
@@ -130,11 +142,51 @@ export class StarMenuTemplate extends StarSlot<StarMenuItemContext> {
   }
 }
 
-export const STAR_MENU_POSITIONS: ConnectedPosition[] = [
-  { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 4 },
-  { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 4 },
-  { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -4 },
-];
+/**
+ * Where a popup menu opens next to its trigger (`starMenuPosition`): below or above the trigger,
+ * with its `start` or `end` edge at the same edge of the trigger. `start` and `end` follow the
+ * reading direction: `end` is the right edge in a left-to-right page and the left edge in a
+ * right-to-left page.
+ */
+export type StarMenuPosition = 'below-start' | 'below-end' | 'above-start' | 'above-end';
+
+const MENU_POSITION: Record<StarMenuPosition, ConnectedPosition> = {
+  'below-start': {
+    originX: 'start',
+    originY: 'bottom',
+    overlayX: 'start',
+    overlayY: 'top',
+    offsetY: 4,
+  },
+  'below-end': { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 4 },
+  'above-start': {
+    originX: 'start',
+    originY: 'top',
+    overlayX: 'start',
+    overlayY: 'bottom',
+    offsetY: -4,
+  },
+  'above-end': { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -4 },
+};
+
+/**
+ * The positions of a popup menu that prefers `position`: that position first, then the fallbacks
+ * that the overlay tries when there is no room. The other edge on the same side of the trigger
+ * comes first, then the same edge on the other side.
+ */
+function menuPositions(position: StarMenuPosition): ConnectedPosition[] {
+  const [side, edge] = position.split('-') as ['below' | 'above', 'start' | 'end'];
+  const otherEdge = edge === 'start' ? 'end' : 'start';
+  const otherSide = side === 'below' ? 'above' : 'below';
+  return [
+    MENU_POSITION[position],
+    MENU_POSITION[`${side}-${otherEdge}`],
+    MENU_POSITION[`${otherSide}-${edge}`],
+  ];
+}
+
+/** Positions of a popup menu below its trigger, start edges aligned (the default). */
+export const STAR_MENU_POSITIONS: ConnectedPosition[] = menuPositions('below-start');
 
 /**
  * Makes the popup of a CDK menu trigger usable inside a modal `<dialog>`.
@@ -265,11 +317,21 @@ class StarMenuLife implements OnInit, OnDestroy {
           class="star-menu"
           cdkMenu
           [attr.aria-label]="ariaLabel()"
-          [attr.aria-labelledby]="ariaLabel() ? null : ariaLabelledBy()"
+          [attr.aria-labelledby]="ariaLabel() ? null : (ariaLabelledBy() ?? headingOf(items))"
         >
           <ng-template #entry let-item>
             @if (item.separator) {
               <div data-star-part="separator" class="star-menu__separator" role="separator"></div>
+            } @else if (item.header) {
+              <!-- Not a menu item: hidden from assistive technology, it names the list instead. -->
+              <div
+                data-star-part="header"
+                class="star-menu__header"
+                aria-hidden="true"
+                [id]="headerId(item)"
+              >
+                {{ item.label }}
+              </div>
             } @else if (item.group && item.items?.length) {
               @let headingId = groupId(item);
               <div
@@ -417,6 +479,7 @@ export class StarMenu {
   });
   private readonly ids = inject(_IdGenerator);
   private readonly groupIds = new WeakMap<StarMenuItem, string>();
+  private readonly headerIds = new WeakMap<StarMenuItem, string>();
   readonly items = input<readonly StarMenuItem[]>([]);
   /** Renders the menu in place instead of as a popup. */
   readonly inline = input(false, { transform: booleanAttribute });
@@ -489,6 +552,21 @@ export class StarMenu {
     return id;
   }
 
+  protected headerId(item: StarMenuItem): string {
+    let id = this.headerIds.get(item);
+    if (!id) {
+      id = this.ids.getId('star-menu-header-');
+      this.headerIds.set(item, id);
+    }
+    return id;
+  }
+
+  /** Id of the first `header` item of a list: it names that list. */
+  protected headingOf(items: readonly StarMenuItem[] | null | undefined): string | null {
+    const heading = items?.find((item) => item.header && !item.separator);
+    return heading ? this.headerId(heading) : null;
+  }
+
   /**
    * Called by a popup list or a submenu list when it is created. Not public API.
    *
@@ -519,6 +597,7 @@ export class StarMenu {
 /**
  * Opens an `star-menu` as a popup from any element (button, icon button, row action).
  * Adds `aria-haspopup`, `aria-expanded`, Arrow Down / Enter / Space to open.
+ * `starMenuPosition` sets where the popup opens (default `'below-start'`).
  */
 @Directive({
   selector: '[starMenuTrigger]',
@@ -540,6 +619,12 @@ export class StarMenuTrigger {
   /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
   private readonly directionSync = inject(StarDirectionService);
   readonly starMenuTrigger = input.required<StarMenu>();
+  /**
+   * Where the popup opens: `'below-start'` (default), `'below-end'`, `'above-start'` or
+   * `'above-end'`. `start` and `end` follow the reading direction. When there is no room, the
+   * popup moves to the other edge, then to the other side of the trigger.
+   */
+  readonly starMenuPosition = input<StarMenuPosition>('below-start');
   protected readonly trigger = inject(CdkMenuTrigger);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
@@ -553,6 +638,7 @@ export class StarMenuTrigger {
   constructor() {
     this.trigger.menuPosition = STAR_MENU_POSITIONS;
     keepMenuInsideDialog(this.trigger, this.host.nativeElement);
+    effect(() => this.usePosition(this.starMenuPosition()));
     effect(() => {
       const menu = this.starMenuTrigger();
       this.trigger.menuTemplateRef = menu.template();
@@ -571,6 +657,22 @@ export class StarMenuTrigger {
     this.trigger.closed.pipe(takeUntilDestroyed()).subscribe(() => later(false));
     this.adaptWrapperHost();
     this.wrapperRole();
+  }
+
+  /**
+   * Sets the positions of the popup. CDK creates the overlay at the first open and keeps it, and
+   * it updates the positions only for a template binding of `cdkMenuPosition`: an overlay that
+   * exists gets the new positions here.
+   */
+  private usePosition(position: StarMenuPosition): void {
+    const positions = menuPositions(position);
+    this.trigger.menuPosition = positions;
+    const overlay = (this.trigger as unknown as { overlayRef?: OverlayRef | null }).overlayRef;
+    const strategy = overlay?.getConfig().positionStrategy;
+    if (overlay && strategy instanceof FlexibleConnectedPositionStrategy) {
+      strategy.withPositions(positions);
+      overlay.updatePosition();
+    }
   }
 
   /**
