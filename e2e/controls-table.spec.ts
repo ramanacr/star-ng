@@ -627,6 +627,44 @@ test.describe('table: selection', () => {
     ).toBeChecked();
   });
 
+  test('selection without the column: click, keyboard and selectOnFocus', async ({ page }) => {
+    await openPage(page, '/controls/table-selection', 'Table selection');
+    const live = example(page, 'Selection without the column');
+    const table = live.getByRole('table', { name: 'Orders without a selection column' });
+    const status = live.getByRole('status');
+    await expect(status).toHaveText('No order selected');
+    // No radio or checkbox column: only the data columns.
+    await expect(table.locator('.star-table__select')).toHaveCount(0);
+    await expect(table.getByRole('radio')).toHaveCount(0);
+    await expect(bodyRows(table).first()).toHaveAttribute('aria-selected', 'false');
+
+    // A click on a cell selects the row; the row shows the selected style.
+    await bodyRows(table).nth(1).locator('td').nth(1).click();
+    await expect(status).toContainText('ORD-1002:');
+    await expect(bodyRows(table).nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect(bodyRows(table).nth(1)).toHaveClass(/star-table__row--selected/);
+    await expect(bodyRows(table).nth(1)).toBeFocused();
+
+    // selectOnFocus: the arrow keys move the selection with the focus.
+    await page.keyboard.press('ArrowDown');
+    await expect(bodyRows(table).nth(2)).toBeFocused();
+    await expect(status).toContainText('ORD-1003:');
+    await expect(bodyRows(table).nth(1)).toHaveAttribute('aria-selected', 'false');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await expect(status).toContainText('ORD-1001:');
+
+    // Ctrl + click clears the row; Enter selects the focused row again.
+    await bodyRows(table)
+      .first()
+      .locator('td')
+      .nth(1)
+      .click({ modifiers: ['ControlOrMeta'] });
+    await expect(status).toHaveText('No order selected');
+    await page.keyboard.press('Enter');
+    await expect(status).toContainText('ORD-1001:');
+  });
+
   test('check box selection: select-all of the filter result, unselectable rows, cancel', async ({
     page,
   }) => {

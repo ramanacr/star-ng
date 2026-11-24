@@ -30,7 +30,15 @@ export interface StarTableSelectionHost<T> {
   readonly selection: ModelSignal<readonly T[]>;
   readonly selectionKeys: ModelSignal<readonly unknown[] | null>;
   readonly selectAll: ModelSignal<boolean | null>;
+  /** The rows select on a click and take the focus (`metaKeySelection`, or no selection column). */
   readonly metaKeySelection: Signal<boolean>;
+  /**
+   * No selection column: Enter on a row selects like Space, and in single mode Space or Enter
+   * selects the row (it does not clear it).
+   */
+  readonly rowOnly?: Signal<boolean>;
+  /** Single mode: Arrow Up / Down on a row select the next row (`selectOnFocus`). */
+  readonly selectOnFocus?: Signal<boolean>;
   readonly pageOnly: Signal<boolean>;
   readonly rowSelectable: Signal<((row: T) => boolean) | null>;
   /** Row key (`dataKey`, else the row object). */
@@ -57,11 +65,16 @@ export type StarSelectionKeyAction = 'toggle' | 'range' | 'extend-up' | 'extend-
 
 /**
  * Selection keys: Space toggles the focused row (on the row itself; a check box toggles on its
- * own), Shift + Space selects the range from the anchor row, Shift + Arrow Up / Down moves to the
+ * own; with `enter`, Enter too), Shift + Space selects the range from the anchor row, Shift + Arrow Up / Down moves to the
  * next row and extends the range.
  */
-export function starSelectionKey(event: KeyboardEvent, onRow: boolean): StarSelectionKeyAction {
+export function starSelectionKey(
+  event: KeyboardEvent,
+  onRow: boolean,
+  enter = false,
+): StarSelectionKeyAction {
   if (event.altKey || event.ctrlKey || event.metaKey) return null;
+  if (enter && onRow && event.key === 'Enter') return event.shiftKey ? 'range' : 'toggle';
   if (event.key === ' ' || event.key === 'Spacebar') {
     if (event.shiftKey) return 'range';
     return onRow ? 'toggle' : null;
@@ -203,6 +216,17 @@ export class StarTableSelection<T> {
   }
 
   /**
+   * Space (or Enter without the selection column) on a row: toggles it, or with `extend` adds
+   * the range from the anchor. Single mode without the selection column selects the row and
+   * does not clear it.
+   */
+  keyToggle(row: T, event: Event | null, extend: boolean): boolean {
+    if (extend) return this.extendTo(row, event);
+    if (this.host.mode() === 'single' && this.host.rowOnly?.()) return this.selectOnly(row, event);
+    return this.toggle(row, event);
+  }
+
+  /**
    * Shift + Space or Shift + Arrow: adds the rows from the anchor to `row` (multiple only). The
    * range only grows: a move back toward the anchor does not clear rows.
    */
@@ -239,18 +263,26 @@ export class StarTableSelection<T> {
     const target = event.target as HTMLElement;
     const onRow = target === tr;
     if (!onRow && !target.closest('td.star-table__select')) return;
-    const action = starSelectionKey(event, onRow && this.host.metaKeySelection());
+    const action = starSelectionKey(
+      event,
+      onRow && this.host.metaKeySelection(),
+      !!this.host.rowOnly?.(),
+    );
     if (!action) {
       const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0;
       const plain = !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey;
-      if (onRow && step && plain && this.moveFocus(tr, step, onRow, rowOf) !== undefined) {
-        event.preventDefault();
+      if (!onRow || !step || !plain) return;
+      const next = this.moveFocus(tr, step, onRow, rowOf);
+      if (next === undefined) return;
+      event.preventDefault();
+      if (mode === 'single' && this.host.selectOnFocus?.() && this.host.metaKeySelection()) {
+        this.selectOnly(next, event);
       }
       return;
     }
     event.preventDefault();
     if (action === 'toggle') {
-      this.toggle(row, event);
+      this.keyToggle(row, event, false);
     } else if (action === 'range') {
       this.extendTo(row, event);
     } else {
