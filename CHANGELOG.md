@@ -10,6 +10,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Confirm: the option `buttonOrder` of `StarConfirmService.ask()` (`StarConfirmButtonOrder`: `reject-first`, the default, or `accept-first`) and the app-wide default `confirmButtonOrder` of `provideStarDialogDefaults`. The option of the request wins. It applies to the confirm dialog and the confirm popup. The DOM order changes, so the Tab order follows the visual order. `defaultFocus`, the accept variant, the labels, `rejectVisible` and the icon slots do not change ([#133](https://github.com/ramanacr/star-ng/issues/133)).
 
+### Fixed
+
+- Screen-reader text in a scroll area: the hidden text (`.star-sr-only`) in the part of the content that is scrolled out of view was not clipped, because the scroll area was not its containing block. A wide table in a right-to-left page gave the page a sideways scroll, and the chat and the file manager tree could make the page taller. Each scroll area of the controls is now a containing block (`position: relative`, without specificity, so a control rule that sets `position` wins) ([#39](https://github.com/ramanacr/star-ng/issues/39)).
+
 ## [0.5.0] - 2026-11-22
 
 ### Added
