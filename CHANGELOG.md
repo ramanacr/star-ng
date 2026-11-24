@@ -13,11 +13,14 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 #### Empty state
 
 - `star-empty-state` (`@star-ng/ui/empty-state`): what a list, a table, a panel or a page area shows when it has nothing to show. Inputs `variant` (`StarEmptyStateVariant`: `empty`, `no-results`, `error`, `success`; sets the default icon and its tone), `size` (`sm`, `md`, `lg`), `icon` (Phosphor name), `title`, `description`, `headingLevel` (1 to 6, default 3; `null` for plain text), `status` (`role="status"`) and `retryable` with the output `retry` (UI text `retry`). Slots `[starEmptyStateImage]` (replaces the icon tile), `[starEmptyStateActions]` and the default content. Tokens `--star-empty-state-icon-color`, `--star-empty-state-icon-surface`, `--star-empty-state-title-color` and `--star-empty-state-description-color` ([#137](https://github.com/ramanacr/star-ng/issues/137)).
-- The table, the data view and the list show a `star-empty-state` as their default empty template (plain-text title, no heading). The `starEmpty` template and `emptyMessage` work as before. The `emptyIcon` styling part of the table and the data view is now the icon tile of the empty state: style it with the pass-through of `star-empty-state`.
 
 #### Description list
 
 - `star-description-list` and `star-description-item` (`@star-ng/ui/description-list`): read-only label and value pairs in `<dl>`, `<dt>` and `<dd>`. Pairs from `items` (`StarDescriptionEntry`: `label`, `value`, `hint`) and from projected `star-description-item` elements (`label`, `hint`, the value as content). Inputs `layout` (`StarDescriptionListLayout`: `stacked`, `inline`, `columns`), `columns`, `labelWidth`, `size` (`sm`, `md`), `placeholder` and `truncate` (one line per value; a cut value shows its full text in a tooltip and takes the focus). An empty value shows the UI text `emptyValue` ("—"); screen readers read `noValue` (new UI texts, English, German, Spanish). Tokens `--star-description-list-label-color`, `--star-description-list-label-weight`, `--star-description-list-value-color`, `--star-description-list-gap` and `--star-description-list-label-width` ([#136](https://github.com/ramanacr/star-ng/issues/136)).
+
+### Changed
+
+- Table, data view and list: the default empty template is now a `star-empty-state` (plain-text title, no heading). The `starEmpty` template and `emptyMessage` work as before. The list wraps its `starEmpty` template in a small empty state with an icon. Breaking for `pt` users: the `emptyIcon` styling part of the table and the data view is removed; the icon is now the icon tile of the empty state, so style it with the pass-through of `star-empty-state` ([#137](https://github.com/ramanacr/star-ng/issues/137)).
 
 ## [0.5.0] - 2026-11-22
 
