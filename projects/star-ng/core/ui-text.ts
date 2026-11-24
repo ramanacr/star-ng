@@ -83,6 +83,10 @@ export interface StarUiText {
   readonly noData: string;
   /** Short label of a missing value: a sparkline without values, the map legend entry of shapes without a value. */
   readonly missingData: string;
+  /** Placeholder of an empty value in `star-description-list` (default "—"). Hidden from screen readers. */
+  readonly emptyValue: string;
+  /** What screen readers read for an empty value in `star-description-list`. */
+  readonly noValue: string;
   readonly selectRow: string;
   readonly selectAllRows: string;
   /** Name of a row check box or radio, with the row text: "Select row Order 1042". */
@@ -991,6 +995,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   paginationBottom: (label) => `${label}, bottom`,
   noData: 'No records found',
   missingData: 'No data',
+  emptyValue: '—',
+  noValue: 'No value',
   selectRow: 'Select row',
   selectAllRows: 'Select all rows',
   selectRowOf: (label) => `Select row ${label}`,

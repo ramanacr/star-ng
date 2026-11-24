@@ -584,6 +584,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/chip.page').then((m) => m.ChipPage),
       },
       {
+        label: 'Description list',
+        path: 'controls/description-list',
+        keywords: 'dl dt dd label value pairs details properties key value record preview',
+        load: () => import('./controls/description-list.page').then((m) => m.DescriptionListPage),
+      },
+      {
         label: 'Timeline',
         path: 'controls/timeline',
         keywords: 'events history steps vertical horizontal',
@@ -758,6 +764,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/banner',
         keywords: 'notice page alert persistent dismiss announcement',
         load: () => import('./controls/banner.page').then((m) => m.BannerPage),
+      },
+      {
+        label: 'Empty state',
+        path: 'controls/empty-state',
+        keywords: 'no data no results nothing found blank slate zero state error retry caught up',
+        load: () => import('./controls/empty-state.page').then((m) => m.EmptyStatePage),
       },
       {
         label: 'Progress bar',

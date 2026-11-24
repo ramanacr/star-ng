@@ -67,6 +67,7 @@ import {
   ɵstarUnchangedEdit,
 } from '@star-ng/ui/core';
 import { StarDialog } from '@star-ng/ui/dialog';
+import { StarEmptyState } from '@star-ng/ui/empty-state';
 import { StarContextMenu, StarMenu } from '@star-ng/ui/menu';
 import { StarPaginator, StarPaginatorTemplate } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
@@ -512,6 +513,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     StarCheckbox,
     StarContextMenu,
     StarDialog,
+    StarEmptyState,
     StarMenu,
     StarMultiSelect,
     StarPaginator,

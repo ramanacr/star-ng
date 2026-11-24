@@ -713,7 +713,8 @@ kbd {
     star-query-builder,
     star-mega-menu,
     star-toolbar,
-    star-tabs
+    star-tabs,
+    .star-description-list--columns
   ) {
   max-width: none;
 }
@@ -745,7 +746,8 @@ kbd {
     star-query-builder,
     star-mega-menu,
     star-toolbar,
-    star-tabs
+    star-tabs,
+    .star-description-list--columns
   ) {
   flex: 1 1 100%;
   min-width: 0;

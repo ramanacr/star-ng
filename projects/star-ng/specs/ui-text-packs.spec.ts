@@ -30,6 +30,8 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     // "Q1" is the usual German quarter label.
     'pivotQuarter',
     'mapFeatureValue',
+    // The dash of an empty value is the same in every language.
+    'emptyValue',
   ],
   // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every
   // language. "No" is the Spanish answer too. A rule summary and a data point only join their
@@ -47,6 +49,8 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     // "General" is the Spanish name of the number format too; "Zoom" is the Spanish UI word.
     'spreadsheetFormatGeneral',
     'documentZoom',
+    // The dash of an empty value is the same in every language.
+    'emptyValue',
   ],
 };
 

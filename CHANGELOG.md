@@ -10,6 +10,18 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Confirm: the option `buttonOrder` of `StarConfirmService.ask()` (`StarConfirmButtonOrder`: `reject-first`, the default, or `accept-first`) and the app-wide default `confirmButtonOrder` of `provideStarDialogDefaults`. The option of the request wins. It applies to the confirm dialog and the confirm popup. The DOM order changes, so the Tab order follows the visual order. `defaultFocus`, the accept variant, the labels, `rejectVisible` and the icon slots do not change ([#133](https://github.com/ramanacr/star-ng/issues/133)).
 
+#### Empty state
+
+- `star-empty-state` (`@star-ng/ui/empty-state`): what a list, a table, a panel or a page area shows when it has nothing to show. Inputs `variant` (`StarEmptyStateVariant`: `empty`, `no-results`, `error`, `success`; sets the default icon and its tone), `size` (`sm`, `md`, `lg`), `icon` (Phosphor name), `title`, `description`, `headingLevel` (1 to 6, default 3; `null` for plain text), `status` (`role="status"`) and `retryable` with the output `retry` (UI text `retry`). Slots `[starEmptyStateImage]` (replaces the icon tile), `[starEmptyStateActions]` and the default content. Tokens `--star-empty-state-icon-color`, `--star-empty-state-icon-surface`, `--star-empty-state-title-color` and `--star-empty-state-description-color` ([#137](https://github.com/ramanacr/star-ng/issues/137)).
+
+#### Description list
+
+- `star-description-list` and `star-description-item` (`@star-ng/ui/description-list`): read-only label and value pairs in `<dl>`, `<dt>` and `<dd>`. Pairs from `items` (`StarDescriptionEntry`: `label`, `value`, `hint`) and from projected `star-description-item` elements (`label`, `hint`, the value as content). Inputs `layout` (`StarDescriptionListLayout`: `stacked`, `inline`, `columns`), `columns`, `labelWidth`, `size` (`sm`, `md`), `placeholder` and `truncate` (one line per value; a cut value shows its full text in a tooltip and takes the focus). An empty value shows the UI text `emptyValue` ("—"); screen readers read `noValue` (new UI texts, English, German, Spanish). Tokens `--star-description-list-label-color`, `--star-description-list-label-weight`, `--star-description-list-value-color`, `--star-description-list-gap` and `--star-description-list-label-width` ([#136](https://github.com/ramanacr/star-ng/issues/136)).
+
+### Changed
+
+- Table, data view and list: the default empty template is now a `star-empty-state` (plain-text title, no heading). The `starEmpty` template and `emptyMessage` work as before. The list wraps its `starEmpty` template in a small empty state with an icon. Breaking for `pt` users: the `emptyIcon` styling part of the table and the data view is removed; the icon is now the icon tile of the empty state, so style it with the pass-through of `star-empty-state` ([#137](https://github.com/ramanacr/star-ng/issues/137)).
+
 ### Fixed
 
 - Screen-reader text in a scroll area: the hidden text (`.star-sr-only`) in the part of the content that is scrolled out of view was not clipped, because the scroll area was not its containing block. A wide table in a right-to-left page gave the page a sideways scroll, and the chat and the file manager tree could make the page taller. Each scroll area of the controls is now a containing block (`position: relative`, without specificity, so a control rule that sets `position` wins) ([#39](https://github.com/ramanacr/star-ng/issues/39)).

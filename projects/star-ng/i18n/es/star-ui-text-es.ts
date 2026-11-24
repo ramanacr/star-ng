@@ -70,6 +70,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   pageReport: (first, last, total) => `${first}–${last} de ${total}`,
   noData: 'No se encontraron registros',
   missingData: 'Sin datos',
+  emptyValue: '—',
+  noValue: 'Sin valor',
   selectRow: 'Seleccionar fila',
   selectAllRows: 'Seleccionar todas las filas',
   selectRowOf: (label) => `Seleccionar fila ${label}`,

@@ -15,7 +15,7 @@
 //   2. The `name` of every `<star-icon>` with its `weight` (`StarIcon` builds `ph-${name}` at run
 //      time; default weight bold).
 //   3. `[class.ph-<name>]` bindings, with the weight class of the same element.
-//   4. `EXTRA`: bound names that are built from data the scan cannot see (none today); a bound
+//   4. `EXTRA`: bound names that are built from data the scan cannot see; a bound
 //      `<star-icon [name]>` that is not a literal and has no entry fails the tool.
 // A name that the package does not have is an error (a typo in a source file).
 //
@@ -42,10 +42,19 @@ export const DEFAULT_WEIGHT = 'bold';
  * Bound icon names that the scan cannot read (`<star-icon [name]="icon">`), with the names they
  * can take: `{ file, expression, weight, names }`, `file` relative to the repository, and
  * `expression` as the scan reports it (`[name]="icon"`). Add an entry, with a comment, only
- * when a page builds the icon name at run time from data (none today). A bound name that has no
- * entry fails the tool.
+ * when a page builds the icon name at run time from data. A bound name that has no entry fails
+ * the tool.
  */
-export const EXTRA = [];
+export const EXTRA = [
+  // The empty state draws the default icon of its variant, or the Phosphor name of its `icon`
+  // input. The docs pages pass `icon` with the `ph-` prefix, so the scan finds those names.
+  {
+    file: 'projects/star-ng/empty-state/empty-state.ts',
+    expression: '[name]="name"',
+    weight: 'bold',
+    names: ['tray', 'magnifying-glass', 'warning-circle', 'check-circle'],
+  },
+];
 
 const posix = (path) => path.split('\\').join('/');
 const WEIGHT_CLASS = new Map(WEIGHTS.map((w) => [w === 'regular' ? 'ph' : `ph-${w}`, w]));

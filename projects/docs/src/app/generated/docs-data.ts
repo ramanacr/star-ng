@@ -4532,7 +4532,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "itemIcon",
       "itemsList",
       "emptyItem",
-      "emptyIcon",
       "loadingPanel",
       "loadingIcon",
       "pagerPanel"
@@ -5766,6 +5765,134 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [],
     "models": [],
     "outputs": []
+  },
+  "StarDescriptionItem": {
+    "kind": "component",
+    "selector": "star-description-item",
+    "entry": "@star-ng/ui/description-list",
+    "description": "One pair of `star-description-list` as content: the `label` input and the value as content, for a value with links, tags or icons. The list renders the label and the value in its own `<dt>` and `<dd>`; this element itself is not rendered.",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "The label (the term, `<dt>`)."
+      },
+      {
+        "name": "hint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "A short help text under the value."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
+      }
+    ],
+    "models": [],
+    "outputs": [],
+    "parts": [
+      "root"
+    ]
+  },
+  "StarDescriptionList": {
+    "kind": "component",
+    "selector": "star-description-list",
+    "entry": "@star-ng/ui/description-list",
+    "description": "Description list: read-only label and value pairs, for example in a record preview panel. It renders `<dl>`, `<dt>` and `<dd>`, so screen readers announce the pairs. PrimeNG has no description list control.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarDescriptionEntry[] | null",
+        "default": "null",
+        "required": false,
+        "description": "The pairs as data. They come before the projected `star-description-item` elements."
+      },
+      {
+        "name": "layout",
+        "type": "StarDescriptionListLayout",
+        "default": "'stacked'",
+        "required": false,
+        "description": "`stacked` (default): label above value. `inline`: one row per pair. `columns`: see `columns`."
+      },
+      {
+        "name": "columns",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Number of columns of the `columns` layout (default 2). A column is at least 12rem wide, so a narrow list has fewer columns."
+      },
+      {
+        "name": "labelWidth",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Width of the labels in the `inline` layout, a CSS length. Default: the token (10rem)."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "`sm` or `md` (default): text size and gaps."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of an empty value. Default (`null`): \"—\" (`emptyValue` of `STAR_UI_TEXT`), which screen readers read as `noValue` (\"No value\")."
+      },
+      {
+        "name": "truncate",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps each value on one line; a value that is cut shows its full text in a tooltip."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
+      }
+    ],
+    "models": [],
+    "outputs": [],
+    "parts": [
+      "root",
+      "list",
+      "item",
+      "label",
+      "description",
+      "valueText",
+      "placeholderText",
+      "hintText"
+    ]
   },
   "StarDiagram": {
     "kind": "component",
@@ -7882,6 +8009,107 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [],
     "models": [],
     "outputs": []
+  },
+  "StarEmptyState": {
+    "kind": "component",
+    "selector": "star-empty-state",
+    "entry": "@star-ng/ui/empty-state",
+    "description": "Empty state: what a list, a table, a panel or a page area shows when it has nothing to show. An icon in a tile (or an image), a title, a description and actions. PrimeNG has no empty state control; the table, the data view and the list of StarNG use it as their default empty template, so the look is the same everywhere.",
+    "inputs": [
+      {
+        "name": "variant",
+        "type": "StarEmptyStateVariant",
+        "default": "'empty'",
+        "required": false,
+        "description": "Why the area is empty: sets the default icon and the tone of the icon tile."
+      },
+      {
+        "name": "size",
+        "type": "StarEmptyStateSize",
+        "default": "'md'",
+        "required": false,
+        "description": "`sm` in a card or a panel, `md` (default) in a table or a list, `lg` for a page area."
+      },
+      {
+        "name": "icon",
+        "type": "string | null | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Phosphor icon name, for example `tray` or `ph-tray`. Default: the icon of the variant. `''` or `null` shows no icon. An `[starEmptyStateImage]` element replaces the icon."
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Title text."
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Description text under the title."
+      },
+      {
+        "name": "headingLevel",
+        "type": "StarEmptyStateHeadingLevel",
+        "default": "3",
+        "required": false,
+        "description": "Level of the title heading (1 to 6). Choose the level that fits the outline of the page. `null` renders the title as plain text, for example inside a table cell."
+      },
+      {
+        "name": "status",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Makes the host a polite live region (`role=\"status\"`). Use it when the empty state replaces loading content, so screen readers announce it."
+      },
+      {
+        "name": "retryable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a built-in retry button (text `retry` of `STAR_UI_TEXT`), for the `error` variant."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "retry",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user presses the built-in retry button."
+      }
+    ],
+    "parts": [
+      "root",
+      "graphic",
+      "iconPanel",
+      "title",
+      "description",
+      "content",
+      "actionList",
+      "retryButton",
+      "retryIcon"
+    ]
   },
   "StarEmptyTemplate": {
     "kind": "directive",
@@ -20718,7 +20946,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "groupFooterRow",
       "groupFooterCell",
       "emptyCell",
-      "emptyIcon",
       "pinnedBottomPanel",
       "foot",
       "footer",
@@ -23697,6 +23924,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/time-range": "<div class=\"docs-stack\">\n  <star-date-range-picker\n    [(value)]=\"shift\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Shift\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}\n    {{ clock(shift()?.end) }}\n  </p>\n</div>",
   "date-picker/touch": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    touchUI\n    ariaLabel=\"Delivery date, touch\"\n  />\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    breakpoint=\"640px\"\n    ariaLabel=\"Delivery date, small window\"\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(touchDate()) }}</p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
+  "description-list/columns": "<div class=\"docs-stack\">\n  <star-description-list layout=\"columns\" [columns]=\"3\" [items]=\"shipment\" />\n</div>",
+  "description-list/content": "<div class=\"docs-stack\">\n  <star-description-list layout=\"inline\">\n    <star-description-item label=\"Status\" hint=\"Set by the warehouse\">\n      <star-tag severity=\"success\" value=\"Shipped\" />\n    </star-description-item>\n    <star-description-item label=\"Contact\">\n      <a href=\"mailto:orders@example.com\">orders&#64;example.com</a>\n    </star-description-item>\n    <star-description-item label=\"Priority\">\n      <star-icon name=\"flag\" weight=\"fill\" />\n      High\n    </star-description-item>\n    <star-description-item label=\"Note\" />\n  </star-description-list>\n</div>",
+  "description-list/inline": "<div class=\"docs-stack\">\n  <star-description-list layout=\"inline\" [items]=\"order\" />\n  <star-description-list layout=\"inline\" size=\"sm\" labelWidth=\"7rem\" [items]=\"order\" />\n</div>",
+  "description-list/stacked": "<div class=\"docs-stack\">\n  <star-description-list [items]=\"order\" />\n</div>",
+  "description-list/truncate": "<div class=\"docs-stack\">\n  <star-description-list layout=\"inline\" [items]=\"address\" />\n  <star-description-list layout=\"inline\" truncate placeholder=\"Not set\" [items]=\"address\" />\n</div>",
   "diagram/template": "<star-diagram\n  [nodes]=\"cards()\"\n  [edges]=\"cardEdges\"\n  readonly\n  [showGrid]=\"false\"\n  height=\"14rem\"\n  ariaLabel=\"Order stages\"\n>\n  <ng-template starDiagramNode let-node>\n    <span class=\"card\">\n      <strong>{{ node.label }}</strong>\n      <small>{{ counts[node.id] }} orders</small>\n    </span>\n  </ng-template>\n</star-diagram>",
   "diagram/workflow": "<div class=\"docs-stack\">\n  <div class=\"actions\">\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutTree()\"\n      >Tree layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutGrid()\"\n      >Grid layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"download()\"\n      >Export SVG</star-button\n    >\n  </div>\n  <star-diagram\n    #workflow\n    [nodes]=\"nodes()\"\n    [edges]=\"edges()\"\n    [(selection)]=\"selection\"\n    fitContent\n    ariaLabel=\"Order workflow\"\n    (nodesPatch)=\"onNodes($event)\"\n    (edgesPatch)=\"onEdges($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ last() }}</p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
@@ -23742,6 +23974,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "editor/tables": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"tables\" [toolbar]=\"tableToolbar\" ariaLabel=\"Price table\" />\n</div>",
   "editor/text-limit": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"summary\"\n    format=\"text\"\n    [maxLength]=\"120\"\n    ariaLabel=\"Delivery summary\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the text editor\">{{\n    summary()\n  }}</pre>\n</div>",
   "editor/toolbar-slot": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Release note\" minHeight=\"4rem\">\n    <ng-template\n      starEditorToolbar\n      let-exec=\"exec\"\n      let-isActive=\"isActive\"\n      let-disabled=\"disabled\"\n    >\n      <div\n        class=\"star-toolbar star-editor__toolbar\"\n        role=\"toolbar\"\n        aria-label=\"Release note tools\"\n      >\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('bold')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('bold')\"\n        >\n          Bold\n        </button>\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('code')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('code')\"\n        >\n          Code\n        </button>\n      </div>\n    </ng-template>\n  </star-editor>\n</div>",
+  "empty-state/image": "<div class=\"docs-stack\">\n  <star-empty-state title=\"No projects\" description=\"Projects group the orders of a team.\">\n    <svg\n      starEmptyStateImage\n      viewBox=\"0 0 120 80\"\n      width=\"120\"\n      height=\"80\"\n      aria-hidden=\"true\"\n    >\n      <rect\n        x=\"22\"\n        y=\"10\"\n        width=\"40\"\n        height=\"16\"\n        rx=\"4\"\n        fill=\"currentColor\"\n        opacity=\"0.25\"\n      />\n      <rect\n        x=\"10\"\n        y=\"20\"\n        width=\"100\"\n        height=\"50\"\n        rx=\"8\"\n        fill=\"currentColor\"\n        opacity=\"0.12\"\n      />\n      <circle cx=\"60\" cy=\"45\" r=\"10\" fill=\"currentColor\" opacity=\"0.35\" />\n    </svg>\n    Ask an administrator to add you to a project.\n  </star-empty-state>\n</div>",
+  "empty-state/sizes": "<div class=\"docs-stack\">\n  <star-empty-state\n    size=\"sm\"\n    icon=\"ph-bell\"\n    title=\"No reminders\"\n    description=\"Reminders that you set show here.\"\n  />\n  <star-empty-state\n    icon=\"ph-folder-open\"\n    title=\"This folder is empty\"\n    description=\"Drop files here or use the upload button.\"\n  />\n  <star-empty-state\n    size=\"lg\"\n    icon=\"ph-chart-bar\"\n    title=\"No reports yet\"\n    description=\"Create a report to see the sales of each city.\"\n  >\n    <star-button starEmptyStateActions>Create report</star-button>\n  </star-empty-state>\n</div>",
+  "empty-state/status": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"load()\"\n      >Load messages</star-button\n    >\n  </div>\n  @if (loading()) {\n    <star-spinner size=\"1.5rem\" ariaLabel=\"Loading messages\" />\n  } @else if (loaded()) {\n    <star-empty-state\n      status\n      [headingLevel]=\"3\"\n      icon=\"ph-chat-circle\"\n      title=\"No messages\"\n      description=\"New messages from your team show here.\"\n    />\n  }\n</div>",
+  "empty-state/table": "<div class=\"docs-stack\">\n  <star-table\n    [value]=\"[]\"\n    [columns]=\"columns\"\n    ariaLabel=\"Orders of today\"\n    emptyMessage=\"No orders today.\"\n  />\n</div>",
+  "empty-state/variants": "<div class=\"docs-stack\">\n  <star-empty-state\n    title=\"No orders yet\"\n    description=\"Orders appear here after the first sale.\"\n  >\n    <star-button starEmptyStateActions size=\"sm\">New order</star-button>\n  </star-empty-state>\n  <star-empty-state\n    variant=\"no-results\"\n    title=\"No orders found\"\n    description=\"No orders match the search criteria.\"\n  >\n    <star-button starEmptyStateActions variant=\"secondary\" size=\"sm\">\n      Clear criteria\n    </star-button>\n  </star-empty-state>\n  <star-empty-state\n    variant=\"error\"\n    title=\"Could not load the orders\"\n    description=\"The order service did not answer.\"\n    retryable\n    (retry)=\"retries.set(retries() + 1)\"\n  />\n  @if (retries()) {\n    <p class=\"docs-output\">Retry pressed {{ retries() }} times.</p>\n  }\n  <star-empty-state\n    variant=\"success\"\n    icon=\"ph-check-circle\"\n    title=\"You're all caught up\"\n    description=\"No notifications right now.\"\n  />\n</div>",
   "field/async": "<div class=\"docs-stack\">\n  <star-field label=\"User name\" hint=\"Letters and digits.\" [state]=\"account.userName()\">\n    <input starInput [formField]=\"account.userName\" autocomplete=\"off\" />\n  </star-field>\n</div>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/groups": "<div class=\"docs-stack\">\n  <star-field label=\"Toppings\" hint=\"Pick one or more.\" [error]=\"groupError()\">\n    <star-checkbox>Cheese</star-checkbox>\n    <star-checkbox>Olives</star-checkbox>\n    <star-checkbox>Peppers</star-checkbox>\n  </star-field>\n  <star-field label=\"Plan\" hint=\"You can change it later.\" [error]=\"groupError()\">\n    <star-radio-group>\n      <star-radio value=\"free\">Free</star-radio>\n      <star-radio value=\"pro\">Pro</star-radio>\n    </star-radio-group>\n  </star-field>\n  <star-button variant=\"secondary\" (pressed)=\"toggleGroupError()\">\n    {{ groupError() ? 'Clear the errors' : 'Show the errors' }}\n  </star-button>\n</div>",
