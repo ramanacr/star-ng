@@ -1097,6 +1097,58 @@ test.describe('popover', () => {
     await anchor.click();
     await expect(popover).toBeHidden();
   });
+
+  test('position below-end lines up the end edges, follows right-to-left and flips above', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/popover', 'Popover');
+    const anchor = example(page, 'Open at the end edge').getByRole('button', { name: 'Saved' });
+    const popover = page.getByRole('dialog', { name: 'Saved views' });
+
+    /** Opens the popover and polls until it is placed: the overlay positions it after render. */
+    async function placement() {
+      await anchor.click();
+      await expect(popover).toBeVisible();
+      await expect(popover.getByRole('button', { name: 'Save current view' })).toBeVisible();
+      let result = { below: false, above: false, start: Infinity, end: Infinity };
+      await expect
+        .poll(async () => {
+          const a = (await anchor.boundingBox())!;
+          const p = (await popover.boundingBox())!;
+          result = {
+            below: p.y >= a.y + a.height,
+            above: p.y + p.height <= a.y,
+            start: Math.abs(p.x - a.x),
+            end: Math.abs(p.x + p.width - (a.x + a.width)),
+          };
+          return result.below || result.above;
+        })
+        .toBe(true);
+      await page.keyboard.press('Escape');
+      await expect(popover).toBeHidden();
+      return result;
+    }
+
+    // Left to right, room below: below the button, the right edges line up.
+    await anchor.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    const ltr = await placement();
+    expect(ltr.below).toBe(true);
+    expect(ltr.end).toBeLessThan(2);
+
+    // Right to left: `end` is the left edge.
+    await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
+    await anchor.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    const rtl = await placement();
+    expect(rtl.below).toBe(true);
+    expect(rtl.start).toBeLessThan(2);
+    await page.evaluate(() => document.documentElement.setAttribute('dir', 'ltr'));
+
+    // No room below the button: the panel opens above it, end edges still lined up.
+    await anchor.evaluate((el) => el.scrollIntoView({ block: 'end' }));
+    const flipped = await placement();
+    expect(flipped.above).toBe(true);
+    expect(flipped.end).toBeLessThan(2);
+  });
 });
 
 test.describe('tooltip', () => {

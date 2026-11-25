@@ -5,6 +5,7 @@ import {
   createFlexibleConnectedPositionStrategy,
   createOverlayRef,
   createRepositionScrollStrategy,
+  FlexibleConnectedPositionStrategy,
   OverlayRef,
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
@@ -16,6 +17,7 @@ import {
   Component,
   contentChildren,
   DestroyRef,
+  effect,
   forwardRef,
   inject,
   Injector,
@@ -23,6 +25,7 @@ import {
   output,
   signal,
   TemplateRef,
+  untracked,
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -41,14 +44,65 @@ import { Subscription } from 'rxjs';
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
-// `start` and `end` are turned around by the CDK in right-to-left: the popover aligns with the
-// start edge of its anchor in both directions.
-const POSITIONS: ConnectedPosition[] = [
-  { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 8 },
-  { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
-  { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -8 },
-  { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -8 },
-];
+/**
+ * Where the popover opens next to its anchor (`position`): below or above the anchor, with its
+ * `start` or `end` edge at the same edge of the anchor. `start` and `end` follow the reading
+ * direction: `end` is the right edge in a left-to-right page and the left edge in a right-to-left
+ * page. The same values as `StarMenuPosition` of the menu trigger.
+ */
+export type StarPopoverPosition = 'below-start' | 'below-end' | 'above-start' | 'above-end';
+
+/** Gap between the anchor and the panel, in pixels. */
+const GAP = 8;
+
+// `start` and `end` are turned around by the CDK in right-to-left.
+const POSITION: Record<StarPopoverPosition, ConnectedPosition> = {
+  'below-start': {
+    originX: 'start',
+    originY: 'bottom',
+    overlayX: 'start',
+    overlayY: 'top',
+    offsetY: GAP,
+  },
+  'below-end': {
+    originX: 'end',
+    originY: 'bottom',
+    overlayX: 'end',
+    overlayY: 'top',
+    offsetY: GAP,
+  },
+  'above-start': {
+    originX: 'start',
+    originY: 'top',
+    overlayX: 'start',
+    overlayY: 'bottom',
+    offsetY: -GAP,
+  },
+  'above-end': {
+    originX: 'end',
+    originY: 'top',
+    overlayX: 'end',
+    overlayY: 'bottom',
+    offsetY: -GAP,
+  },
+};
+
+/**
+ * The positions of a popover that prefers `position`: that position first, then the fallbacks
+ * that the overlay tries when there is no room. The other edge on the same side of the anchor
+ * comes first, then the same edge on the other side, then the other edge on the other side.
+ */
+function popoverPositions(position: StarPopoverPosition): ConnectedPosition[] {
+  const [side, edge] = position.split('-') as ['below' | 'above', 'start' | 'end'];
+  const otherEdge = edge === 'start' ? 'end' : 'start';
+  const otherSide = side === 'below' ? 'above' : 'below';
+  return [
+    POSITION[position],
+    POSITION[`${side}-${otherEdge}`],
+    POSITION[`${otherSide}-${edge}`],
+    POSITION[`${otherSide}-${otherEdge}`],
+  ];
+}
 
 /**
  * Popover (PrimeNG `p-popover`, formerly OverlayPanel): rich floating content anchored to an
@@ -60,6 +114,10 @@ const POSITIONS: ConnectedPosition[] = [
  * <star-button #anchor (pressed)="info.toggle($event)">Details</star-button>
  * <star-popover #info ariaLabel="Order details">…</star-popover>
  * ```
+ *
+ * `position` sets where the panel opens: `below-start` (the default), `below-end`, `above-start`
+ * or `above-end`. When there is no room, the panel moves to the other edge, then to the other
+ * side of the anchor, and it is pushed inside the window.
  *
  * Slots (content children): `starHeader` adds a header above the content (PrimeNG has no header
  * template; this matches the `header` of the other overlays).
@@ -127,6 +185,12 @@ export class StarPopover {
    * button in the content, so keyboard users can close it.
    */
   readonly closeOnEscape = input(true, { transform: booleanAttribute });
+  /**
+   * Where the panel opens next to the anchor: `below-start` (the default), `below-end`,
+   * `above-start` or `above-end`. `start` and `end` follow the reading direction. When there is no
+   * room, the panel moves to the other edge, then to the other side.
+   */
+  readonly position = input<StarPopoverPosition>('below-start');
 
   private readonly slots = contentChildren(StarSlot, { descendants: true });
   protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
@@ -137,6 +201,7 @@ export class StarPopover {
   readonly visible = signal(false);
   private readonly panel = viewChild.required<TemplateRef<unknown>>('panel');
   private overlayRef: OverlayRef | null = null;
+  private strategy: FlexibleConnectedPositionStrategy | null = null;
   private anchor: HTMLElement | null = null;
   private outside: Subscription | null = null;
 
@@ -146,6 +211,15 @@ export class StarPopover {
     inject(DestroyRef).onDestroy(() => {
       this.outside?.unsubscribe();
       this.overlayRef?.dispose();
+    });
+    // An open panel moves when the position changes.
+    effect(() => {
+      const positions = popoverPositions(this.position());
+      untracked(() => {
+        if (!this.visible() || !this.strategy) return;
+        this.strategy.withPositions(positions);
+        this.overlayRef?.updatePosition();
+      });
     });
   }
 
@@ -162,9 +236,10 @@ export class StarPopover {
     if (this.visible()) this.hide(false);
     this.anchor = anchor;
     const strategy = createFlexibleConnectedPositionStrategy(this.injector, anchor)
-      .withPositions(POSITIONS)
+      .withPositions(popoverPositions(this.position()))
       .withPush(true)
       .withViewportMargin(8);
+    this.strategy = strategy;
     this.overlayRef ??= createOverlayRef(this.injector, {
       positionStrategy: strategy,
       scrollStrategy: createRepositionScrollStrategy(this.injector),

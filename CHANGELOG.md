@@ -2,6 +2,14 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+#### Popover
+
+- Popover: the input `position` (`StarPopoverPosition`: `below-start`, the default, `below-end`, `above-start`, `above-end`; the same values as `StarMenuPosition`) sets where the panel opens next to its anchor. `start` and `end` follow the reading direction, so `below-end` lines up the right edges in a left-to-right page and the left edges in a right-to-left page. The panel keeps its gap of 8px to the anchor. When there is no room, it moves to the other edge, then to the other side of the anchor, and it is pushed inside the window. A change of `position` moves an open panel. The default positions do not change ([#158](https://github.com/ramanacr/star-ng/issues/158)).
+
 ## [0.7.0] - 2026-11-25
 
 ### Added

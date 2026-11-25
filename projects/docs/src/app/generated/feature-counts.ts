@@ -3,7 +3,7 @@
 export const FEATURE_COUNTS = {
   "lib": {
     "input": {
-      "uses": 1335,
+      "uses": 1336,
       "files": 129
     },
     "inputRequired": {
@@ -59,12 +59,12 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "untracked": {
-      "uses": 77,
-      "files": 33
+      "uses": 78,
+      "files": 34
     },
     "effect": {
-      "uses": 70,
-      "files": 40
+      "uses": 71,
+      "files": 41
     },
     "afterRenderEffect": {
       "uses": 28,
@@ -181,7 +181,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 969,
+      "uses": 971,
       "files": 125
     },
     "computed": {
@@ -253,7 +253,7 @@ export const FEATURE_COUNTS = {
       "files": 26
     },
     "for": {
-      "uses": 56,
+      "uses": 57,
       "files": 30
     },
     "switch": {
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 255,
+  "specFiles": 256,
   "pages": 146
 } as const;

@@ -74,10 +74,58 @@ import { DOCS, DocsRow } from '../shared/docs';
         </star-popover>
       </docs-example>
 
+      <docs-example
+        heading="Open at the end edge"
+        source="popover/position"
+        [script]="savedScript"
+        note="position sets where the panel opens: below-start (the default), below-end, above-start or above-end. Here the Saved button is at the end of a toolbar, so the panel opens below-end: its end edge lines up with the end edge of the button. Start and end follow the reading direction. When there is no room below, the panel opens above; near the edge of the window it is pushed in. A popover (not a menu) fits here because each row has two buttons."
+      >
+        <div class="docs-row" style="width: 100%; justify-content: space-between">
+          <span class="docs-output">{{ savedViews().length }} saved views</span>
+          <star-button
+            variant="secondary"
+            leadingIcon="ph-bold ph-bookmark-simple"
+            (pressed)="saved.toggle($event)"
+          >
+            Saved
+          </star-button>
+        </div>
+        <star-popover #saved position="below-end" ariaLabel="Saved views">
+          <div class="docs-stack" style="gap: var(--star-space-2); min-width: 16rem">
+            @for (view of savedViews(); track view) {
+              <div class="docs-row" style="justify-content: space-between; flex-wrap: nowrap">
+                <star-button appearance="text" size="sm" (pressed)="saved.hide()">
+                  {{ view }}
+                </star-button>
+                <star-button
+                  appearance="text"
+                  size="sm"
+                  iconOnly
+                  leadingIcon="ph-bold ph-trash"
+                  [ariaLabel]="'Delete ' + view"
+                  (pressed)="deleteView(view)"
+                />
+              </div>
+            } @empty {
+              <p class="docs-output">No saved views.</p>
+            }
+            <star-button
+              variant="secondary"
+              size="sm"
+              leadingIcon="ph-bold ph-plus"
+              (pressed)="saveView()"
+            >
+              Save current view
+            </star-button>
+          </div>
+        </star-popover>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
-        The popover is aligned with the start edge of its anchor: the right edge in a right-to-left
-        page. When there is no room, it moves to the other edge. See the Right-to-left guide.
+        The popover is aligned with the start edge of its anchor (or the end edge with a position
+        that ends in end): the start edge is the right edge in a right-to-left page. When there is
+        no room, it moves to the other edge. See the Right-to-left guide.
       </p>
 
       <docs-api [of]="['StarPopover']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
@@ -110,14 +158,35 @@ import { DOCS, DocsRow } from '../shared/docs';
       <h2>Technical notes</h2>
       <p>
         The panel is a native popover in the top layer, so it is shown above a modal dialog. It is
-        positioned with the Angular CDK overlay below the anchor, and above the anchor when there is
-        no room below.
+        positioned with the Angular CDK overlay at the side and edge that position names, at the
+        other edge or the other side when there is no room, and it is pushed inside the window.
       </p>
     </docs-page>
   `,
 })
 export class PopoverPage {
   protected readonly renameState = signal('closed');
+  protected readonly savedViews = signal(['Open orders', 'Late shipments', 'This week']);
+  private viewCount = 0;
+
+  protected readonly savedScript = `readonly savedViews = signal(['Open orders', 'Late shipments', 'This week']);
+private viewCount = 0;
+
+deleteView(view: string): void {
+  this.savedViews.update((views) => views.filter((v) => v !== view));
+}
+
+saveView(): void {
+  this.savedViews.update((views) => [...views, \`View \${++this.viewCount}\`]);
+}`;
+
+  protected deleteView(view: string): void {
+    this.savedViews.update((views) => views.filter((v) => v !== view));
+  }
+
+  protected saveView(): void {
+    this.savedViews.update((views) => [...views, `View ${++this.viewCount}`]);
+  }
 
   protected readonly fieldScript = `readonly renameState = signal('closed');`;
 

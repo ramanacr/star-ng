@@ -160,7 +160,7 @@
     "StarSplitButton",
     "keepMenuInsideDialog"
   ],
-  "popover": ["StarPopover"],
+  "popover": ["StarPopover", "StarPopoverPosition"],
   "spinner": ["StarSpinner"],
   "theme": [
     "STAR_THEME_DEFAULT_STORAGE_KEY",
