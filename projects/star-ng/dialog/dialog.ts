@@ -1,4 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -29,6 +30,7 @@ import {
   StarDialogPoint,
   trackPointer,
 } from './dialog-drag';
+import { ɵStarDialogHeaderTemplates } from './dialog-header-actions';
 import { resizeFrame } from './dialog-resize';
 
 /**
@@ -80,7 +82,8 @@ function starDialogIconClass(icon: string | null | undefined): string | null {
  * Header: `icon` and `iconTone` put a decorative icon tile before the title, `subheader` adds a
  * text after it, and `headerDivider` draws a line under the header. Content with
  * `starDialogHeader` goes under the title; content with `starDialogHeaderActions` (for example a
- * button) goes before the header buttons.
+ * button) goes before the header buttons, and so does the content of an
+ * `<ng-template starDialogHeaderActions>` (after the projected elements).
  *
  * `sheet` turns the dialog into a full-height side sheet at the end edge (or the start edge with
  * `position="start"`): the body fills the height and scrolls.
@@ -92,6 +95,8 @@ function starDialogIconClass(icon: string | null | undefined): string | null {
   selector: 'star-dialog',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  providers: [ɵStarDialogHeaderTemplates],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Backdrop click only; keyboard users close with Escape (native cancel event). -->
@@ -167,6 +172,9 @@ function starDialogIconClass(icon: string | null | undefined): string | null {
             </div>
             <div data-star-part="controlsPanel" class="star-dialog__controls">
               <ng-content select="[starDialogHeaderActions]" />
+              @for (actions of headerTemplates.templates(); track actions) {
+                <ng-container [ngTemplateOutlet]="actions" />
+              }
               @if (canDrag()) {
                 <button
                   data-star-part="moveButton"
@@ -231,6 +239,8 @@ function starDialogIconClass(icon: string | null | undefined): string | null {
 })
 export class StarDialog extends StarDialogBase {
   private readonly document = inject(DOCUMENT);
+  /** Content of `<ng-template starDialogHeaderActions>` inside this dialog. */
+  protected readonly headerTemplates = inject(ɵStarDialogHeaderTemplates, { self: true });
 
   /**
    * Icon in a tinted tile before the title. A Phosphor icon name (`file-text` or

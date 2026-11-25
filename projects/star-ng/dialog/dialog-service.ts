@@ -1,9 +1,10 @@
-import { NgComponentOutlet } from '@angular/common';
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
   ApplicationRef,
   ChangeDetectionStrategy,
   Component,
   ComponentRef,
+  computed,
   createComponent,
   EnvironmentInjector,
   inject,
@@ -19,13 +20,16 @@ import { StarStyled, ɵSTAR_PART_HOST, ɵstarAfterExit } from '@star-ng/ui/core'
 import { StarDialog, StarDialogIconTone, StarDialogPosition } from './dialog';
 import { StarDialogSize } from './dialog-base';
 import { STAR_DIALOG_DEFAULTS } from './dialog-defaults';
+import { ɵStarDialogHeaderTemplates } from './dialog-header-actions';
 
 /** Data passed to the component opened by `StarDialogService.open()`. */
 export const STAR_DIALOG_DATA = new InjectionToken<unknown>('STAR_DIALOG_DATA');
 
 /**
  * A button in the header of a dialog opened with `StarDialogService.open()`. A press closes the
- * dialog with `result`. With `closable: false` it can take the place of the close icon.
+ * dialog with `result`. With `closable: false` it can take the place of the close icon. For a
+ * button that runs logic of the opened component first (validation, a request), use
+ * `<ng-template starDialogHeaderActions>` in that component.
  */
 export interface StarDialogHeaderAction {
   /** Text of the button. */
@@ -50,8 +54,14 @@ export interface StarDialogConfig<D = unknown> {
   readonly iconTone?: StarDialogIconTone;
   /** A line under the header. Default false. */
   readonly headerDivider?: boolean;
-  /** A button in the header that closes the dialog with its `result`. */
+  /** A button in the header that closes the dialog with its `result`. After `headerActions`. */
   readonly headerAction?: StarDialogHeaderAction;
+  /**
+   * Buttons in the header, in this order (put the primary one first). Each closes the dialog with
+   * its `result`. They come after the `<ng-template starDialogHeaderActions>` content of the
+   * opened component and before `headerAction`.
+   */
+  readonly headerActions?: readonly StarDialogHeaderAction[];
   readonly size?: StarDialogSize;
   readonly width?: string;
   readonly data?: D;
@@ -132,7 +142,7 @@ export class StarDialogRef<R = unknown> {
   selector: 'star-dialog-container',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarButton, StarDialog, NgComponentOutlet],
+  imports: [StarButton, StarDialog, NgComponentOutlet, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let c = config();
@@ -162,17 +172,22 @@ export class StarDialogRef<R = unknown> {
       (visibleChange)="!$event && userClosed()"
       (hidden)="hidden()"
     >
-      @if (c.headerAction; as action) {
-        <star-button
-          starDialogHeaderActions
-          size="sm"
-          [variant]="action.variant ?? 'secondary'"
-          [leadingIcon]="action.icon ?? null"
-          [ariaLabel]="action.ariaLabel ?? null"
-          (pressed)="headerActionPressed(action.result)"
-          >{{ action.label }}</star-button
-        >
-      }
+      <!-- Header order: the templates of the opened component, headerActions, headerAction. -->
+      <ng-container ngProjectAs="[starDialogHeaderActions]">
+        @for (actions of headerTemplates().templates(); track actions) {
+          <ng-container [ngTemplateOutlet]="actions" />
+        }
+        @for (action of configActions(); track $index) {
+          <star-button
+            size="sm"
+            [variant]="action.variant ?? 'secondary'"
+            [leadingIcon]="action.icon ?? null"
+            [ariaLabel]="action.ariaLabel ?? null"
+            (pressed)="headerActionPressed(action.result)"
+            >{{ action.label }}</star-button
+          >
+        }
+      </ng-container>
       <ng-container *ngComponentOutlet="component(); injector: contentInjector()" />
     </star-dialog>
   `,
@@ -183,6 +198,13 @@ export class StarDialogContainer {
   readonly component = input.required<Type<unknown>>();
   readonly config = input.required<StarDialogConfig>();
   readonly contentInjector = input.required<Injector>();
+  /** Templates of `<ng-template starDialogHeaderActions>` in the opened component. */
+  readonly headerTemplates = input.required<ɵStarDialogHeaderTemplates>();
+  /** `headerActions`, then `headerAction`. */
+  protected readonly configActions = computed(() => {
+    const { headerActions = [], headerAction } = this.config();
+    return headerAction ? [...headerActions, headerAction] : headerActions;
+  });
   readonly visible = signal(true);
   /** Set by the service; runs after the native dialog closed. */
   hidden: () => void = () => undefined;
@@ -201,8 +223,10 @@ export class StarDialogContainer {
  * const saved = await ref.closed; // value passed to ref.close(...) inside EditOrder
  * ```
  * Inside the opened component: `inject(STAR_DIALOG_DATA)` and `inject(StarDialogRef)`.
- * Put its action buttons in an element with class `star-dialog__footer`. `headerAction` puts one
- * button in the header, for example a Close button with `closable: false`. `sheet: true` opens a
+ * Put its action buttons in an element with class `star-dialog__footer`, or in the header with
+ * `<ng-template starDialogHeaderActions>` (the buttons keep the state and the click handlers of the
+ * component). `headerActions` and `headerAction` put buttons in the header that close the dialog
+ * with a fixed result, for example a Close button with `closable: false`. `sheet: true` opens a
  * full-height side sheet; a dialog or sheet opened from an open one stacks above it, and Escape
  * closes only the top one.
  */
@@ -219,17 +243,20 @@ export class StarDialogService {
   ): StarDialogRef<R> {
     let host: ComponentRef<StarDialogContainer> | null = null;
     const ref = new StarDialogRef<R>(() => host?.instance.visible.set(false));
+    const headerTemplates = new ɵStarDialogHeaderTemplates();
     const contentInjector = Injector.create({
       parent: injector,
       providers: [
         { provide: STAR_DIALOG_DATA, useValue: config.data },
         { provide: StarDialogRef, useValue: ref },
+        { provide: ɵStarDialogHeaderTemplates, useValue: headerTemplates },
       ],
     });
     host = createComponent(StarDialogContainer, { environmentInjector: this.environment });
     host.setInput('component', component);
     host.setInput('config', config);
     host.setInput('contentInjector', contentInjector);
+    host.setInput('headerTemplates', headerTemplates);
     // Destroyed before it closed (for example during the exit motion): the result still comes.
     host.onDestroy(() => ref.settle());
     host.instance.userClosed = () => ref.markRequested();

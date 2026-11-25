@@ -6533,6 +6533,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "headerTemplates",
+        "type": "ɵStarDialogHeaderTemplates",
+        "default": null,
+        "required": true,
+        "description": "Templates of `<ng-template starDialogHeaderActions>` in the opened component."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -6554,6 +6561,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root"
     ]
+  },
+  "StarDialogHeaderActions": {
+    "kind": "directive",
+    "selector": "ng-template[starDialogHeaderActions]",
+    "entry": "@star-ng/ui/dialog",
+    "description": "Header actions from a template: `<ng-template starDialogHeaderActions>` puts its content in the header of the dialog, before the move, maximize and close buttons.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarDivider": {
     "kind": "component",
@@ -24031,6 +24047,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dialog/resize": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last size: {{ resizeNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"resizeOpen.set(true)\">\n      Open resizable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"resizeOpen\"\n  header=\"Resizable dialog\"\n  resizable\n  draggable\n  (resizeEnd)=\"resizeNote.set($event.width + ' x ' + $event.height)\"\n>\n  <p>Drag the corner handle, or focus it and press Shift with an arrow key.</p>\n</star-dialog>",
   "dialog/responsive": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"responsiveOpen.set(true)\">\n    Open responsive dialog\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"scrollOpen.set(true)\">\n    Non-modal, page scrolls\n  </star-button>\n</div>\n<star-dialog\n  [(visible)]=\"responsiveOpen\"\n  header=\"Responsive dialog\"\n  width=\"48rem\"\n  [breakpoints]=\"{ '960px': '75vw', '640px': '100vw' }\"\n  [focusOnShow]=\"false\"\n>\n  <p>48rem wide on a large window, 75vw up to 960px and the full width up to 640px.</p>\n  <star-field label=\"Reference\"><input starInput value=\"INV-2041\" /></star-field>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"scrollOpen\"\n  header=\"Scroll stays on\"\n  [modal]=\"false\"\n  position=\"bottom-end\"\n  size=\"sm\"\n>\n  <p>A non-modal dialog does not block the page scroll. Set blockScroll to block it.</p>\n</star-dialog>",
   "dialog/service": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Note: {{ note() }}</p>\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-note-pencil\" (pressed)=\"editNote()\">\n      Edit note\n    </star-button>\n  </div>\n</div>",
+  "dialog/service-header-actions": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Report sent to: {{ reportResult() }}</p>\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-paper-plane-tilt\" (pressed)=\"sendReport()\">\n      Send report\n    </star-button>\n  </div>\n</div>",
   "dialog/sheet": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Message: {{ sheetMessage() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"activityOpen.set(true)\">\n      Open activity\n    </star-button>\n    <star-button variant=\"secondary\" (pressed)=\"sheetOrderOpen.set(true)\">\n      Open order ORD-2207\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"activityOpen\"\n  sheet\n  size=\"sm\"\n  header=\"Activity\"\n  subheader=\"ORD-1042\"\n  headerDivider\n>\n  <ol class=\"docs-stack\">\n    @for (entry of activity; track entry) {\n      <li>{{ entry }}</li>\n    }\n  </ol>\n</star-dialog>\n<star-dialog [(visible)]=\"sheetOrderOpen\" header=\"Order ORD-2207\">\n  <p>Three lines, ready to ship. Write a message to the customer in a side sheet.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"sheetOrderOpen.set(false)\">Close</star-button>\n    <star-button (pressed)=\"writeMessage()\">Write message</star-button>\n  </div>\n</star-dialog>",
   "dialog/sizes": "<div class=\"docs-row\">\n  @for (item of sizes; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openSize(item)\">\n      Open {{ item }}\n    </star-button>\n  }\n</div>\n<star-dialog [(visible)]=\"sizeOpen\" [size]=\"size()\" [header]=\"'Size ' + size()\">\n  <p>The size input of this dialog is {{ size() }}.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"sizeOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "divider/basic": "<div class=\"docs-stack\">\n  <p>Sign in with your email.</p>\n  <star-divider>or</star-divider>\n  <p>Continue with a link.</p>\n  <star-divider align=\"start\">Start</star-divider>\n  <star-divider align=\"end\" type=\"dashed\">End, dashed</star-divider>\n  <star-divider type=\"dotted\" />\n</div>",

@@ -7,7 +7,7 @@ export const FEATURE_COUNTS = {
       "files": 129
     },
     "inputRequired": {
-      "uses": 85,
+      "uses": 86,
       "files": 46
     },
     "model": {
@@ -39,12 +39,12 @@ export const FEATURE_COUNTS = {
       "files": 58
     },
     "signal": {
-      "uses": 332,
-      "files": 89
+      "uses": 333,
+      "files": 90
     },
     "computed": {
-      "uses": 851,
-      "files": 107
+      "uses": 852,
+      "files": 108
     },
     "linkedSignal": {
       "uses": 30,
@@ -79,8 +79,8 @@ export const FEATURE_COUNTS = {
       "files": 6
     },
     "inject": {
-      "uses": 576,
-      "files": 134
+      "uses": 581,
+      "files": 135
     },
     "takeUntilDestroyed": {
       "uses": 7,
@@ -111,8 +111,8 @@ export const FEATURE_COUNTS = {
       "files": 108
     },
     "for": {
-      "uses": 250,
-      "files": 75
+      "uses": 253,
+      "files": 77
     },
     "switch": {
       "uses": 12,
@@ -131,8 +131,8 @@ export const FEATURE_COUNTS = {
       "files": 123
     },
     "destroyRef": {
-      "uses": 115,
-      "files": 48
+      "uses": 117,
+      "files": 49
     },
     "booleanAttribute": {
       "uses": 545,
@@ -181,12 +181,12 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 961,
-      "files": 124
+      "uses": 969,
+      "files": 125
     },
     "computed": {
-      "uses": 35,
-      "files": 14
+      "uses": 37,
+      "files": 16
     },
     "linkedSignal": {
       "uses": 5,
@@ -221,8 +221,8 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "inject": {
-      "uses": 78,
-      "files": 27
+      "uses": 84,
+      "files": 28
     },
     "takeUntilDestroyed": {
       "uses": 1,
@@ -269,12 +269,12 @@ export const FEATURE_COUNTS = {
       "files": 2
     },
     "onPush": {
-      "uses": 185,
-      "files": 153
+      "uses": 186,
+      "files": 154
     },
     "destroyRef": {
-      "uses": 22,
-      "files": 11
+      "uses": 24,
+      "files": 12
     },
     "booleanAttribute": {
       "uses": 0,
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 254,
+  "specFiles": 255,
   "pages": 146
 } as const;

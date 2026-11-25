@@ -264,6 +264,57 @@ test.describe('dialog', () => {
     await expect(dialog).toBeVisible();
     await tabStaysInside(page, dialog, 6);
   });
+
+  test('the opened component puts its own buttons in the dialog header', async ({ page }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    const live = example(page, 'Header actions from the opened component');
+    const trigger = live.getByRole('button', { name: 'Send report' });
+    const dialog = page.getByRole('dialog', { name: 'Send report' });
+    const header = dialog.locator('header');
+    const send = header.getByRole('button', { name: 'Send', exact: true });
+    const cancel = header.getByRole('button', { name: 'Cancel' });
+    const email = dialog.getByRole('textbox', { name: 'Recipient email' });
+
+    // Cancel closes with no result.
+    await trigger.click();
+    await expect(dialog).toBeVisible();
+    await expect(email).toBeFocused();
+    await cancel.click();
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(live.getByRole('status')).toHaveText('Report sent to: nobody');
+
+    // The header has Send, Cancel and the close button, in this Tab order.
+    await trigger.click();
+    await expect(send).toBeDisabled();
+    const names = await header
+      .getByRole('button')
+      .evaluateAll((buttons) =>
+        buttons.map((button) => button.getAttribute('aria-label') ?? button.textContent!.trim()),
+      );
+    expect(names).toEqual(['Send', 'Cancel', 'Close']);
+
+    // Send follows the state of the component: on for a valid address only.
+    await email.fill('team@example.com');
+    await expect(send).toBeEnabled();
+    await email.fill('team@');
+    await expect(send).toBeDisabled();
+    await email.fill('team@example.com');
+    // Back from the field: the close button, then Cancel, then Send.
+    await page.keyboard.press('Shift+Tab');
+    await expect(header.getByRole('button', { name: 'Close', exact: true })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(cancel).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(send).toBeFocused();
+
+    // The component logic runs, then the dialog closes with its result.
+    await page.keyboard.press('Enter');
+    await expect(dialog).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Report sent to: team@example.com');
+    // The service dialog and the header buttons are gone.
+    await expect(page.locator('star-dialog-container')).toHaveCount(0);
+  });
 });
 
 /**
