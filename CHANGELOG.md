@@ -2,7 +2,7 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
-## [Unreleased]
+## [0.7.0] - 2026-11-25
 
 ### Added
 
@@ -14,6 +14,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 #### Input tags
 
 - Input tags: input `keepInvalid`. Text that fails `validate` becomes a chip marked invalid (class `star-chip--invalid`, `aria-invalid="true"`, a warning icon, visually hidden "not valid" text, a live announcement) instead of staying in the field. Invalid chips are part of `value`, so the control shows what the user typed; the computed signal `invalidTags` lists them, and a form blocks submit with a validator that uses the same check. Backspace in the empty field puts the text of a last invalid chip back into the field to fix it (new method `editAt(index)`). The duplicate and limit rules still reject. Slot `ng-template[starInputTagsAction]` (`StarInputTagsActionTemplate`, context `StarInputTagsActionContext`: `disabled`, `readonly`): a trailing action inside the box, for example an icon button, at the inline end and vertically centred; the chips wrap before it, also in RTL, and a click on it does not focus the input. Styling parts `invalidIcon` and `actionPanel`, classes `star-chip__status` and `star-tags__action`. Tokens `--star-tags-invalid-color`, `--star-tags-invalid-surface` and `--star-tags-invalid-border`. UI texts `tagAddedInvalid`, `tagNotValid` and `tagEdit` (English, German, Spanish). Without `keepInvalid` the control works as before ([#143](https://github.com/ramanacr/star-ng/issues/143)).
+
+### Migrating from 0.6
+
+This version only adds API. No item in it breaks code, tests or styles. Dialogs, sheets and input tags that do not use the new options look and work as before.
 
 ## [0.6.0] - 2026-11-24
 
