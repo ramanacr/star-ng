@@ -2,7 +2,9 @@
 // Header tokens: `--star-dialog-icon-tile-size`, `--star-dialog-icon-size`,
 // `--star-dialog-icon-radius`, `--star-dialog-icon-color`, `--star-dialog-icon-surface`,
 // `--star-dialog-subheader-color`, `--star-dialog-subheader-font` and
-// `--star-dialog-header-divider-color`. Set them on `.star-dialog` (or a parent).
+// `--star-dialog-header-divider-color`. Side sheet tokens: `--star-dialog-sheet-gap`,
+// `--star-dialog-sheet-reserve` and `--star-dialog-sheet-radius`. Set them on `.star-dialog` (or a
+// parent).
 @use '../shared' as *;
 
 // Block scroll: on by default for a modal dialog or drawer (blockScroll input).
@@ -16,6 +18,10 @@ html:has(dialog.star-dialog--block-scroll[open]) {
   --star-dialog-subheader-color: var(--star-text-muted);
   --star-dialog-subheader-font: var(--star-type-body-lg);
   --star-dialog-header-divider-color: var(--star-border);
+  // Side sheet: gap to the window edges, the least window width it leaves free, and its radius.
+  --star-dialog-sheet-gap: var(--star-space-3);
+  --star-dialog-sheet-reserve: var(--star-space-12);
+  --star-dialog-sheet-radius: var(--star-radius-2xl);
   width: min(32rem, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
   padding: 0;
@@ -29,6 +35,7 @@ html:has(dialog.star-dialog--block-scroll[open]) {
   transition:
     opacity var(--star-duration-base) $ease,
     scale var(--star-duration-base) $ease,
+    translate var(--star-duration-base) $ease,
     overlay var(--star-duration-base) allow-discrete,
     display var(--star-duration-base) allow-discrete;
 
@@ -240,6 +247,66 @@ html:has(dialog.star-dialog--block-scroll[open]) {
   inset: 0;
   margin-block: auto 1rem;
   margin-inline: auto 1rem;
+}
+// Side sheet (`sheet` input): full height at the end edge, or at the start edge with
+// `--at-start`, a gap from the window edges. The width comes from the size step or the `width`
+// input, up to the window width minus `--star-dialog-sheet-reserve`. It slides in from its edge
+// (the `translate` of the dialog transition) instead of the scale of a dialog. The rules come after
+// the position rules: they win over them.
+.star-dialog--sheet {
+  // -1 slides from the left edge. The offset is physical (translate has no logical form).
+  --star-dialog-sheet-side: 1;
+  --star-dialog-sheet-from: calc(
+      var(--star-dialog-sheet-side) * (100% + var(--star-dialog-sheet-gap))
+    )
+    0;
+  // A sheet never scales: this wins over the scale of the open, entry and exit states.
+  scale: none !important;
+  translate: var(--star-dialog-sheet-from);
+
+  &:dir(rtl),
+  &.star-dialog--at-start {
+    --star-dialog-sheet-side: -1;
+  }
+  &.star-dialog--at-start:dir(rtl) {
+    --star-dialog-sheet-side: 1;
+  }
+  &[open] {
+    translate: 0;
+
+    @starting-style {
+      translate: var(--star-dialog-sheet-from);
+    }
+  }
+  &[open][data-star-closing] {
+    translate: var(--star-dialog-sheet-from);
+  }
+  // The body fills the height and scrolls. It is a flex column: content can grow with `flex: 1`.
+  .star-dialog__surface {
+    height: 100%;
+    max-height: none;
+  }
+  .star-dialog__body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+}
+.star-dialog--sheet:not(.star-dialog--maximized) {
+  height: calc(100dvh - 2 * var(--star-dialog-sheet-gap));
+  max-width: calc(100vw - var(--star-dialog-sheet-reserve));
+  max-height: none;
+  border-radius: var(--star-dialog-sheet-radius);
+}
+.star-dialog--sheet:not(.star-dialog--placed, .star-dialog--maximized) {
+  position: fixed;
+  inset: 0;
+  margin-block: var(--star-dialog-sheet-gap);
+  margin-inline: auto var(--star-dialog-sheet-gap);
+
+  &.star-dialog--at-start {
+    margin-inline: var(--star-dialog-sheet-gap) auto;
+  }
 }
 // A non-modal dialog is not in the top layer (native show()): it stacks above the page and its
 // sticky headers, below the CDK overlay container (z-index 1000).

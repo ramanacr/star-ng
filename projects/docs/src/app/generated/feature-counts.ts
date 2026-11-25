@@ -3,7 +3,7 @@
 export const FEATURE_COUNTS = {
   "lib": {
     "input": {
-      "uses": 1334,
+      "uses": 1335,
       "files": 129
     },
     "inputRequired": {
@@ -43,7 +43,7 @@ export const FEATURE_COUNTS = {
       "files": 89
     },
     "computed": {
-      "uses": 850,
+      "uses": 851,
       "files": 107
     },
     "linkedSignal": {
@@ -135,7 +135,7 @@ export const FEATURE_COUNTS = {
       "files": 48
     },
     "booleanAttribute": {
-      "uses": 544,
+      "uses": 545,
       "files": 100
     },
     "numberAttribute": {
@@ -181,8 +181,8 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 953,
-      "files": 123
+      "uses": 961,
+      "files": 124
     },
     "computed": {
       "uses": 35,
@@ -221,8 +221,8 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "inject": {
-      "uses": 73,
-      "files": 26
+      "uses": 78,
+      "files": 27
     },
     "takeUntilDestroyed": {
       "uses": 1,
@@ -253,7 +253,7 @@ export const FEATURE_COUNTS = {
       "files": 26
     },
     "for": {
-      "uses": 55,
+      "uses": 56,
       "files": 30
     },
     "switch": {
@@ -269,8 +269,8 @@ export const FEATURE_COUNTS = {
       "files": 2
     },
     "onPush": {
-      "uses": 184,
-      "files": 152
+      "uses": 185,
+      "files": 153
     },
     "destroyRef": {
       "uses": 22,

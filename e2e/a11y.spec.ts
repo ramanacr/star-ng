@@ -641,6 +641,17 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'side sheet opened from a dialog',
+    path: 'controls/dialog',
+    open: async (page) => {
+      await example(page, 'Side sheet')
+        .getByRole('button', { name: 'Open order ORD-2207' })
+        .click();
+      await page.getByRole('button', { name: 'Write message' }).click();
+      await expect(page.getByRole('dialog', { name: 'Message to the customer' })).toBeVisible();
+    },
+  },
+  {
     name: 'non-modal dialog',
     path: 'controls/dialog',
     open: async (page) => {

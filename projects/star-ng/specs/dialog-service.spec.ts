@@ -100,6 +100,71 @@ describe('StarDialogService', () => {
     expect(dialog.querySelector('[aria-label="Maximize"]')).not.toBeNull();
   });
 
+  it('opens a side sheet at the end edge by default and at the start edge with position start', async () => {
+    const service = TestBed.inject(StarDialogService);
+    service.open(Content, { header: 'Sheet', data: { name: 'Ada' }, sheet: true, width: '40rem' });
+    await settle();
+    const dialog = document.querySelector<HTMLDialogElement>('star-dialog-container dialog')!;
+    expect(dialog.classList).toContain('star-dialog--sheet');
+    expect(dialog.classList).toContain('star-dialog--at-end');
+    expect(dialog.style.width).toBe('40rem');
+    service.closeAll();
+    await settle();
+
+    service.open(Content, { data: { name: 'Ada' }, sheet: true, position: 'start' });
+    await settle();
+    const start = document.querySelector<HTMLDialogElement>('star-dialog-container dialog')!;
+    expect(start.classList).toContain('star-dialog--at-start');
+
+    service.open(Content, { data: { name: 'Ada' } });
+    await settle();
+    const plain = document.querySelectorAll<HTMLDialogElement>('star-dialog-container dialog')[1];
+    expect(plain.classList).not.toContain('star-dialog--sheet');
+    expect(plain.classList).toContain('star-dialog--at-center');
+  });
+
+  it('stacks a sheet opened from an open dialog, and Escape closes only the top one', async () => {
+    @Component({
+      template: `<button id="more" (click)="openSheet()">More</button>`,
+    })
+    class Opener {
+      private readonly dialogs = inject(StarDialogService);
+      sheet: StarDialogRef<unknown> | null = null;
+      openSheet(): void {
+        this.sheet = this.dialogs.open(Content, {
+          header: 'Top',
+          sheet: true,
+          data: { name: 'B' },
+        });
+      }
+    }
+    const service = TestBed.inject(StarDialogService);
+    const parent = service.open(Opener, { header: 'Parent' });
+    await settle();
+    document.querySelector<HTMLButtonElement>('#more')!.click();
+    await settle();
+    const dialogs = document.querySelectorAll<HTMLDialogElement>('star-dialog-container dialog');
+    expect(dialogs.length).toBe(2);
+    // The later container comes later in the body: showModal() put it on top of the top layer.
+    const [below, top] = dialogs;
+    expect(top.classList).toContain('star-dialog--sheet');
+    expect(below.compareDocumentPosition(top) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    // The browser sends Escape (the cancel event) to the top modal dialog only.
+    top.dispatchEvent(new Event('cancel', { cancelable: true }));
+    await settle();
+    expect(top.hasAttribute('open')).toBe(false);
+    expect(below.hasAttribute('open')).toBe(true);
+    let parentDone = false;
+    void parent.closed.then(() => (parentDone = true));
+    await Promise.resolve();
+    expect(parentDone).toBe(false);
+
+    below.dispatchEvent(new Event('cancel', { cancelable: true }));
+    await settle();
+    await expect(parent.closed).resolves.toBeUndefined();
+  });
+
   it('resolves undefined when the user dismisses it, and closeAll() closes every dialog', async () => {
     const service = TestBed.inject(StarDialogService);
     const first = service.open(Content, { data: { name: 'A' } });
