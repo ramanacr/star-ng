@@ -2,11 +2,15 @@ import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@
 import { form, FormField, required } from '@angular/forms/signals';
 import {
   StarAutoComplete,
+  StarAutoCompleteLeadingTemplate,
   StarAutoCompleteSearch,
+  StarAutoCompleteTrailingTemplate,
   StarMultiAutoComplete,
 } from '@star-ng/ui/autocomplete';
+import { StarButton } from '@star-ng/ui/button';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
+import { StarIconField } from '@star-ng/ui/input-group';
 import { StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 import { lazyOrders } from '../shared/lazy-orders';
@@ -15,6 +19,12 @@ interface Person {
   readonly id: string;
   readonly name: string;
   readonly team: string;
+}
+
+interface SavedSearch {
+  readonly label: string;
+  readonly group: string;
+  readonly icon: string;
 }
 
 interface OfficeCity {
@@ -31,6 +41,10 @@ interface OfficeCity {
     DOCS,
     StarAutoComplete,
     StarMultiAutoComplete,
+    StarAutoCompleteLeadingTemplate,
+    StarAutoCompleteTrailingTemplate,
+    StarIconField,
+    StarButton,
     StarOptionTemplate,
     STAR_SLOTS,
     StarField,
@@ -97,6 +111,71 @@ interface OfficeCity {
             </span>
           </ng-template>
         </star-autocomplete>
+      </docs-example>
+
+      <docs-example
+        heading="Free-text search"
+        source="autocomplete/free-text"
+        [script]="freeTextScript"
+        note="freeText makes the typed text the value: blur keeps it, and Enter with no highlighted suggestion emits submitted. openOnFocus with minQueryLength 0 opens the panel on focus. optionGroup sorts the suggestions into Recent and Saved, optionIcon gives each one an icon. Arrow keys highlight a suggestion and Enter chooses it (optionSelect). The starAutoCompleteLeading and starAutoCompleteTrailing slots put content before and after the text: an icon, a key hint and a Search button that calls submit()."
+      >
+        <div class="docs-stack">
+          <star-autocomplete
+            #searchBox
+            freeText
+            openOnFocus
+            [minQueryLength]="0"
+            [options]="savedSearches"
+            optionLabel="label"
+            optionGroup="group"
+            optionIcon="icon"
+            [(value)]="searchText"
+            placeholder="Search or ask a question"
+            ariaLabel="Search"
+            (submitted)="searchEvent.set('Submitted: ' + $event)"
+            (optionSelect)="searchEvent.set('Chose: ' + $event.label)"
+          >
+            <ng-template starAutoCompleteLeading>
+              <i class="ph-bold ph-sparkle" aria-hidden="true"></i>
+            </ng-template>
+            <ng-template starAutoCompleteTrailing let-disabled="disabled">
+              <kbd aria-hidden="true">Enter</kbd>
+              <star-button size="sm" [disabled]="disabled" (click)="searchBox.submit()"
+                >Search</star-button
+              >
+            </ng-template>
+          </star-autocomplete>
+          <p class="docs-output" role="status">
+            Text: {{ searchText() || 'empty' }}. {{ searchEvent() }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Leading icon"
+        source="autocomplete/icon"
+        note="Put star-autocomplete or star-multi-autocomplete in star-icon-field. The icon is decorative (aria-hidden), the text starts after it, and the clear and dropdown buttons stay at the end. It uses logical properties, so the icon moves to the right in right-to-left pages."
+      >
+        <div class="docs-stack">
+          <star-icon-field icon="ph-bold ph-globe-hemisphere-west">
+            <star-autocomplete
+              [options]="countries"
+              [(value)]="country"
+              placeholder="Search a country"
+              ariaLabel="Country"
+              dropdown
+              showClear
+            />
+          </star-icon-field>
+          <star-icon-field icon="ph-bold ph-globe-hemisphere-west">
+            <star-multi-autocomplete
+              [options]="countries"
+              placeholder="Add countries"
+              ariaLabel="Countries"
+              showClear
+            />
+          </star-icon-field>
+        </div>
       </docs-example>
 
       <docs-example
@@ -453,6 +532,31 @@ readonly lazyList = lazyOrders();`;
   ];
 
   protected readonly city = signal<string | null>(null);
+  protected readonly savedSearches: readonly SavedSearch[] = [
+    { label: 'Open orders this week', group: 'Recent', icon: 'ph-bold ph-clock-counter-clockwise' },
+    {
+      label: 'Returns from last month',
+      group: 'Recent',
+      icon: 'ph-bold ph-clock-counter-clockwise',
+    },
+    { label: 'Late deliveries', group: 'Saved', icon: 'ph-fill ph-bookmark-simple' },
+    { label: 'Orders over 1,000 EUR', group: 'Saved', icon: 'ph-fill ph-bookmark-simple' },
+  ];
+  protected readonly searchText = signal<string | null>(null);
+  protected readonly searchEvent = signal('');
+  protected readonly countries: readonly string[] = [
+    'Argentina',
+    'Australia',
+    'Austria',
+    'Belgium',
+    'Brazil',
+    'Canada',
+    'Chile',
+    'Denmark',
+    'Egypt',
+    'Finland',
+  ];
+  protected readonly country = signal<string | null>(null);
   protected readonly officeCity = signal<string | null>(null);
   protected readonly officesLoading = signal(false);
   private officesTimer: ReturnType<typeof setTimeout> | undefined;
@@ -502,6 +606,14 @@ readonly lazyList = lazyOrders();`;
     required(path.assignee, { message: 'Choose an assignee.' });
   });
 
+  protected readonly freeTextScript = `readonly savedSearches: readonly SavedSearch[] = [
+  { label: 'Open orders this week', group: 'Recent', icon: 'ph-bold ph-clock-counter-clockwise' },
+  { label: 'Returns from last month', group: 'Recent', icon: 'ph-bold ph-clock-counter-clockwise' },
+  { label: 'Late deliveries', group: 'Saved', icon: 'ph-fill ph-bookmark-simple' },
+  { label: 'Orders over 1,000 EUR', group: 'Saved', icon: 'ph-fill ph-bookmark-simple' },
+];
+readonly searchText = signal<string | null>(null);
+// (submitted) and (optionSelect) run the search in a real application.`;
   protected readonly localScript = `readonly cities: readonly string[] = [
   'Amsterdam', 'Berlin', 'Bern', 'Lisbon', 'Madrid', 'Mumbai', 'Munich', 'Pune',
 ];
@@ -579,6 +691,16 @@ readonly task = form(this.taskModel, (path) => {
         'Content child. Shown while the loading input is true. Set loading while your completeMethod request runs.',
     },
     {
+      name: 'ng-template[starAutoCompleteLeading]',
+      description:
+        'Content child. Content before the text inside the box, for example a decorative icon. The context has $implicit (the typed text), disabled and readonly.',
+    },
+    {
+      name: 'ng-template[starAutoCompleteTrailing]',
+      description:
+        'Content child. Content after the text and the clear and dropdown buttons, for example a key hint or a Search button. Same context. Focus that moves into it closes the panel.',
+    },
+    {
       name: 'ng-template[starGroup]',
       description:
         'Content child. Replaces the text of a group heading. $implicit is the label and count is the number of suggestions in the group.',
@@ -589,6 +711,10 @@ readonly task = form(this.taskModel, (path) => {
     { name: '--star-border', description: 'Border of the control and the panel.' },
     { name: '--star-accent', description: 'Border of the focused control.' },
     { name: '--star-primary', description: 'Color of the marked match.' },
+    {
+      name: '--star-text-soft',
+      description: 'Color of the option icons and of the leading and trailing slots.',
+    },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
     { name: 'Letter keys', description: 'Type to search. The list opens at minQueryLength.' },
@@ -598,7 +724,8 @@ readonly task = form(this.taskModel, (path) => {
     },
     {
       name: 'Enter',
-      description: 'Chooses the active suggestion. With a closed list it does nothing.',
+      description:
+        'Chooses the active suggestion. With a closed list it does nothing. With freeText and no active suggestion, it emits submitted with the typed text.',
     },
     {
       name: 'Page up / Page down',

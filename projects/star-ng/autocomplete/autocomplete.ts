@@ -22,13 +22,17 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
+  readOption,
   STAR_SLOT_HOST,
   StarPart,
+  StarSlot,
+  starSlot,
   StarStyled,
   ɵSTAR_PART_HOST,
   ɵstarKeyed,
   ɵstarLeaveWithClass,
   type StarEmptyContext,
+  type StarOptionKey,
 } from '@star-ng/ui/core';
 import {
   StarOptionListBase,
@@ -48,6 +52,57 @@ export type StarAutoCompleteLoader<TOption> = (
   query: string,
   abortSignal: AbortSignal,
 ) => Promise<readonly TOption[]> | readonly TOption[];
+
+/** Context of the leading and trailing slots of the autocomplete controls. */
+export interface StarAutoCompleteAddonContext {
+  /** The typed text. */
+  readonly $implicit: string;
+  /** The control is disabled. */
+  readonly disabled: boolean;
+  /** The control is read-only. */
+  readonly readonly: boolean;
+}
+
+/**
+ * Content before the input, inside the box of the autocomplete, for example a decorative icon:
+ * `<ng-template starAutoCompleteLeading><i class="ph-bold ph-sparkle" aria-hidden="true"></i></ng-template>`.
+ * It sits at the inline start, centred on the first row.
+ */
+@Directive({
+  selector: 'ng-template[starAutoCompleteLeading]',
+  providers: [{ provide: StarSlot, useExisting: StarAutoCompleteLeadingTemplate }],
+})
+export class StarAutoCompleteLeadingTemplate extends StarSlot<StarAutoCompleteAddonContext> {
+  readonly name = 'autoCompleteLeading';
+
+  static ngTemplateContextGuard(
+    _dir: StarAutoCompleteLeadingTemplate,
+    _ctx: unknown,
+  ): _ctx is StarAutoCompleteAddonContext {
+    return true;
+  }
+}
+
+/**
+ * Content after the input and the clear and dropdown buttons, inside the box of the autocomplete,
+ * for example a key hint or a Search button:
+ * `<ng-template starAutoCompleteTrailing><kbd>/</kbd></ng-template>`. When focus moves into it, the
+ * suggestion panel closes.
+ */
+@Directive({
+  selector: 'ng-template[starAutoCompleteTrailing]',
+  providers: [{ provide: StarSlot, useExisting: StarAutoCompleteTrailingTemplate }],
+})
+export class StarAutoCompleteTrailingTemplate extends StarSlot<StarAutoCompleteAddonContext> {
+  readonly name = 'autoCompleteTrailing';
+
+  static ngTemplateContextGuard(
+    _dir: StarAutoCompleteTrailingTemplate,
+    _ctx: unknown,
+  ): _ctx is StarAutoCompleteAddonContext {
+    return true;
+  }
+}
 
 interface Chip<TValue> {
   readonly value: TValue;
@@ -77,6 +132,18 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   /** Highlights the first result, so Enter picks it. */
   readonly autoHighlight = input(false, { transform: booleanAttribute });
   readonly showEmptyMessage = input(true, { transform: booleanAttribute });
+  /**
+   * Opens the panel when the field gets focus (or a click while it has focus), when the text is at
+   * least `minQueryLength` long. With `[minQueryLength]="0"` an empty field shows all options (or
+   * the `suggestions` for an empty `completeMethod` query) at once. Default `false`.
+   */
+  readonly openOnFocus = input(false, { transform: booleanAttribute });
+  /**
+   * Icon of each option: a property name or a function that gives Phosphor icon classes, for example
+   * `ph-bold ph-clock`. The icon is decorative (`aria-hidden`) and shows before the label, also with
+   * a `starOption` template.
+   */
+  readonly optionIcon = input<StarOptionKey<TOption> | null>(null);
 
   /**
    * Loads the suggestions itself, as an alternative to `(completeMethod)` + `[suggestions]`. The
@@ -100,6 +167,24 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   protected readonly closeOnChoose = true;
   protected abstract readonly isMultiple: boolean;
   protected readonly control = viewChild.required<ElementRef<HTMLElement>>('control');
+
+  protected readonly leadingSlot = starSlot<StarAutoCompleteAddonContext>(
+    this.slots,
+    this,
+    'autoCompleteLeading',
+  );
+  protected readonly trailingSlot = starSlot<StarAutoCompleteAddonContext>(
+    this.slots,
+    this,
+    'autoCompleteTrailing',
+  );
+  protected readonly addonContext = computed<StarAutoCompleteAddonContext>(() => ({
+    $implicit: this.query(),
+    disabled: this.disabled(),
+    readonly: this.readonly(),
+  }));
+  /** True while `closePanel` runs: focus it gives back to the field must not open the panel again. */
+  private closing = false;
 
   /** Options the user picked, so labels survive when the result list changes. */
   protected readonly known = signal<readonly TOption[]>([]);
@@ -225,6 +310,14 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     return this.optionValue() === null ? this.labelOf(value as unknown as TOption) : String(value);
   }
 
+  /** Icon classes of an option (`optionIcon`), or `null`. */
+  protected iconOf(option: TOption): string | null {
+    const key = this.optionIcon();
+    if (!key || option === undefined) return null;
+    const icon = readOption(option, key);
+    return typeof icon === 'string' && icon ? icon : null;
+  }
+
   protected remember(option: TOption): void {
     this.known.update((known) => (known.includes(option) ? known : [...known, option]));
   }
@@ -239,6 +332,30 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     }
     this.openPanel();
     this.searchTimer = setTimeout(() => this.search(text), this.delay());
+  }
+
+  /** `openOnFocus`: focus (or a click) on the field opens the panel and searches at once. */
+  protected onInputFocus(): void {
+    if (!this.openOnFocus() || this.closing || this.open() || !this.interactive()) return;
+    const text = this.query();
+    if (text.length < this.minQueryLength()) return;
+    clearTimeout(this.searchTimer);
+    this.search(text);
+    this.openPanel();
+  }
+
+  override closePanel(focusTrigger = true): void {
+    this.closing = true;
+    try {
+      super.closePanel(focusTrigger);
+    } finally {
+      this.closing = false;
+    }
+  }
+
+  /** Focus moved into the trailing slot (for example a button): the panel closes. */
+  protected onAddonFocusin(): void {
+    if (this.open()) this.dismiss();
   }
 
   /** Starts a search: `completeMethod`, and the `suggestionLoader` when one is set. */
@@ -332,6 +449,11 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
 
 const TEMPLATE = `
   <div data-star-part="controlPanel" #control class="star-select__control star-ac__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
+    @if (leadingSlot(); as leading) {
+      <div data-star-part="leadingPanel" class="star-ac__addon star-ac__addon--leading">
+        <ng-container *ngTemplateOutlet="leading; context: addonContext()" />
+      </div>
+    }
     <div data-star-part="mainPanel" class="star-ac__main">
       @if (isMultiple) {
         @for (entry of chipEntries(); track entry.key) {
@@ -376,6 +498,8 @@ const TEMPLATE = `
         [attr.aria-activedescendant]="panelVisible() ? activeId() : null"
         (input)="onQuery(trigger.value)"
         (keydown)="onKeydown($event)"
+        (focus)="onInputFocus()"
+        (click)="onInputFocus()"
         (blur)="onInputBlur()"
       />
     </div>
@@ -398,6 +522,11 @@ const TEMPLATE = `
       >
         <i data-star-part="dropdownIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
       </button>
+    }
+    @if (trailingSlot(); as trailing) {
+      <div data-star-part="trailingPanel" class="star-ac__addon star-ac__addon--trailing" (focusin)="onAddonFocusin()">
+        <ng-container *ngTemplateOutlet="trailing; context: addonContext()" />
+      </div>
     }
   </div>
   <span class="star-sr-only" aria-live="polite">{{ liveText() }}</span>
@@ -477,6 +606,9 @@ const TEMPLATE = `
             (click)="onOptionClick(option, i)"
             (mousemove)="onOptionHover(i)"
           >
+            @if (iconOf(option); as icon) {
+              <i data-star-part="optionIcon" [class]="icon + ' star-ac__option-icon'" aria-hidden="true"></i>
+            }
             <span data-star-part="label" class="star-listbox__label">
               @if (option === undefined) {
                 <span data-star-part="skeletonText" class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
@@ -578,13 +710,62 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
    * value. Ignite UI combo `selectionChanging`.
    */
   readonly selectionChanging = output<StarSelectionChangingEvent<TValue | null>>();
+  /**
+   * Free-text search mode: the value is the typed text (a string), and the options only help to
+   * fill it in. Typing sets the value (without `selectionChanging`); choosing an option sets the
+   * value to the label of the option and emits `optionSelect`. Blur keeps the text (`forceSelection`
+   * does not apply). Enter with no highlighted option emits `submitted` and does not choose an
+   * option; it is not cancelled, so a surrounding form still submits. Clear sets the value to `''`.
+   * Default `false`.
+   */
+  readonly freeText = input(false, { transform: booleanAttribute });
+  /**
+   * `freeText`: the user submitted the typed text, with Enter while no option is highlighted, or
+   * through `submit()` (for example a Search button in the `starAutoCompleteTrailing` slot). Does not
+   * fire for blank text.
+   */
+  readonly submitted = output<string>();
 
   protected readonly isMultiple = false;
-  protected readonly hasValue = computed(() => this.value() !== null || !!this.query());
+  protected readonly hasValue = computed(() => {
+    const value = this.value();
+    return (value !== null && !(this.freeText() && value === '')) || !!this.query();
+  });
 
   protected queryFromValue(): string {
     const value = this.value();
-    return value === null ? '' : this.labelForValue(value);
+    if (value === null) return '';
+    return this.freeText() ? String(value) : this.labelForValue(value);
+  }
+
+  /** `freeText`: the typed text is the value. */
+  protected override onQuery(text: string): void {
+    super.onQuery(text);
+    if (this.freeText()) this.value.set(text as TValue);
+  }
+
+  /**
+   * Emits `submitted` with the typed text and closes the panel. Does nothing for blank text or when
+   * the control is disabled or read-only.
+   */
+  submit(): void {
+    const text = this.query();
+    if (!this.interactive() || !text.trim()) return;
+    this.closePanel(false);
+    this.submitted.emit(text);
+  }
+
+  protected override onKeydown(event: KeyboardEvent): void {
+    if (
+      this.freeText() &&
+      event.key === 'Enter' &&
+      !event.isComposing &&
+      !(this.panelVisible() && this.activeIndex() >= 0)
+    ) {
+      this.submit();
+      return;
+    }
+    super.onKeydown(event);
   }
 
   protected isSelected(option: TOption): boolean {
@@ -594,7 +775,8 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
 
   protected choose(option: TOption): void {
     this.remember(option);
-    if (!this.change(this.valueOf(option))) {
+    const next = this.freeText() ? (this.labelOf(option) as TValue) : this.valueOf(option);
+    if (!this.change(next)) {
       this.setText(this.queryFromValue());
       return;
     }
@@ -615,6 +797,8 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
   }
 
   protected onBlurCommit(): void {
+    // Free text: the typed text is the value already.
+    if (this.freeText()) return;
     const text = this.query().trim();
     if (!text) {
       const previous = this.value();
@@ -651,8 +835,9 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
 
   clear(): void {
     const previous = this.value();
-    if (!this.change(null)) return;
-    if (previous !== null) this.optionUnselect.emit(previous);
+    const free = this.freeText();
+    if (!this.change(free ? ('' as TValue) : null)) return;
+    if (previous !== null && !free) this.optionUnselect.emit(previous);
     this.setText('');
     this.focus();
   }

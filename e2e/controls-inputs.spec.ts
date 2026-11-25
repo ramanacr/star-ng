@@ -883,3 +883,88 @@ test.describe('end buttons stay on row 1', () => {
     await expectClearOnFirstRow(live);
   });
 });
+
+test.describe('autocomplete free-text search', () => {
+  test('Enter submits the text, and arrow + Enter chooses a suggestion', async ({ page }) => {
+    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    const live = example(page, 'Free-text search');
+    const input = live.getByRole('combobox', { name: 'Search' });
+    const output = live.locator('.docs-output');
+
+    await input.focus();
+    const listbox = page.getByRole('listbox', { name: 'Search' });
+    await expect(input).toHaveAttribute('aria-expanded', 'true');
+    await expect(listbox.locator('.star-listbox__group')).toHaveText(['Recent', 'Saved']);
+    await expect(listbox.locator('[data-star-part="optionIcon"]').first()).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+
+    await page.keyboard.type('open orders');
+    await page.keyboard.press('Enter');
+    await expect(output).toHaveText('Text: open orders. Submitted: open orders');
+    await expect(input).toHaveAttribute('aria-expanded', 'false');
+
+    await page.keyboard.press('Control+A');
+    await page.keyboard.press('Backspace');
+    await expect(input).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('ArrowDown');
+    await expect(input).toHaveAttribute('aria-activedescendant', /.+/);
+    const active = await input.getAttribute('aria-activedescendant');
+    await expect(page.locator(`#${active}`)).toHaveText('Open orders this week');
+    await page.keyboard.press('Enter');
+    await expect(input).toHaveValue('Open orders this week');
+    await expect(output).toHaveText('Text: Open orders this week. Chose: Open orders this week');
+
+    // Blur keeps the typed text.
+    await input.fill('weekly returns');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Tab');
+    await expect(input).toHaveValue('weekly returns');
+    await live.getByRole('button', { name: 'Search' }).click();
+    await expect(output).toHaveText('Text: weekly returns. Submitted: weekly returns');
+  });
+});
+
+test.describe('autocomplete leading icon (star-icon-field)', () => {
+  for (const dir of ['ltr', 'rtl'] as const) {
+    test(`the icon sits at the inline start before the text (${dir})`, async ({ page }) => {
+      if (dir === 'rtl') {
+        await page.addInitScript(() => localStorage.setItem('star-direction', 'rtl'));
+      }
+      await openPage(page, '/controls/autocomplete', 'Autocomplete');
+      await expect(page.locator('html')).toHaveAttribute('dir', dir);
+      const live = example(page, 'Leading icon');
+      for (const [index, name] of ['Country', 'Countries'].entries()) {
+        const field = live.locator('star-icon-field').nth(index);
+        const input = field.getByRole('combobox', { name, exact: true });
+        await input.click();
+        await page.keyboard.type('a');
+        await expect(input).toHaveAttribute('aria-expanded', 'true');
+        await page.keyboard.press('ArrowDown');
+        await expect(input).toHaveAttribute('aria-activedescendant', /.+/);
+        await page.keyboard.press('Enter');
+        await expect(field.getByRole('button', { name: 'Clear' })).toBeVisible();
+        const icon = field.locator('.star-icon-field__icon');
+        await expect(icon).toHaveAttribute('aria-hidden', 'true');
+        const glyph = (await icon.boundingBox())!;
+        const control = (await field.locator('.star-ac__control').boundingBox())!;
+        // The text area: chips (multiple) and the input.
+        const text = (await field.locator('.star-ac__main').boundingBox())!;
+        const clear = (await field.getByRole('button', { name: 'Clear' }).boundingBox())!;
+        // The icon is inside the control, at its inline start, vertically on the first row.
+        expect(glyph.y).toBeGreaterThanOrEqual(control.y);
+        expect(glyph.y + glyph.height).toBeLessThanOrEqual(control.y + control.height + 1);
+        if (dir === 'ltr') {
+          expect(glyph.x).toBeGreaterThan(control.x);
+          expect(glyph.x + glyph.width).toBeLessThanOrEqual(text.x + 1);
+          expect(clear.x).toBeGreaterThan(text.x);
+        } else {
+          expect(glyph.x + glyph.width).toBeLessThan(control.x + control.width);
+          expect(glyph.x).toBeGreaterThanOrEqual(text.x + text.width - 1);
+          expect(clear.x).toBeLessThan(text.x + text.width);
+        }
+      }
+    });
+  }
+});
