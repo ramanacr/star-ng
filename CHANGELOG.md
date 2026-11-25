@@ -18,6 +18,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Icon field: `star-icon-field` works around `star-autocomplete` and `star-multi-autocomplete` as it does around `input[starInput]`. The icon is decorative (`aria-hidden`) and sits on the first row; the text starts after it, and the clear and dropdown buttons stay at the end. `iconPosition="end"` and the small size (`size="sm"`) work too. The rules use logical properties, so the icon moves to the other side in RTL ([#156](https://github.com/ramanacr/star-ng/issues/156)).
 
+#### Popover
+
+- Popover: the input `position` (`StarPopoverPosition`: `below-start`, the default, `below-end`, `above-start`, `above-end`; the same values as `StarMenuPosition`) sets where the panel opens next to its anchor. `start` and `end` follow the reading direction, so `below-end` lines up the right edges in a left-to-right page and the left edges in a right-to-left page. The panel keeps its gap of 8px to the anchor. When there is no room, it moves to the other edge, then to the other side of the anchor, and it is pushed inside the window. A change of `position` moves an open panel. The default positions do not change ([#158](https://github.com/ramanacr/star-ng/issues/158)).
+
 ## [0.7.0] - 2026-11-25
 
 ### Added

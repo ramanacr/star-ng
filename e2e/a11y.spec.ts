@@ -990,6 +990,14 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'popover at the end edge',
+    path: 'controls/popover',
+    open: async (page) => {
+      await example(page, 'Open at the end edge').getByRole('button', { name: 'Saved' }).click();
+      await expect(page.getByRole('dialog', { name: 'Saved views' })).toBeVisible();
+    },
+  },
+  {
     name: 'tooltip shown',
     path: 'controls/tooltip',
     open: async (page) => {
