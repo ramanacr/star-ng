@@ -68,7 +68,7 @@ async function left(page: Page, cls: string): Promise<LeaveEntry> {
   return (await leaves(page)).find((entry) => entry.cls === cls)!;
 }
 
-/** Native dialogs whose close motion the tests check: template drawer and two services. */
+/** Native dialogs whose close motion the tests check: template drawer and sheet, two services. */
 const CLOSE_CASES = [
   {
     name: 'a dialog opened by the service',
@@ -76,6 +76,13 @@ const CLOSE_CASES = [
     button: 'Edit note',
     dialog: 'star-dialog-container dialog',
     host: 'star-dialog-container',
+  },
+  {
+    name: 'a dialog side sheet',
+    path: '/controls/dialog',
+    button: 'Open activity',
+    dialog: 'dialog.star-dialog--sheet[open]',
+    host: null,
   },
   {
     name: 'a bottom sheet',

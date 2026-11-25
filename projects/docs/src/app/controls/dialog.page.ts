@@ -18,6 +18,7 @@ import { StarContextMenu, StarMenu, StarMenuItem, StarMenuTrigger } from '@star-
 import { StarCascadeSelect } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 import { EditNoteData, EditNoteDialog } from './edit-note-dialog';
+import { MessageSheetData, MessageSheetDialog } from './message-sheet-dialog';
 import { RecordPreviewData, RecordPreviewDialog } from './record-preview-dialog';
 
 interface Place {
@@ -316,6 +317,46 @@ const POSITIONS: readonly StarDialogPosition[] = [
       </docs-example>
 
       <docs-example
+        heading="Side sheet"
+        source="dialog/sheet"
+        [script]="sheetScript"
+        note="sheet turns the dialog into a full-height side sheet. It sits at the end edge, a small gap from the top, the end and the bottom of the window, and slides in from that edge; position start puts it at the start edge. width or size sets the width, up to the window width minus a gap. The body fills the height and scrolls, and it is a flex column, so content can grow with flex: 1. StarDialogService takes sheet: true too. A dialog or sheet opened from an open dialog stacks above it, and Escape closes only the top one."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Message: {{ sheetMessage() }}</p>
+          <div class="docs-row">
+            <star-button variant="secondary" (pressed)="activityOpen.set(true)">
+              Open activity
+            </star-button>
+            <star-button variant="secondary" (pressed)="sheetOrderOpen.set(true)">
+              Open order ORD-2207
+            </star-button>
+          </div>
+        </div>
+        <star-dialog
+          [(visible)]="activityOpen"
+          sheet
+          size="sm"
+          header="Activity"
+          subheader="ORD-1042"
+          headerDivider
+        >
+          <ol class="docs-stack">
+            @for (entry of activity; track entry) {
+              <li>{{ entry }}</li>
+            }
+          </ol>
+        </star-dialog>
+        <star-dialog [(visible)]="sheetOrderOpen" header="Order ORD-2207">
+          <p>Three lines, ready to ship. Write a message to the customer in a side sheet.</p>
+          <div starDialogFooter class="star-dialog__footer">
+            <star-button variant="ghost" (pressed)="sheetOrderOpen.set(false)">Close</star-button>
+            <star-button (pressed)="writeMessage()">Write message</star-button>
+          </div>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
         heading="Breakpoints, scroll and focus"
         source="dialog/responsive"
         [script]="responsiveScript"
@@ -502,6 +543,13 @@ export class DialogPage {
   protected readonly positions = POSITIONS;
   protected readonly positionOpen = signal(false);
   protected readonly position = signal<StarDialogPosition>('center');
+  protected readonly activityOpen = signal(false);
+  protected readonly sheetOrderOpen = signal(false);
+  protected readonly sheetMessage = signal('none');
+  protected readonly activity: readonly string[] = Array.from(
+    { length: 24 },
+    (_, index) => `Step ${index + 1}: the order moved to the next station.`,
+  );
   protected readonly responsiveOpen = signal(false);
   protected readonly scrollOpen = signal(false);
   protected readonly headlessOpen = signal(false);
@@ -561,6 +609,21 @@ export class DialogPage {
     });
     const saved = await ref.closed;
     if (saved !== undefined) this.note.set(saved);
+  }
+
+  /** Opens a side sheet from the open order dialog: it stacks above it. */
+  protected async writeMessage(): Promise<void> {
+    const ref = this.dialogs.open<MessageSheetDialog, MessageSheetData, string>(
+      MessageSheetDialog,
+      {
+        header: 'Message to the customer',
+        width: '48rem',
+        sheet: true,
+        data: { orderId: 'ORD-2207', to: 'Orchard Supply' },
+      },
+    );
+    const sent = await ref.closed;
+    if (sent !== undefined) this.sheetMessage.set(sent);
   }
 
   protected async openPreview(): Promise<void> {
@@ -638,6 +701,60 @@ openAt(position: StarDialogPosition): void {
   this.position.set(position);
   this.positionOpen.set(true);
 }`;
+  protected readonly sheetScript = `private readonly dialogs = inject(StarDialogService);
+readonly activityOpen = signal(false);
+readonly sheetOrderOpen = signal(false);
+readonly sheetMessage = signal('none');
+readonly activity = Array.from(
+  { length: 24 },
+  (_, index) => \`Step \${index + 1}: the order moved to the next station.\`,
+);
+
+// From the open order dialog: the sheet stacks above it, Escape closes the sheet only.
+async writeMessage(): Promise<void> {
+  const ref = this.dialogs.open<MessageSheetDialog, MessageSheetData, string>(
+    MessageSheetDialog,
+    {
+      header: 'Message to the customer',
+      width: '48rem',
+      sheet: true,
+      data: { orderId: 'ORD-2207', to: 'Orchard Supply' },
+    },
+  );
+  const sent = await ref.closed;
+  if (sent !== undefined) this.sheetMessage.set(sent);
+}
+
+// The content grows with the sheet: its host is a flex column with flex: 1.
+@Component({
+  selector: 'docs-message-sheet-dialog',
+  imports: [StarField, StarInput, StarButton],
+  styles: \`
+    :host { display: flex; flex: 1; flex-direction: column; gap: var(--star-space-4); }
+    .docs-message-field { flex: 1; }
+    .docs-message-field textarea { flex: 1; min-height: 8rem; resize: none; }
+  \`,
+  template: \`
+    <star-field label="To"><input starInput readonly [value]="data.to" /></star-field>
+    <star-field class="docs-message-field" label="Message" [hint]="'Order ' + data.orderId">
+      <textarea starInput data-autofocus [value]="message()"
+        (input)="message.set($any($event.target).value)"></textarea>
+    </star-field>
+    <div class="star-dialog__footer star-dialog__footer--inline">
+      <star-button variant="ghost" (pressed)="ref.close()">Cancel</star-button>
+      <star-button [disabled]="!message().trim()" (pressed)="ref.close(message().trim())">
+        Send
+      </star-button>
+    </div>
+  \`,
+})
+export class MessageSheetDialog {
+  protected readonly data = inject<MessageSheetData>(STAR_DIALOG_DATA);
+  protected readonly ref = inject<StarDialogRef<string>>(StarDialogRef);
+  protected readonly message = signal(
+    \`Hello, your order \${this.data.orderId} leaves the warehouse today.\`,
+  );
+}`;
   protected readonly responsiveScript = `readonly responsiveOpen = signal(false);
 readonly scrollOpen = signal(false);`;
   protected readonly headlessScript = `readonly headlessOpen = signal(false);`;
@@ -691,7 +808,7 @@ readonly actionItems: readonly StarMenuItem[] = [
     {
       name: 'open(component, config?, injector?)',
       description:
-        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, subheader, icon, iconTone, headerDivider, headerAction, size, width, data, closable, closeOnEscape, dismissableMask, role, ariaLabel, position, draggable, resizable, maximizable, keepInViewport, breakpoints, blockScroll and focusOnShow.',
+        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, subheader, icon, iconTone, headerDivider, headerAction, size, width, data, closable, closeOnEscape, dismissableMask, role, ariaLabel, position, sheet, draggable, resizable, maximizable, keepInViewport, breakpoints, blockScroll and focusOnShow.',
     },
     {
       name: 'StarDialogHeaderAction',
@@ -769,9 +886,27 @@ readonly actionItems: readonly StarMenuItem[] = [
       name: '--star-dialog-header-divider-color',
       description: 'Line under the header with headerDivider. Default --star-border.',
     },
+    {
+      name: '--star-dialog-sheet-gap',
+      description:
+        'Gap between a side sheet and the top, the side and the bottom of the window. Default --star-space-3.',
+    },
+    {
+      name: '--star-dialog-sheet-reserve',
+      description:
+        'Window width that a side sheet leaves free at its widest. Default --star-space-12.',
+    },
+    {
+      name: '--star-dialog-sheet-radius',
+      description: 'Corner radius of a side sheet. Default --star-radius-2xl.',
+    },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
-    { name: 'Escape', description: 'Closes the dialog, unless closeOnEscape is false.' },
+    {
+      name: 'Escape',
+      description:
+        'Closes the dialog, unless closeOnEscape is false. With stacked dialogs, only the top one closes.',
+    },
     {
       name: 'Tab / Shift+Tab',
       description: 'Moves the focus inside a modal dialog. The focus does not leave the dialog.',

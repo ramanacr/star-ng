@@ -2,6 +2,14 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+#### Dialog
+
+- Side sheet: input `sheet` on `star-dialog` and `sheet` in `StarDialogConfig` of `StarDialogService.open()`. The dialog becomes a full-height side sheet at the end edge, or at the start edge with `position: 'start'` (both follow the writing direction; other positions are ignored). It keeps a gap from the top, the side and the bottom of the window and has the large radius. `width` and `size` set its width, up to the window width minus a gap. The body fills the height and scrolls, and it is a flex column, so content can grow with `flex: 1`. It slides in from its edge; with reduced motion it has no motion. Class `star-dialog--sheet`; tokens `--star-dialog-sheet-gap` (default `--star-space-3`), `--star-dialog-sheet-reserve` (default `--star-space-12`) and `--star-dialog-sheet-radius` (default `--star-radius-2xl`). A dialog or sheet opened from an open dialog stacks above it in the top layer, and Escape closes only the top one. Dialogs without `sheet` look as before ([#144](https://github.com/ramanacr/star-ng/issues/144)).
+
 ## [0.6.0] - 2026-11-24
 
 ### Added

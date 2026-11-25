@@ -579,6 +579,17 @@ test.describe('right-to-left controls', () => {
       }
     });
 
+    test('dialog side sheet: the end edge is the left edge', async ({ page }) => {
+      await openPage(page, '/controls/dialog', 'Dialog');
+      await example(page, 'Side sheet').getByRole('button', { name: 'Open activity' }).click();
+      const sheet = page.getByRole('dialog', { name: 'Activity ORD-1042' });
+      await expect(sheet).toBeVisible();
+      // The slide-in transition ends 12px (the sheet gap) from the left edge.
+      expect(Math.round((await settledBox(sheet)).x)).toBe(12);
+      await page.keyboard.press('Escape');
+      await expect(sheet).toBeHidden();
+    });
+
     test('toast: corners with start and end follow the direction', async ({ page }) => {
       await openPage(page, '/controls/toast', 'Toast');
       const live = example(page, 'Corners that follow the direction');
