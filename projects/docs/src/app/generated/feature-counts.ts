@@ -59,12 +59,12 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "untracked": {
-      "uses": 77,
-      "files": 33
+      "uses": 78,
+      "files": 34
     },
     "effect": {
-      "uses": 70,
-      "files": 40
+      "uses": 71,
+      "files": 41
     },
     "afterRenderEffect": {
       "uses": 28,
@@ -181,7 +181,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 975,
+      "uses": 977,
       "files": 125
     },
     "computed": {
@@ -253,7 +253,7 @@ export const FEATURE_COUNTS = {
       "files": 26
     },
     "for": {
-      "uses": 57,
+      "uses": 58,
       "files": 30
     },
     "switch": {
