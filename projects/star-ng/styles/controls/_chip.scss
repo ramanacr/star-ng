@@ -1,16 +1,97 @@
 // Chip and tags field.
 @use '../shared' as *;
 
+// Size tokens (the defaults keep the look of a chip without them): `--star-chip-height`,
+// `--star-chip-font` (font shorthand; the weight stays 600), `--star-chip-padding-inline`, `--star-chip-max-width` (default 100%: the text ends with an
+// ellipsis), `--star-chip-remove-size` and `--star-chip-remove-surface` (hover fill of the remove
+// button).
 .star-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.625rem;
+  box-sizing: border-box;
+  min-height: var(--star-chip-height, auto);
+  max-width: var(--star-chip-max-width, 100%);
+  padding: 0.25rem var(--star-chip-padding-inline, 0.625rem);
   border-radius: var(--star-radius-pill);
   background: var(--star-accent-soft);
   color: var(--star-accent);
-  font: var(--star-type-body-sm);
+  font: var(--star-chip-font, var(--star-type-body-sm));
   font-weight: 600;
+}
+// The text keeps one line and ends with an ellipsis when the chip reaches its maximum width. A
+// short bold key before the value (`<b>Status:</b> Open`) stays; the value is cut.
+.star-chip__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+// Tone (`severity`): the tokens of the tag. The tone alone is under 4.5:1 on its soft fill: the
+// text mixes it toward the strong text color, as `.star-tag` does.
+.star-chip--tone {
+  --star-tone: var(--star-accent);
+  --star-tone-soft: var(--star-accent-soft);
+  background: var(--star-tone-soft);
+  color: color-mix(in srgb, var(--star-tone) 62%, var(--star-text-strong));
+}
+.star-chip--neutral,
+.star-chip--secondary {
+  --star-tone: var(--star-text-muted);
+  --star-tone-soft: var(--star-surface-muted);
+  // The muted fill is close to the page: a 1 px border shows the edge of the chip.
+  box-shadow: inset 0 0 0 1px var(--star-border);
+}
+.star-chip--primary {
+  --star-tone: var(--star-primary);
+  --star-tone-soft: var(--star-primary-soft);
+}
+.star-chip--success {
+  --star-tone: var(--star-success);
+  --star-tone-soft: var(--star-success-soft);
+}
+.star-chip--warn {
+  --star-tone: var(--star-warning);
+  --star-tone-soft: var(--star-warning-soft);
+}
+.star-chip--danger {
+  --star-tone: var(--star-danger);
+  --star-tone-soft: var(--star-danger-soft);
+}
+// Clickable body (`clickable`): a button with the icon, the label and the content. It fills the
+// chip up to the remove button; its negative margins give it the padding of the chip as target.
+.star-chip__body {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: inherit;
+  min-width: 0;
+  margin-block: -0.25rem;
+  margin-inline: calc(-1 * var(--star-chip-padding-inline, 0.625rem)) 0;
+  padding-block: 0.25rem;
+  padding-inline: var(--star-chip-padding-inline, 0.625rem) 0;
+  border: 0;
+  border-radius: var(--star-radius-pill);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:only-child {
+    margin-inline-end: calc(-1 * var(--star-chip-padding-inline, 0.625rem));
+    padding-inline-end: var(--star-chip-padding-inline, 0.625rem);
+  }
+  &:hover:not(:disabled) .star-chip__text {
+    text-decoration: underline;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    cursor: default;
+  }
 }
 .star-chip--disabled {
   opacity: 0.6;
@@ -31,6 +112,7 @@
 }
 .star-chip__remove {
   display: inline-grid;
+  flex: none;
   place-items: center;
   padding: 0;
   border: 0;
@@ -39,14 +121,20 @@
   cursor: pointer;
   opacity: 0.7;
 
-  // Target of at least 24 x 24 px (WCAG 2.5.8). The negative margins keep the chip size. The icon
-  // keeps its size.
-  min-width: 1.5rem;
-  min-height: 1.5rem;
+  // Target of at least 24 x 24 px (WCAG 2.5.8; `--star-chip-remove-size`). The negative margins
+  // keep the chip size. The icon keeps its size.
+  min-width: var(--star-chip-remove-size, 1.5rem);
+  min-height: var(--star-chip-remove-size, 1.5rem);
   margin: -0.25rem;
 
   &:hover {
     opacity: 1;
+    // A round fill in the square target: a radius would cut the corners of the 24 px target.
+    background: radial-gradient(
+      closest-side,
+      var(--star-chip-remove-surface, transparent) 98%,
+      transparent
+    );
   }
 }
 

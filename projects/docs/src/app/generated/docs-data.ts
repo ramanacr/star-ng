@@ -3804,6 +3804,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The chip looks inactive and its remove button does not work. PrimeNG `disabled`."
       },
       {
+        "name": "severity",
+        "type": "StarChipSeverity | null",
+        "default": "null",
+        "required": false,
+        "description": "Tone of the chip: `neutral` (grey), `info`, `primary`, `success`, `warn`, `danger` or `secondary` (the same as `neutral`). `null` (the default) keeps the accent look."
+      },
+      {
+        "name": "clickable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The body (icon, label and content) is a button that emits `chipClick`. It is separate from the remove button. Its accessible name is the text of the chip."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -3828,6 +3842,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "chipClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "A click (or Enter, Space) on the body of a `clickable` chip."
       }
     ],
     "parts": [
@@ -3835,6 +3856,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "picture",
       "icon",
       "text",
+      "bodyButton",
       "removeButton",
       "removeIcon"
     ]
@@ -24087,6 +24109,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "checkbox/states": "<star-checkbox [checked]=\"true\" disabled>Disabled</star-checkbox>\n<star-checkbox [checked]=\"true\" readonly>Read-only</star-checkbox>",
   "chip/area": "<div class=\"docs-stack\">\n  <star-chips-area ariaLabel=\"Sort order\" [(items)]=\"sortOrder\" removable />\n  <p class=\"docs-output\" role=\"status\">Sort by: {{ sortOrder().join(', ') || 'none' }}</p>\n</div>",
   "chip/basic": "<star-chip label=\"Design\" />\n<star-chip label=\"Travel\" icon=\"ph-bold ph-airplane\" />\n<star-chip label=\"Team\">(4)</star-chip>",
+  "chip/filters": "<div class=\"docs-stack\">\n  <div\n    class=\"docs-row\"\n    style=\"\n      --star-chip-height: 30px;\n      --star-chip-font: 13px/18px var(--star-font-sans);\n      --star-chip-max-width: 340px;\n      --star-chip-remove-surface: color-mix(in srgb, currentColor 14%, transparent);\n    \"\n  >\n    @for (filter of filters(); track filter.key) {\n      <star-chip\n        [severity]=\"filter.tone\"\n        clickable\n        removable\n        (chipClick)=\"edit(filter.key)\"\n        (removed)=\"removeFilter(filter.key)\"\n        ><b>{{ filter.key }}:</b> {{ filter.value }}</star-chip\n      >\n    }\n  </div>\n  <p class=\"docs-output\" role=\"status\">{{ filterStatus() }}</p>\n</div>",
   "chip/removable": "<div class=\"docs-row\">\n  @for (name of names(); track name) {\n    <star-chip [label]=\"name\" removable (removed)=\"remove(name)\" />\n  }\n</div>\n<p class=\"docs-output\" role=\"status\">{{ names().length }} chips left.</p>",
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
   "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
