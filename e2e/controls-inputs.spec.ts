@@ -819,8 +819,12 @@ test.describe('select button and toggle button', () => {
 });
 
 // Controls that paint text on a fill: the text must reach WCAG AA (4.5:1) in both themes.
-const FILLED = '.star-chip, .star-segmented__item--on, .star-toggle-btn.star-segmented__item--on';
-const PAGES = ['/controls/input-tags', '/controls/select-button'];
+// A chips area chip is a transparent button on a filled item: the helper reads the fill of the
+// element itself, so it leaves those out.
+const FILLED =
+  '.star-chip:not(.star-chips-area__chip), .star-segmented__item--on, .star-toggle-btn.star-segmented__item--on';
+// The chip page has the default chip and the tones of the filter chips.
+const PAGES = ['/controls/input-tags', '/controls/select-button', '/controls/chip'];
 
 for (const theme of ['light', 'dark'] as const) {
   test(`chips and selected segments have AA contrast in the ${theme} theme`, async ({ page }) => {

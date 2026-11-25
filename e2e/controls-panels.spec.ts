@@ -129,6 +129,41 @@ test.describe('card, avatar, skeleton, chip', () => {
     await expect(live.getByRole('status')).toHaveText('2 chips left.');
     await expect(live.getByRole('button', { name: 'Remove Beta' })).toHaveCount(0);
   });
+
+  test('a filter chip body is a button; Enter and Space open it, the remove button is separate', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/chip', 'Chip');
+    const live = example(page, 'Filter chips');
+    const status = live.getByRole('status');
+    await expect(status).toHaveText('3 filters.');
+    const body = live.getByRole('button', { name: 'Status: Open', exact: true });
+    await body.focus();
+    await page.keyboard.press('Enter');
+    await expect(status).toHaveText('Edit the filter Status.');
+    const date = live.getByRole('button', { name: 'Date range: Last 30 days', exact: true });
+    await date.focus();
+    await page.keyboard.press('Space');
+    await expect(status).toHaveText('Edit the filter Date range.');
+    // Tab goes from the body to its own remove button, named after the chip text.
+    await page.keyboard.press('Tab');
+    const remove = live.getByRole('button', { name: 'Remove Date range: Last 30 days' });
+    await expect(remove).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(status).toHaveText('Removed Date range. 2 filters.');
+    await expect(date).toHaveCount(0);
+    // A long value ends with an ellipsis; the remove button keeps its size inside the chip.
+    const keyword = live.locator('star-chip').last();
+    const text = keyword.locator('.star-chip__text');
+    expect(await text.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+    const [chipBox, removeBox] = await Promise.all([
+      keyword.boundingBox(),
+      keyword.locator('.star-chip__remove').boundingBox(),
+    ]);
+    expect(removeBox!.width).toBeGreaterThanOrEqual(24);
+    expect(removeBox!.x + removeBox!.width).toBeLessThanOrEqual(chipBox!.x + chipBox!.width + 1);
+    expect(chipBox!.width).toBeLessThanOrEqual(341);
+  });
 });
 
 test.describe('message', () => {
