@@ -290,6 +290,79 @@ test.describe('tags field', () => {
     await expect(field).not.toBeEditable();
   });
 
+  test('keepInvalid adds red chips; Backspace takes the last one back to fix it', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/input-tags', 'Tags field');
+    const live = example(page, 'Invalid chips and an action');
+    const field = live.locator('input.star-ac__input');
+    const status = live.locator('.docs-output');
+    const invalidChips = live.locator('.star-chip--invalid');
+    await expect(status).toHaveText('Invalid: not-an-email');
+    await expect(invalidChips).toHaveCount(1);
+    await expect(invalidChips).toHaveAttribute('aria-invalid', 'true');
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+
+    await field.click();
+    await page.keyboard.type('also bad');
+    await page.keyboard.press('Enter');
+    await expect(field).toHaveValue('');
+    await expect(invalidChips).toHaveCount(2);
+    await expect(status).toHaveText('Invalid: not-an-email, also bad');
+    await expect(live.locator('star-input-tags [aria-live]')).toHaveText(
+      'also bad added, not valid',
+    );
+
+    // Backspace puts the last invalid chip back into the field; fix it and add it again.
+    await page.keyboard.press('Backspace');
+    await expect(field).toHaveValue('also bad');
+    await field.fill('also.good@example.com');
+    await page.keyboard.press('Enter');
+    await expect(status).toHaveText('Invalid: not-an-email');
+
+    await live.getByRole('button', { name: 'Remove not-an-email' }).click();
+    await expect(status).toHaveText('Invalid: (none)');
+    await expect(field).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
+  for (const dir of ['ltr', 'rtl'] as const) {
+    test(`the trailing action sits at the end of the box, vertically centred (${dir})`, async ({
+      page,
+    }) => {
+      await openPage(page, '/controls/input-tags', 'Tags field');
+      if (dir === 'rtl') {
+        await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
+      }
+      const live = example(page, 'Invalid chips and an action');
+      const host = live.locator('star-input-tags');
+      const control = host.locator('.star-ac__control');
+      const action = live.getByRole('button', { name: 'Address book' });
+      const field = live.locator('input.star-ac__input');
+
+      // Wrap the chips to several rows: the action stays at the end, centred on the box.
+      await host.evaluate((el) => ((el as HTMLElement).style.width = '18rem'));
+      for (let i = 0; i < 3; i++) await action.click();
+      await expect(live.locator('.star-chip')).toHaveCount(5);
+      await expect(field).not.toBeFocused();
+
+      const [box, button, firstChip] = await Promise.all([
+        control.boundingBox(),
+        action.boundingBox(),
+        live.locator('.star-chip').first().boundingBox(),
+      ]);
+      expect(box!.height).toBeGreaterThan(button!.height * 2);
+      const middle = box!.y + box!.height / 2;
+      expect(Math.abs(button!.y + button!.height / 2 - middle)).toBeLessThan(3);
+      if (dir === 'ltr') {
+        expect(box!.x + box!.width - (button!.x + button!.width)).toBeLessThan(16);
+        expect(firstChip!.x).toBeLessThan(button!.x);
+      } else {
+        expect(button!.x - box!.x).toBeLessThan(16);
+        expect(firstChip!.x).toBeGreaterThan(button!.x);
+      }
+    });
+  }
+
   test('a disabled field has no remove buttons', async ({ page }) => {
     await openPage(page, '/controls/input-tags', 'Tags field');
     const live = example(page, 'Disabled');

@@ -10909,7 +10909,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "((tag: string) => boolean) | null",
         "default": "null",
         "required": false,
-        "description": "Returns true for a valid tag. Invalid text stays in the field with an error."
+        "description": "Returns true for a valid tag. Invalid text stays in the field with an error, or becomes an invalid chip with `keepInvalid`."
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds text that fails `validate` as a chip marked invalid (danger colours, `aria-invalid`, a live announcement) instead of keeping it in the field. The chip is in `value`; `invalidTags` lists it. The duplicate and limit rules still reject. Default `false`: invalid text stays in the field."
       },
       {
         "name": "allowDuplicates",
@@ -11071,13 +11078,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "mainPanel",
       "list",
       "chipItem",
+      "invalidIcon",
       "removeButton",
       "removeIcon",
       "input",
       "clearButton",
       "clearIcon",
+      "actionPanel",
       "errorText"
     ]
+  },
+  "StarInputTagsActionTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starInputTagsAction]",
+    "entry": "@star-ng/ui/input-tags",
+    "description": "Trailing action inside the box of `star-input-tags`, for example an icon button that opens an address book: `<ng-template starInputTagsAction let-disabled=\"disabled\">…</ng-template>`. It sits at the inline end (after the clear button), vertically centred; the chips and the input wrap before it. A click on it does not move the focus to the input.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarInputTagTemplate": {
     "kind": "directive",
@@ -24123,6 +24141,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "input-tags/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Labels\" hint=\"Press Enter or a comma to add a label.\">\n    <star-input-tags [(value)]=\"labels\" showClear />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">{{ labels().join(', ') || '(none)' }}</p>\n</div>",
   "input-tags/chips": "<star-input-tags [(value)]=\"chipTags\" ariaLabel=\"Topics\" showClear>\n  <ng-template starInputTag let-tag><i class=\"ph-bold ph-hash\"></i>{{ tag }}</ng-template>\n  <ng-template starIcon=\"remove\"><i class=\"ph-bold ph-trash\"></i></ng-template>\n</star-input-tags>",
   "input-tags/disabled": "<div class=\"docs-stack\">\n  <star-input-tags [value]=\"['north', 'south']\" disabled ariaLabel=\"Regions\" />\n</div>",
+  "input-tags/keep-invalid": "<div class=\"docs-stack\">\n  <star-field label=\"To\" hint=\"Email addresses. Fix or remove the red ones.\">\n    <star-input-tags #toField [(value)]=\"to\" [validate]=\"isEmail\" keepInvalid showClear>\n      <ng-template starInputTagsAction let-disabled=\"disabled\">\n        <star-button\n          variant=\"ghost\"\n          size=\"sm\"\n          iconOnly\n          leadingIcon=\"ph-bold ph-address-book\"\n          ariaLabel=\"Address book\"\n          [disabled]=\"disabled\"\n          (pressed)=\"addFromBook()\"\n        />\n      </ng-template>\n    </star-input-tags>\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">\n    Invalid: {{ toField.invalidTags().join(', ') || '(none)' }}\n  </p>\n</div>",
   "input-tags/validate": "<div class=\"docs-stack\">\n  <star-field label=\"Recipients\" hint=\"Email addresses, three at most.\">\n    <star-input-tags\n      [(value)]=\"recipients\"\n      [validate]=\"isEmail\"\n      [maxTags]=\"3\"\n      (rejected)=\"rejected.set($event.tag + ': ' + $event.reason)\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Rejected: {{ rejected() || '(nothing)' }}</p>\n</div>",
   "kanban/basic": "<div class=\"docs-stack\">\n  <star-kanban\n    [columns]=\"columns\"\n    [items]=\"tasks()\"\n    columnKey=\"status\"\n    itemKey=\"id\"\n    order=\"rank\"\n    itemLabel=\"title\"\n    (itemMove)=\"onMove($event)\"\n  >\n    <ng-template starKanbanCard [starKanbanCardOf]=\"tasks()\" let-task>\n      <span class=\"card-title\">{{ task.title }}</span>\n      <span class=\"card-meta\">\n        <span>{{ task.owner }}</span>\n        <star-tag [value]=\"task.id\" severity=\"secondary\" />\n      </span>\n    </ng-template>\n  </star-kanban>\n  <p class=\"docs-output\" role=\"status\">{{ lastMove() }}</p>\n</div>",
   "kanban/cancel": "<div class=\"docs-stack\">\n  <star-kanban\n    [columns]=\"columns\"\n    [items]=\"lockedTasks()\"\n    columnKey=\"status\"\n    itemKey=\"id\"\n    order=\"rank\"\n    itemLabel=\"title\"\n    (itemMove)=\"onLockedMove($event)\"\n  >\n    <ng-template starKanbanCard [starKanbanCardOf]=\"lockedTasks()\" let-task>{{\n      task.title\n    }}</ng-template>\n  </star-kanban>\n  <p class=\"docs-output\" role=\"status\">{{ refused() }}</p>\n</div>",
