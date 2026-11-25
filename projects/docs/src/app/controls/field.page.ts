@@ -8,7 +8,7 @@ import {
 import { email, form, FormField, required, validateAsync } from '@angular/forms/signals';
 import { StarButton } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
-import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarField, StarFieldLabelEnd, StarInput } from '@star-ng/ui/field';
 import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -21,6 +21,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     StarButton,
     StarCheckbox,
     StarField,
+    StarFieldLabelEnd,
     StarInput,
     StarRadio,
     StarRadioGroup,
@@ -37,6 +38,22 @@ import { DOCS, DocsRow } from '../shared/docs';
         <div class="docs-stack">
           <star-field label="Full name" hint="As shown on your account.">
             <input starInput placeholder="Avery Stone" />
+          </star-field>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Content at the end of the label row"
+        source="field/label-end"
+        note="labelEnd puts plain text at the inline end of the label row, in muted text. For a link or other rich content, add an element with starFieldLabelEnd. The end content is outside the label: it is not part of the accessible name of the control, and it is not in its description. In RTL it moves to the left; on a narrow field it wraps to its own line."
+      >
+        <div class="docs-stack">
+          <star-field label="Reason" required labelEnd="jdoe · 25 Nov 2026 09:26">
+            <textarea starInput placeholder="Why is this item closed?"></textarea>
+          </star-field>
+          <star-field label="Password">
+            <a starFieldLabelEnd href="#forgot-password">Forgot password?</a>
+            <input starInput type="password" autocomplete="current-password" />
           </star-field>
         </div>
       </docs-example>
@@ -121,7 +138,11 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
-      <docs-api [of]="['StarField', 'StarInput']" [slots]="slots" [cssVars]="cssVars" />
+      <docs-api
+        [of]="['StarField', 'StarFieldLabelEnd', 'StarInput']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+      />
     </docs-page>
   `,
 })
@@ -177,6 +198,11 @@ readonly account = form(this.model, (path) => {
 
   protected readonly slots: readonly DocsRow[] = [
     { name: '(default)', description: 'The control: an input with starInput or a StarNG control.' },
+    {
+      name: '[starFieldLabelEnd]',
+      description:
+        'Content at the inline end of the label row, outside the label (for example a "Forgot password?" link). Not part of the accessible name. Import StarFieldLabelEnd.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-input-radius', description: 'Corner radius of the input.' },
@@ -186,6 +212,10 @@ readonly account = form(this.model, (path) => {
     { name: '--star-label-letter-spacing', description: 'Letter spacing of the label.' },
     { name: '--star-accent', description: 'Border color on focus.' },
     { name: '--star-danger', description: 'Border and message color of an invalid field.' },
+    {
+      name: '--star-field-label-end-color',
+      description: 'Color of the end content of the label row. Default: --star-text-muted.',
+    },
     {
       name: '--star-field-pending-color',
       description: 'Color of the busy icon while an async validator runs. Default: --star-accent.',
