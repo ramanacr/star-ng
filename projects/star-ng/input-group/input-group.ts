@@ -3,11 +3,16 @@ import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Icon inside a text input (PrimeNG `p-iconfield` + `p-inputicon`). The icon is decoration
- * only: the input still needs a label (`star-field` or `aria-label`).
+ * only: the input still needs a label (`star-field` or `aria-label`). It also works around
+ * `star-autocomplete` and `star-multi-autocomplete`: the text starts after the icon, and the clear
+ * and dropdown buttons stay at the end.
  *
  * ```html
  * <star-icon-field icon="ph-bold ph-magnifying-glass">
- *   <input starInput type="search" aria-label="Search cases" />
+ *   <input starInput type="search" aria-label="Search orders" />
+ * </star-icon-field>
+ * <star-icon-field icon="ph-bold ph-globe-hemisphere-west">
+ *   <star-autocomplete [options]="countries" ariaLabel="Country" />
  * </star-icon-field>
  * ```
  */

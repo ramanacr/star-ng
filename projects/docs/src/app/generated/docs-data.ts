@@ -1064,6 +1064,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarAutoCompleteBase"
       },
       {
+        "name": "openOnFocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the panel when the field gets focus (or a click while it has focus), when the text is at least `minQueryLength` long. With `[minQueryLength]=\"0\"` an empty field shows all options (or the `suggestions` for an empty `completeMethod` query) at once. Default `false`.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "optionIcon",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon of each option: a property name or a function that gives Phosphor icon classes, for example `ph-bold ph-clock`. The icon is decorative (`aria-hidden`) and shows before the label, also with a `starOption` template.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
         "name": "suggestionLoader",
         "type": "StarAutoCompleteLoader<TOption> | null",
         "default": "null",
@@ -1077,6 +1093,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "On blur, text that is no option label clears the text and the value (PrimeNG `forceSelection`). Default `false`: the text goes back to the label of the value."
+      },
+      {
+        "name": "freeText",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Free-text search mode: the value is the typed text (a string), and the options only help to fill it in. Typing sets the value (without `selectionChanging`); choosing an option sets the value to the label of the option and emits `optionSelect`. Blur keeps the text (`forceSelection` does not apply). Enter with no highlighted option emits `submitted` and does not choose an option; it is not cancelled, so a surrounding form still submits. Clear sets the value to `''`. Default `false`."
       },
       {
         "name": "pt",
@@ -1182,6 +1205,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
+      },
+      {
+        "name": "submitted",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "`freeText`: the user submitted the typed text, with Enter while no option is highlighted, or through `submit()` (for example a Search button in the `starAutoCompleteTrailing` slot). Does not fire for blank text."
       }
     ],
     "parts": [
@@ -1517,6 +1547,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "openOnFocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the panel when the field gets focus (or a click while it has focus), when the text is at least `minQueryLength` long. With `[minQueryLength]=\"0\"` an empty field shows all options (or the `suggestions` for an empty `completeMethod` query) at once. Default `false`."
+      },
+      {
+        "name": "optionIcon",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon of each option: a property name or a function that gives Phosphor icon classes, for example `ph-bold ph-clock`. The icon is decorative (`aria-hidden`) and shows before the label, also with a `starOption` template."
+      },
+      {
         "name": "suggestionLoader",
         "type": "StarAutoCompleteLoader<TOption> | null",
         "default": "null",
@@ -1588,6 +1632,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "A value was removed by the user: a chip, Backspace, or the clear of a single value. PrimeNG `onUnselect`."
       }
     ]
+  },
+  "StarAutoCompleteLeadingTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starAutoCompleteLeading]",
+    "entry": "@star-ng/ui/autocomplete",
+    "description": "Content before the input, inside the box of the autocomplete, for example a decorative icon: `<ng-template starAutoCompleteLeading><i class=\"ph-bold ph-sparkle\" aria-hidden=\"true\"></i></ng-template>`. It sits at the inline start, centred on the first row.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarAutoCompleteTrailingTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starAutoCompleteTrailing]",
+    "entry": "@star-ng/ui/autocomplete",
+    "description": "Content after the input and the clear and dropdown buttons, inside the box of the autocomplete, for example a key hint or a Search button: `<ng-template starAutoCompleteTrailing><kbd>/</kbd></ng-template>`. When focus moves into it, the suggestion panel closes.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarAvatar": {
     "kind": "component",
@@ -9672,7 +9734,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-icon-field",
     "entry": "@star-ng/ui/input-group",
-    "description": "Icon inside a text input (PrimeNG `p-iconfield` + `p-inputicon`). The icon is decoration only: the input still needs a label (`star-field` or `aria-label`).",
+    "description": "Icon inside a text input (PrimeNG `p-iconfield` + `p-inputicon`). The icon is decoration only: the input still needs a label (`star-field` or `aria-label`). It also works around `star-autocomplete` and `star-multi-autocomplete`: the text starts after the icon, and the clear and dropdown buttons stay at the end.",
     "inputs": [
       {
         "name": "icon",
@@ -13339,6 +13401,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "true",
         "required": false,
         "description": "",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "openOnFocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the panel when the field gets focus (or a click while it has focus), when the text is at least `minQueryLength` long. With `[minQueryLength]=\"0\"` an empty field shows all options (or the `suggestions` for an empty `completeMethod` query) at once. Default `false`.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "optionIcon",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon of each option: a property name or a function that gives Phosphor icon classes, for example `ph-bold ph-clock`. The icon is decorative (`aria-hidden`) and shows before the label, also with a `starOption` template.",
         "inheritedFrom": "StarAutoCompleteBase"
       },
       {
@@ -23915,6 +23993,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
   "autocomplete/force-selection": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"forcedCity\"\n    forceSelection\n    showClear\n    placeholder=\"Type a city, then leave the field\"\n    ariaLabel=\"City, listed only\"\n    (optionSelect)=\"cityEvent.set('Selected ' + $event)\"\n    (optionUnselect)=\"cityEvent.set('Removed ' + $event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    City: {{ forcedCity() ?? 'none' }}. {{ cityEvent() }}\n  </p>\n</div>",
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",
+  "autocomplete/free-text": "<div class=\"docs-stack\">\n  <star-autocomplete\n    #searchBox\n    freeText\n    openOnFocus\n    [minQueryLength]=\"0\"\n    [options]=\"savedSearches\"\n    optionLabel=\"label\"\n    optionGroup=\"group\"\n    optionIcon=\"icon\"\n    [(value)]=\"searchText\"\n    placeholder=\"Search or ask a question\"\n    ariaLabel=\"Search\"\n    (submitted)=\"searchEvent.set('Submitted: ' + $event)\"\n    (optionSelect)=\"searchEvent.set('Chose: ' + $event.label)\"\n  >\n    <ng-template starAutoCompleteLeading>\n      <i class=\"ph-bold ph-sparkle\" aria-hidden=\"true\"></i>\n    </ng-template>\n    <ng-template starAutoCompleteTrailing let-disabled=\"disabled\">\n      <kbd aria-hidden=\"true\">Enter</kbd>\n      <star-button size=\"sm\" [disabled]=\"disabled\" (click)=\"searchBox.submit()\"\n        >Search</star-button\n      >\n    </ng-template>\n  </star-autocomplete>\n  <p class=\"docs-output\" role=\"status\">\n    Text: {{ searchText() || 'empty' }}. {{ searchEvent() }}\n  </p>\n</div>",
+  "autocomplete/icon": "<div class=\"docs-stack\">\n  <star-icon-field icon=\"ph-bold ph-globe-hemisphere-west\">\n    <star-autocomplete\n      [options]=\"countries\"\n      [(value)]=\"country\"\n      placeholder=\"Search a country\"\n      ariaLabel=\"Country\"\n      dropdown\n      showClear\n    />\n  </star-icon-field>\n  <star-icon-field icon=\"ph-bold ph-globe-hemisphere-west\">\n    <star-multi-autocomplete\n      [options]=\"countries\"\n      placeholder=\"Add countries\"\n      ariaLabel=\"Countries\"\n      showClear\n    />\n  </star-icon-field>\n</div>",
   "autocomplete/large": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"tickets\"\n    [(value)]=\"ticket\"\n    placeholder=\"Search 10,000 tickets\"\n    ariaLabel=\"Ticket\"\n    virtualScroll\n    dropdown\n  />\n  <p class=\"docs-output\" role=\"status\">Ticket: {{ ticket() ?? 'none' }}</p>\n</div>",
   "autocomplete/lazy": "<div class=\"docs-stack\">\n  <star-autocomplete\n    #lazyControl\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyOrder\"\n    lazy\n    virtualScroll\n    dropdown\n    placeholder=\"Type an order number\"\n    ariaLabel=\"Order, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Order: {{ lazyOrder() ?? 'none' }}</p>\n  @if (lazyList.failed()) {\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"lazyControl.resetLazy()\"\n    >\n      Retry\n    </button>\n  }\n</div>",
   "autocomplete/loader": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestionLoader]=\"findPeople\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"loaded\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague (loader)\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ loaded() ?? 'none' }}</p>\n</div>",
