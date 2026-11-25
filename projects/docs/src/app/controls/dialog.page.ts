@@ -20,6 +20,7 @@ import { DOCS, DocsRow } from '../shared/docs';
 import { EditNoteData, EditNoteDialog } from './edit-note-dialog';
 import { MessageSheetData, MessageSheetDialog } from './message-sheet-dialog';
 import { RecordPreviewData, RecordPreviewDialog } from './record-preview-dialog';
+import { SendReportData, SendReportDialog } from './send-report-dialog';
 
 interface Place {
   readonly name: string;
@@ -428,6 +429,22 @@ const POSITIONS: readonly StarDialogPosition[] = [
       </docs-example>
 
       <docs-example
+        heading="Header actions from the opened component"
+        source="dialog/service-header-actions"
+        [script]="serviceHeaderActionsScript"
+        note="The opened component puts its own buttons in the dialog header with an ng-template starDialogHeaderActions. The buttons keep the state and the click handlers of the component: Send is off until the address is valid and shows a loading state while it sends, and the component then closes the dialog with ref.close(result). The header shows the component buttons first, then config.headerActions, then config.headerAction, then the close button. Tab follows the same order."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Report sent to: {{ reportResult() }}</p>
+          <div class="docs-row">
+            <star-button leadingIcon="ph-bold ph-paper-plane-tilt" (pressed)="sendReport()">
+              Send report
+            </star-button>
+          </div>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Menus and selects inside a modal"
         source="dialog/popups"
         [script]="popupsScript"
@@ -557,6 +574,7 @@ export class DialogPage {
   protected readonly previewOpen = signal(false);
   protected readonly previewResult = signal('none');
   protected readonly note = signal('Call the customer before delivery.');
+  protected readonly reportResult = signal('nobody');
   protected readonly place = signal<string | null>(null);
   protected readonly lastAction = signal('none');
 
@@ -609,6 +627,18 @@ export class DialogPage {
     });
     const saved = await ref.closed;
     if (saved !== undefined) this.note.set(saved);
+  }
+
+  /** The opened component puts Send and Cancel in the header. */
+  protected async sendReport(): Promise<void> {
+    const ref = this.dialogs.open<SendReportDialog, SendReportData, string>(SendReportDialog, {
+      header: 'Send report',
+      icon: 'paper-plane-tilt',
+      headerDivider: true,
+      size: 'md',
+      data: { report: 'monthly summary' },
+    });
+    this.reportResult.set((await ref.closed) ?? 'nobody');
   }
 
   /** Opens a side sheet from the open order dialog: it stacks above it. */
@@ -791,6 +821,62 @@ export class EditNoteDialog {
   protected readonly ref = inject<StarDialogRef<string>>(StarDialogRef);
   protected readonly note = signal(this.data.note);
 }`;
+  protected readonly serviceHeaderActionsScript = `private readonly dialogs = inject(StarDialogService);
+readonly reportResult = signal('nobody');
+
+async sendReport(): Promise<void> {
+  const ref = this.dialogs.open<SendReportDialog, SendReportData, string>(SendReportDialog, {
+    header: 'Send report',
+    icon: 'paper-plane-tilt',
+    headerDivider: true,
+    size: 'md',
+    data: { report: 'monthly summary' },
+  });
+  this.reportResult.set((await ref.closed) ?? 'nobody');
+}
+
+// The component puts Send and Cancel in the dialog header. Its own state and logic drive them.
+@Component({
+  selector: 'docs-send-report-dialog',
+  imports: [StarField, StarInput, StarButton, StarDialogHeaderActions],
+  template: \`
+    <ng-template starDialogHeaderActions>
+      <star-button size="sm" [disabled]="!valid()" [loading]="sending()" (pressed)="send()">
+        Send
+      </star-button>
+      <star-button size="sm" variant="secondary" [disabled]="sending()" (pressed)="ref.close()">
+        Cancel
+      </star-button>
+    </ng-template>
+    <div class="docs-stack">
+      <star-field label="Recipient email" hint="Send turns on when the address is valid.">
+        <input starInput type="email" autocomplete="off" data-autofocus [value]="email()"
+          (input)="email.set($any($event.target).value)" />
+      </star-field>
+      <star-field label="Message">
+        <textarea starInput rows="3" [value]="message()"
+          (input)="message.set($any($event.target).value)"></textarea>
+      </star-field>
+    </div>
+  \`,
+})
+export class SendReportDialog {
+  protected readonly data = inject<SendReportData>(STAR_DIALOG_DATA);
+  protected readonly ref = inject<StarDialogRef<string>>(StarDialogRef);
+  protected readonly email = signal('');
+  protected readonly message = signal(\`Here is the \${this.data.report}.\`);
+  protected readonly sending = signal(false);
+  protected readonly valid = computed(
+    () => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(this.email().trim()) && !this.sending(),
+  );
+
+  // Your own logic runs first: here a short wait stands in for the request.
+  protected send(): void {
+    if (!this.valid()) return;
+    this.sending.set(true);
+    setTimeout(() => this.ref.close(this.email().trim()), 400);
+  }
+}`;
   protected readonly popupsScript = `readonly popupsOpen = signal(false);
 readonly place = signal<string | null>(null);
 readonly lastAction = signal('none');
@@ -808,12 +894,22 @@ readonly actionItems: readonly StarMenuItem[] = [
     {
       name: 'open(component, config?, injector?)',
       description:
-        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, subheader, icon, iconTone, headerDivider, headerAction, size, width, data, closable, closeOnEscape, dismissableMask, role, ariaLabel, position, sheet, draggable, resizable, maximizable, keepInViewport, breakpoints, blockScroll and focusOnShow.',
+        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, subheader, icon, iconTone, headerDivider, headerAction, headerActions, size, width, data, closable, closeOnEscape, dismissableMask, role, ariaLabel, position, sheet, draggable, resizable, maximizable, keepInViewport, breakpoints, blockScroll and focusOnShow.',
     },
     {
       name: 'StarDialogHeaderAction',
       description:
         'config.headerAction: one button in the header. label, variant (default secondary), icon, ariaLabel and result. A press closes the dialog, and closed resolves with result. With closable: false it takes the place of the close icon.',
+    },
+    {
+      name: 'config.headerActions',
+      description:
+        'StarDialogHeaderAction[]: buttons in the header, in this order (put the primary one first). Each closes the dialog with its result. They come after the starDialogHeaderActions template of the component and before headerAction.',
+    },
+    {
+      name: 'ng-template starDialogHeaderActions',
+      description:
+        'Directive StarDialogHeaderActions, inside the opened component: the template content goes into the dialog header, before the config buttons and the close button. The buttons keep the state and the click handlers of the component, so a button can validate or send first and then call ref.close(result). The content leaves the header when the dialog closes.',
     },
     { name: 'closeAll()', description: 'Closes every dialog that the service opened.' },
     {
@@ -842,6 +938,11 @@ readonly actionItems: readonly StarMenuItem[] = [
       name: '[starDialogHeaderActions]',
       description:
         'Header actions, for example a button, before the move, maximize and close buttons.',
+    },
+    {
+      name: 'ng-template[starDialogHeaderActions]',
+      description:
+        'Header actions from a template (directive StarDialogHeaderActions), after the [starDialogHeaderActions] elements. In a component opened with StarDialogService, it fills the header of the service dialog.',
     },
     {
       name: '[starDialogFooter]',

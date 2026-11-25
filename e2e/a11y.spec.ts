@@ -668,6 +668,19 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'dialog with header buttons from the opened component',
+    path: 'controls/dialog',
+    open: async (page) => {
+      await example(page, 'Header actions from the opened component')
+        .getByRole('button', { name: 'Send report' })
+        .click();
+      const dialog = page.getByRole('dialog', { name: 'Send report' });
+      await expect(dialog).toBeVisible();
+      // The disabled Send button is part of the scanned state.
+      await expect(dialog.getByRole('button', { name: 'Send', exact: true })).toBeDisabled();
+    },
+  },
+  {
     name: 'command palette open with a filter',
     path: 'controls/command-palette',
     open: async (page) => {
