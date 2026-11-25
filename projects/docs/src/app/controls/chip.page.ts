@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
-import { StarChip, StarChipsArea } from '@star-ng/ui/layout';
+import { StarChip, StarChipsArea, StarChipSeverity } from '@star-ng/ui/layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -32,6 +32,37 @@ import { DOCS, DocsRow } from '../shared/docs';
           }
         </div>
         <p class="docs-output" role="status">{{ names().length }} chips left.</p>
+      </docs-example>
+
+      <docs-example
+        heading="Filter chips"
+        source="chip/filters"
+        [script]="filtersScript"
+        note="severity sets the tone: neutral, info, primary, success, warn, danger (secondary is the same as neutral). Without it the chip keeps its accent look. With clickable, the label area is a button that emits chipClick (Enter and Space work too); the remove button stays separate. A bold key before the value stays; long values end with an ellipsis at --star-chip-max-width. This example sets the size tokens on the row: --star-chip-height: 30px, --star-chip-font: 13px/18px var(--star-font-sans), --star-chip-max-width: 340px and a round hover fill with --star-chip-remove-surface. A smaller remove button (--star-chip-remove-size: 22px) needs 24 px of free space around it for WCAG 2.5.8."
+      >
+        <div class="docs-stack">
+          <div
+            class="docs-row"
+            style="
+              --star-chip-height: 30px;
+              --star-chip-font: 13px/18px var(--star-font-sans);
+              --star-chip-max-width: 340px;
+              --star-chip-remove-surface: color-mix(in srgb, currentColor 14%, transparent);
+            "
+          >
+            @for (filter of filters(); track filter.key) {
+              <star-chip
+                [severity]="filter.tone"
+                clickable
+                removable
+                (chipClick)="edit(filter.key)"
+                (removed)="removeFilter(filter.key)"
+                ><b>{{ filter.key }}:</b> {{ filter.value }}</star-chip
+              >
+            }
+          </div>
+          <p class="docs-output" role="status">{{ filterStatus() }}</p>
+        </div>
       </docs-example>
 
       <docs-example
@@ -70,6 +101,42 @@ remove(name: string): void {
   this.names.update((names) => names.filter((item) => item !== name));
 }`;
 
+  protected readonly filters = signal<
+    readonly { key: string; value: string; tone: StarChipSeverity }[]
+  >([
+    { key: 'Status', value: 'Open', tone: 'info' },
+    { key: 'Date range', value: 'Last 30 days', tone: 'primary' },
+    { key: 'Keyword', value: 'battery overheating after the latest update', tone: 'neutral' },
+  ]);
+  protected readonly filterStatus = signal('3 filters.');
+
+  protected edit(key: string): void {
+    this.filterStatus.set(`Edit the filter ${key}.`);
+  }
+
+  protected removeFilter(key: string): void {
+    this.filters.update((filters) => filters.filter((item) => item.key !== key));
+    this.filterStatus.set(`Removed ${key}. ${this.filters().length} filters.`);
+  }
+
+  protected readonly filtersScript = `readonly filters = signal<
+  readonly { key: string; value: string; tone: StarChipSeverity }[]
+>([
+  { key: 'Status', value: 'Open', tone: 'info' },
+  { key: 'Date range', value: 'Last 30 days', tone: 'primary' },
+  { key: 'Keyword', value: 'battery overheating after the latest update', tone: 'neutral' },
+]);
+readonly filterStatus = signal('3 filters.');
+
+edit(key: string): void {
+  this.filterStatus.set(\`Edit the filter \${key}.\`);
+}
+
+removeFilter(key: string): void {
+  this.filters.update((filters) => filters.filter((item) => item.key !== key));
+  this.filterStatus.set(\`Removed \${key}. \${this.filters().length} filters.\`);
+}`;
+
   protected readonly slots: readonly DocsRow[] = [
     {
       name: 'ng-template[starIcon="remove"]',
@@ -78,13 +145,44 @@ remove(name: string): void {
     { name: '(default)', description: 'Extra text after the label.' },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
-    { name: '--star-accent', description: 'Color of the text.' },
-    { name: '--star-accent-soft', description: 'Fill of the chip.' },
+    { name: '--star-accent', description: 'Color of the text (no severity).' },
+    { name: '--star-accent-soft', description: 'Fill of the chip (no severity).' },
+    {
+      name: '--star-tone, --star-tone-soft',
+      description:
+        'Tone and fill of a chip with a severity (set by the severity class; override them on one chip for a custom tone). The text mixes the tone toward --star-text-strong for 4.5:1.',
+    },
     { name: '--star-radius-pill', description: 'Corner radius.' },
+    { name: '--star-chip-height', description: 'Minimum height. Default: auto.' },
+    {
+      name: '--star-chip-font',
+      description: 'Font shorthand; the weight stays 600. Default: --star-type-body-sm.',
+    },
+    {
+      name: '--star-chip-padding-inline',
+      description: 'Start and end padding. Default: 0.625rem.',
+    },
+    {
+      name: '--star-chip-max-width',
+      description: 'Maximum width; the text ends with an ellipsis. Default: 100%.',
+    },
+    {
+      name: '--star-chip-remove-size',
+      description: 'Size of the remove button. Default: 1.5rem (24 px, WCAG 2.5.8 target).',
+    },
+    {
+      name: '--star-chip-remove-surface',
+      description: 'Fill of the remove button on hover. Default: none.',
+    },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
-    { name: 'Tab', description: 'Moves the focus to the remove button of a removable chip.' },
+    {
+      name: 'Tab',
+      description:
+        'Moves the focus to the body of a clickable chip, then to the remove button of a removable chip.',
+    },
     { name: 'Enter / Space', description: 'On the remove button: removes the chip.' },
+    { name: 'Enter / Space', description: 'On the body of a clickable chip: emits chipClick.' },
     {
       name: 'Arrow left / right, Home, End',
       description: 'Chips area: moves the focus between the chips (one tab stop).',

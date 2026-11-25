@@ -2,6 +2,14 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+#### Chip
+
+- Chip: tones and a clickable body, for filter chips. Input `severity` (`StarChipSeverity`: `neutral`, `info`, `primary`, `success`, `warn`, `danger`, and `secondary`, the same as `neutral`); without it the chip keeps its accent look. The tones use the tag tokens `--star-tone` and `--star-tone-soft` and reach 4.5:1 in the light and dark themes. Input `clickable` and output `chipClick`: the icon, label and content become a real button (styling part `bodyButton`, class `star-chip__body`) with a focus ring, Enter and Space; its accessible name is the chip text. The remove button stays separate; without a `label` it is named "Remove" plus the projected text. The text keeps one line: a bold key before the value (`<b>Status:</b> Open`) stays and the value ends with an ellipsis at `--star-chip-max-width` (default `100%`), so long text does not push out the remove button. Size tokens `--star-chip-height`, `--star-chip-font`, `--star-chip-padding-inline`, `--star-chip-remove-size` and `--star-chip-remove-surface`; their defaults keep the current size. Classes `star-chip--tone`, `star-chip--<severity>`, `star-chip--clickable` and `star-chip__text`. Chips without the new options look and work as before ([#150](https://github.com/ramanacr/star-ng/issues/150)).
+
 ## [0.7.0] - 2026-11-25
 
 ### Added

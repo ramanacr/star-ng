@@ -3,7 +3,7 @@
 export const FEATURE_COUNTS = {
   "lib": {
     "input": {
-      "uses": 1335,
+      "uses": 1337,
       "files": 129
     },
     "inputRequired": {
@@ -19,7 +19,7 @@ export const FEATURE_COUNTS = {
       "files": 1
     },
     "output": {
-      "uses": 260,
+      "uses": 261,
       "files": 91
     },
     "viewChild": {
@@ -79,7 +79,7 @@ export const FEATURE_COUNTS = {
       "files": 6
     },
     "inject": {
-      "uses": 581,
+      "uses": 582,
       "files": 135
     },
     "takeUntilDestroyed": {
@@ -107,7 +107,7 @@ export const FEATURE_COUNTS = {
       "files": 27
     },
     "if": {
-      "uses": 830,
+      "uses": 831,
       "files": 108
     },
     "for": {
@@ -135,7 +135,7 @@ export const FEATURE_COUNTS = {
       "files": 49
     },
     "booleanAttribute": {
-      "uses": 545,
+      "uses": 546,
       "files": 100
     },
     "numberAttribute": {
@@ -181,7 +181,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 969,
+      "uses": 971,
       "files": 125
     },
     "computed": {
@@ -253,7 +253,7 @@ export const FEATURE_COUNTS = {
       "files": 26
     },
     "for": {
-      "uses": 56,
+      "uses": 57,
       "files": 30
     },
     "switch": {
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 255,
+  "specFiles": 256,
   "pages": 146
 } as const;
