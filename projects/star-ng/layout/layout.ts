@@ -1,3 +1,4 @@
+import { _IdGenerator } from '@angular/cdk/a11y';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
@@ -19,6 +20,7 @@ import {
   STAR_UI_TEXT,
   StarIconContext,
   starInlineKey,
+  StarSeverity,
   StarSlot,
   starSlotMap,
   StarStyled,
@@ -214,8 +216,17 @@ export class StarTimeline {
 }
 
 /**
+ * Tone of a chip (`severity`): the severities of the tag, and `neutral` (grey, the same as
+ * `secondary`). Without a severity, the chip keeps its accent look.
+ */
+export type StarChipSeverity = StarSeverity | 'neutral';
+
+/**
  * Chip (PrimeNG `p-chip`): label with optional icon or image and a remove button.
  * `<star-chip label="Design" icon="ph-bold ph-palette" removable (removed)="drop()" />`
+ *
+ * Filter chip: a tone, a clickable body and a remove button.
+ * `<star-chip severity="info" clickable removable (chipClick)="edit()" (removed)="drop()"><b>Status:</b> Open</star-chip>`
  *
  * Slots (content children): `starIcon="remove"` replaces the icon of the remove button
  * (PrimeNG `#removeicon`, `removeIcon`).
@@ -227,21 +238,45 @@ export class StarTimeline {
   imports: [NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarChip) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-chip', '[class.star-chip--disabled]': 'disabled()' },
+  host: {
+    class: 'star-chip',
+    '[class.star-chip--disabled]': 'disabled()',
+    '[class.star-chip--clickable]': 'clickable()',
+    '[class]': "severity() ? 'star-chip--tone star-chip--' + severity() : ''",
+  },
   template: `
-    @if (image()) {
-      <img data-star-part="picture" class="star-chip__image" [src]="image()" alt="" />
-    } @else if (icon()) {
-      <i data-star-part="icon" [class]="icon()" aria-hidden="true"></i>
+    <ng-template #body>
+      @if (image()) {
+        <img data-star-part="picture" class="star-chip__image" [src]="image()" alt="" />
+      } @else if (icon()) {
+        <i data-star-part="icon" [class]="icon()" aria-hidden="true"></i>
+      }
+      <span data-star-part="text" class="star-chip__text" [attr.id]="label() ? null : textId"
+        >{{ label() }}<ng-content
+      /></span>
+    </ng-template>
+    @if (clickable()) {
+      <button
+        data-star-part="bodyButton"
+        type="button"
+        class="star-chip__body"
+        [disabled]="disabled()"
+        (click)="chipClick.emit()"
+      >
+        <ng-container *ngTemplateOutlet="body" />
+      </button>
+    } @else {
+      <ng-container *ngTemplateOutlet="body" />
     }
-    <span data-star-part="text">{{ label() }}<ng-content /></span>
     @if (removable()) {
       <button
         data-star-part="removeButton"
         type="button"
         class="star-chip__remove"
+        [attr.id]="label() ? null : removeId"
         [disabled]="disabled()"
-        [attr.aria-label]="text.removeItem(label())"
+        [attr.aria-label]="label() ? text.removeItem(label()) : text.removeItem('').trim()"
+        [attr.aria-labelledby]="label() ? null : removeId + ' ' + textId"
         (click)="removed.emit()"
       >
         @if (icons().get('remove'); as custom) {
@@ -260,11 +295,26 @@ export class StarChip {
   protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
   protected readonly iconContext: StarIconContext = {};
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly ids = inject(_IdGenerator);
+  protected readonly textId = this.ids.getId('star-chip-text-');
+  protected readonly removeId = this.ids.getId('star-chip-remove-');
   readonly label = input('');
   readonly icon = input<string | null>(null);
   readonly image = input<string | null>(null);
   readonly removable = input(false, { transform: booleanAttribute });
   /** The chip looks inactive and its remove button does not work. PrimeNG `disabled`. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /**
+   * Tone of the chip: `neutral` (grey), `info`, `primary`, `success`, `warn`, `danger` or
+   * `secondary` (the same as `neutral`). `null` (the default) keeps the accent look.
+   */
+  readonly severity = input<StarChipSeverity | null>(null);
+  /**
+   * The body (icon, label and content) is a button that emits `chipClick`. It is separate from
+   * the remove button. Its accessible name is the text of the chip.
+   */
+  readonly clickable = input(false, { transform: booleanAttribute });
   readonly removed = output<void>();
+  /** A click (or Enter, Space) on the body of a `clickable` chip. */
+  readonly chipClick = output<void>();
 }
