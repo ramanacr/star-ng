@@ -111,6 +111,8 @@ Override the `--star-*` tokens after the StarNG styles. Put light values on `:ro
 
 `StarThemeService` (`@star-ng/ui/theme`) is an optional helper for a system, light or dark choice. A first-paint script avoids a flash of the wrong theme. See the guides [theming and tokens](https://ramanacr.github.io/star-ng/guides/theming) and [dark mode](https://ramanacr.github.io/star-ng/guides/dark-mode).
 
+The theme factory (`@star-ng/ui/theme-factory`) makes a complete theme from a hue and a few inputs, with translucent floating layers and a contrast check of the text against any backdrop. The package ships the first generated theme, glass: `@use '@star-ng/ui/styles/themes/glass';` and `<html data-star-theme="glass">`. See the guide [theme factory and glass](https://ramanacr.github.io/star-ng/guides/theme-factory).
+
 ## Styling hooks
 
 Each element of a control has a part name in the attribute `data-star-part`. The host element is the part `root`. The part names are public API: a renamed part is a breaking change in the changelog. The API section of each control page lists its parts.

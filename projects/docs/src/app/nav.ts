@@ -48,6 +48,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./guides/dark-mode.guide').then((m) => m.DarkModeGuide),
       },
       {
+        label: 'Theme factory and glass',
+        path: 'guides/theme-factory',
+        keywords: 'glass translucent blur backdrop generator contrast variant theme factory',
+        load: () => import('./guides/theme-factory.guide').then((m) => m.ThemeFactoryGuide),
+      },
+      {
         label: 'Forms',
         path: 'guides/forms',
         keywords: 'signal forms reactive forms validation SignalFormControl formField',

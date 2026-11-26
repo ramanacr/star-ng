@@ -181,12 +181,12 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 979,
-      "files": 125
+      "uses": 987,
+      "files": 126
     },
     "computed": {
-      "uses": 37,
-      "files": 16
+      "uses": 43,
+      "files": 17
     },
     "linkedSignal": {
       "uses": 5,
@@ -221,8 +221,8 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "inject": {
-      "uses": 86,
-      "files": 29
+      "uses": 87,
+      "files": 30
     },
     "takeUntilDestroyed": {
       "uses": 1,
@@ -253,8 +253,8 @@ export const FEATURE_COUNTS = {
       "files": 26
     },
     "for": {
-      "uses": 58,
-      "files": 30
+      "uses": 61,
+      "files": 31
     },
     "switch": {
       "uses": 0,
@@ -265,12 +265,12 @@ export const FEATURE_COUNTS = {
       "files": 2
     },
     "host": {
-      "uses": 5,
-      "files": 2
+      "uses": 6,
+      "files": 3
     },
     "onPush": {
-      "uses": 186,
-      "files": 154
+      "uses": 189,
+      "files": 155
     },
     "destroyRef": {
       "uses": 24,
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 261,
-  "pages": 146
+  "specFiles": 262,
+  "pages": 147
 } as const;
