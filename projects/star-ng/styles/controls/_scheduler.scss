@@ -11,6 +11,16 @@
   --star-scheduler-resource-width: 9rem;
   --star-scheduler-height: 36rem;
   --star-scheduler-head-height: 3rem;
+  // The neutral event colour (`color: 'muted'`), outside the chart palette.
+  --star-scheduler-event-muted-surface: color-mix(
+    in srgb,
+    var(--star-border) 60%,
+    var(--star-surface)
+  );
+  --star-scheduler-event-muted-edge: var(--star-text-soft);
+  --star-scheduler-event-muted-text: var(--star-text);
+  // Text of a cancelled event: less strong than an event title, still AA on the event surface.
+  --star-scheduler-event-cancelled-text: var(--star-text);
   display: flex;
   flex-direction: column;
   gap: var(--star-space-3);
@@ -326,6 +336,52 @@
 }
 .star-scheduler__event-time {
   color: var(--star-text);
+}
+.star-scheduler__event--muted {
+  --star-scheduler-event-color: var(--star-scheduler-event-muted-edge);
+  background: var(--star-scheduler-event-muted-surface);
+  color: var(--star-scheduler-event-muted-text);
+
+  &:hover {
+    background: color-mix(
+      in srgb,
+      var(--star-scheduler-event-muted-edge) 20%,
+      var(--star-scheduler-event-muted-surface)
+    );
+  }
+  .star-scheduler__event-time {
+    color: inherit;
+  }
+}
+// A cancelled event: a lighter surface and edge, a struck title of normal weight. The text keeps
+// a colour of the theme, so the contrast stays AA.
+.star-scheduler__event--cancelled {
+  border-inline-start-color: color-mix(
+    in srgb,
+    var(--star-scheduler-event-color) 55%,
+    var(--star-surface)
+  );
+  background: color-mix(in srgb, var(--star-scheduler-event-color) 7%, var(--star-surface));
+  color: var(--star-scheduler-event-cancelled-text);
+
+  &:hover {
+    background: color-mix(in srgb, var(--star-scheduler-event-color) 16%, var(--star-surface));
+  }
+  .star-scheduler__event-title {
+    font-weight: 400;
+    text-decoration: line-through;
+  }
+}
+.star-scheduler__event--muted.star-scheduler__event--cancelled {
+  background: var(--star-scheduler-event-muted-surface);
+
+  &:hover {
+    background: color-mix(
+      in srgb,
+      var(--star-scheduler-event-muted-edge) 20%,
+      var(--star-scheduler-event-muted-surface)
+    );
+  }
 }
 .star-scheduler__event-repeat {
   position: absolute;

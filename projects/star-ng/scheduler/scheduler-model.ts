@@ -31,8 +31,12 @@ function recurrenceOf(text: string): StarRrule | null {
 /** Views of `star-scheduler`. `timeline-day` shows the resources as rows. */
 export type StarSchedulerView = 'day' | 'week' | 'work-week' | 'month' | 'agenda' | 'timeline-day';
 
-/** Colour of an event: an entry of the chart palette (`--star-chart-1` … `--star-chart-8`). */
-export type StarSchedulerColor = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+/**
+ * Colour of an event: an entry of the chart palette (`--star-chart-1` … `--star-chart-8`), or
+ * `'muted'`, a neutral tone outside the palette (tokens `--star-scheduler-event-muted-surface`,
+ * `--star-scheduler-event-muted-edge` and `--star-scheduler-event-muted-text`).
+ */
+export type StarSchedulerColor = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 'muted';
 
 export type StarSchedulerId = string | number;
 
@@ -48,8 +52,17 @@ export interface StarSchedulerEvent {
   readonly allDay?: boolean;
   /** Id of a `StarSchedulerResource` (a room, a person). */
   readonly resourceId?: StarSchedulerId | null;
-  /** Entry of the chart palette, 1 to 8. Without it the event takes the colour of its resource. */
+  /**
+   * Entry of the chart palette, 1 to 8, or `'muted'` (neutral). Without it the event takes the
+   * colour of its resource.
+   */
   readonly color?: StarSchedulerColor;
+  /**
+   * The event is cancelled: the title is struck through, the event has less emphasis, and
+   * "(cancelled)" follows the title in the accessible name. It does not change the behaviour: a
+   * cancelled event is still selected, moved and resized as before (set `readonly` to stop that).
+   */
+  readonly cancelled?: boolean;
   /**
    * RRULE text (RFC 5545), for example `FREQ=WEEKLY;BYDAY=TU`. `start` is the first occurrence.
    * Text that does not parse, or uses `BYSETPOS`, `BYHOUR` or another unsupported part, shows the

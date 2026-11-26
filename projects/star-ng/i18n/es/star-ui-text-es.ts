@@ -725,6 +725,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   noEvents: 'No hay eventos',
   timeRange: (start, end) => `${start} a ${end}`,
   repeats: 'Se repite',
+  eventCancelled: '(cancelado)',
   eventMoveHint: 'Alt y las flechas lo mueven; Alt, Mayús y las flechas cambian su duración.',
   eventMoved: (label, when) => `${label} movido a ${when}`,
   eventResized: (label, when) => `${label} ahora ${when}`,

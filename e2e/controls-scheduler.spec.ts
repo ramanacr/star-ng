@@ -1,5 +1,5 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { collectErrors, example, openPage, pageTransitionDone } from './support';
+import { collectErrors, example, lowContrast, openPage, pageTransitionDone } from './support';
 
 /** Drags with the mouse from the centre of `from` by small steps to a point. */
 async function dragTo(page: Page, from: Locator, x: number, y: number): Promise<void> {
@@ -240,4 +240,43 @@ test.describe('scheduler', () => {
     await expect(editor).toHaveCount(0);
     expect(errors).toEqual([]);
   });
+
+  test('names a cancelled event "(cancelled)" and navigates from the page toolbar', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/scheduler', 'Scheduler');
+    const area = example(page, "Muted and cancelled days off, with the page's own toolbar");
+    await expect(
+      area.getByRole('button', { name: /^Ben: day off \(cancelled\), Tuesday 17 March, All day/ }),
+    ).toBeVisible();
+    await expect(
+      area.getByRole('button', { name: /^Office closed, Friday 20 March, All day$/ }),
+    ).toBeVisible();
+    await expect(area.locator('.star-scheduler__toolbar')).toHaveCount(0);
+    await expect(area.getByRole('grid', { name: 'March 2026' })).toBeVisible();
+    // Retry until the prerendered page is hydrated and the click is handled.
+    await expect(async () => {
+      await area.getByRole('button', { name: 'Next month' }).click();
+      await expect(area.locator('.days-off-bar h3')).toHaveText('April 2026', { timeout: 1000 });
+    }).toPass();
+    await expect(area.getByRole('grid', { name: 'April 2026' })).toBeVisible();
+  });
 });
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`muted and cancelled events have AA text contrast in the ${theme} theme`, async ({
+    page,
+  }) => {
+    await page.addInitScript((value) => localStorage.setItem('star-theme', value), theme);
+    await page.goto('/controls/scheduler');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    const area = example(page, "Muted and cancelled days off, with the page's own toolbar");
+    const events = area.locator('.star-scheduler__event--muted, .star-scheduler__event--cancelled');
+    await expect(events.first()).toBeVisible();
+    expect(await events.count()).toBeGreaterThanOrEqual(3);
+    expect(await lowContrast(events)).toEqual([]);
+    await expect(
+      area.locator('.star-scheduler__event--cancelled .star-scheduler__event-title').first(),
+    ).toHaveCSS('text-decoration-line', 'line-through');
+  });
+}

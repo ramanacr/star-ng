@@ -77,6 +77,7 @@ const EVENTS: StarSchedulerEvent[] = [
         [firstDayOfWeek]="1"
         [editor]="editor()"
         [monthEventLimit]="3"
+        [showToolbar]="showToolbar()"
         (slotSelect)="slots.push($event)"
         (eventSelect)="selected.push($event)"
         (eventChange)="onChange($event)"
@@ -101,6 +102,7 @@ class Host {
   readonly dir = signal<'ltr' | 'rtl'>('ltr');
   readonly editor = signal(false);
   readonly custom = signal(false);
+  readonly showToolbar = signal(true);
   cancel = false;
   apply = false;
   readonly slots: StarSchedulerSlotSelect[] = [];
@@ -248,6 +250,131 @@ describe('StarScheduler', () => {
       expect(event('Team meeting').querySelector('.custom')?.textContent).toBe(
         'Team meeting (10:00 – 11:00)',
       );
+    });
+  });
+
+  describe('muted and cancelled events', () => {
+    const withdrawn = (extra: Partial<StarSchedulerEvent> = {}): StarSchedulerEvent[] => [
+      ...EVENTS,
+      {
+        id: 'off',
+        title: 'Day off',
+        start: at(2026, 3, 4),
+        end: at(2026, 3, 4),
+        allDay: true,
+        color: 'muted',
+        cancelled: true,
+        ...extra,
+      },
+      {
+        id: 'closed',
+        title: 'Office closed',
+        start: at(2026, 3, 3, 13),
+        end: at(2026, 3, 3, 14),
+        color: 'muted',
+      },
+    ];
+
+    it('looks as before without the new options', async () => {
+      const { scheduler } = await setup();
+      expect(scheduler.querySelector('.star-scheduler__event--muted')).toBeNull();
+      expect(scheduler.querySelector('.star-scheduler__event--cancelled')).toBeNull();
+      expect(scheduler.querySelector('.star-scheduler__toolbar')).not.toBeNull();
+    });
+
+    it("gives color 'muted' the neutral class and no palette colour", async () => {
+      const { event } = await setup((h) => h.events.set(withdrawn()));
+      const closed = event('Office closed');
+      expect(closed.classList).toContain('star-scheduler__event--muted');
+      expect(closed.classList).not.toContain('star-scheduler__event--cancelled');
+      expect(closed.style.getPropertyValue('--star-scheduler-event-color')).toBe('');
+      expect(nameOf(closed)).toBe('Office closed, 13:00 to 14:00, Tuesday 3 March');
+    });
+
+    it("takes 'muted' from the resource too", async () => {
+      const { event } = await setup((h) => {
+        (h as { rooms: StarSchedulerResource[] }).rooms = [
+          { id: 'a', name: 'Room A', color: 'muted' },
+        ];
+      });
+      expect(event('Team meeting').classList).toContain('star-scheduler__event--muted');
+      expect(event('Team meeting').style.getPropertyValue('--star-scheduler-event-color')).toBe('');
+      // An own palette colour wins over the muted resource.
+      expect(event('Design review').classList).not.toContain('star-scheduler__event--muted');
+    });
+
+    it('marks a cancelled event and adds "(cancelled)" to its name, in every view', async () => {
+      const { event, host, stable } = await setup((h) => h.events.set(withdrawn()));
+      const off = event('Day off');
+      expect(off.classList).toContain('star-scheduler__event--cancelled');
+      expect(off.classList).toContain('star-scheduler__event--muted');
+      expect(nameOf(off)).toBe('Day off (cancelled), Wednesday 4 March, All day');
+      // The visible title is still the start of the name.
+      expect(off.textContent?.trim()).toBe('Day off');
+      for (const view of ['month', 'agenda', 'day'] as const) {
+        host.view.set(view);
+        await stable();
+        expect(event('Day off').classList).toContain('star-scheduler__event--cancelled');
+        expect(nameOf(event('Day off'))).toContain('Day off (cancelled)');
+      }
+    });
+
+    it('cancels an event of any colour, with the same behaviour as before', async () => {
+      const { event, host } = await setup((h) =>
+        h.events.set(
+          withdrawn({
+            color: 2,
+            allDay: false,
+            start: at(2026, 3, 4, 10),
+            end: at(2026, 3, 4, 11),
+          }),
+        ),
+      );
+      const off = event('Day off');
+      expect(off.classList).not.toContain('star-scheduler__event--muted');
+      expect(off.style.getPropertyValue('--star-scheduler-event-color')).toBe(
+        'var(--star-chart-2)',
+      );
+      expect(nameOf(off)).toBe('Day off (cancelled), 10:00 to 11:00, Wednesday 4 March');
+      // Still movable and selectable.
+      expect(off.classList).not.toContain('star-scheduler__event--readonly');
+      expect(off.querySelectorAll('.star-scheduler__handle')).toHaveLength(2);
+      off.click();
+      expect(host.selected.at(-1)?.event.id).toBe('off');
+    });
+
+    it('adds "(cancelled)" to the hidden name of a custom template', async () => {
+      const { event } = await setup((h) => {
+        h.custom.set(true);
+        h.events.set(withdrawn());
+      });
+      expect(event('Day off').querySelector('.star-sr-only')?.textContent).toBe(
+        'Day off (cancelled), Wednesday 4 March, All day',
+      );
+    });
+  });
+
+  describe('without the toolbar', () => {
+    it('hides the toolbar, keeps the grid name, and the host navigates', async () => {
+      const { scheduler, host, stable, fixture } = await setup((h) => h.showToolbar.set(false));
+      expect(scheduler.querySelector('.star-scheduler__toolbar')).toBeNull();
+      expect(scheduler.querySelectorAll('button:not(.star-scheduler__event)')).toHaveLength(0);
+      const title = scheduler.querySelector('h2')!;
+      expect(title.classList).toContain('star-sr-only');
+      const grid = scheduler.querySelector('[role="grid"]')!;
+      expect(grid.getAttribute('aria-labelledby')).toBe(title.id);
+      const api = fixture.componentInstance.scheduler();
+      expect(api.rangeTitle()).toBe(title.textContent?.trim());
+      api.page(1);
+      await stable();
+      expect(host.date()).toEqual(at(2026, 3, 11));
+      api.page(-1);
+      await stable();
+      expect(host.date()).toEqual(at(2026, 3, 4));
+      host.view.set('month');
+      await stable();
+      expect(api.rangeTitle()).toBe('March 2026');
+      expect(scheduler.querySelector('h2')?.textContent?.trim()).toBe('March 2026');
     });
   });
 
