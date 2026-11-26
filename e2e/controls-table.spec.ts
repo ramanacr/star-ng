@@ -1,7 +1,7 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { collectErrors, example, openPage as openDocsPage } from './support';
+import { collectErrors, example, lowContrast, openPage as openDocsPage } from './support';
 
 /**
  * Opens a docs page and waits until the page is hydrated. The page is prerendered, so it is
@@ -1646,6 +1646,85 @@ test.describe('table: tools panel', () => {
       for (const panel of panels) {
         expect(panel.empty).toBe(0);
         expect(Math.abs(panel.end - panel.lastEnd)).toBeLessThanOrEqual(0.5);
+      }
+    });
+  }
+});
+
+test.describe('table: row tones', () => {
+  test('tints a whole row, its frozen cells too, and keeps the header and the selection fill', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table', 'Table');
+    const live = example(page, 'Row tones and row classes');
+    const table = live.getByRole('table', { name: 'Sign-in log' });
+    await table.scrollIntoViewIfNeeded();
+    const failed = bodyRows(table).filter({ hasText: '09:41' });
+    const success = bodyRows(table).filter({ hasText: '08:02' });
+    await expect(failed).toHaveClass(/star-table__row--tone-danger/);
+    // rowClass adds a class and the table keeps its own.
+    await expect(failed).toHaveClass(/login-row--failed/);
+    await expect(failed).toHaveClass(/star-table__row--alt/);
+    await expect(success).not.toHaveClass(/--tone/);
+
+    // --star-danger-soft of the light theme, on the row and on the frozen cell.
+    const danger = 'rgb(254, 242, 242)';
+    const frozen = failed.locator('td.star-table__cell--frozen');
+    await expect(failed).toHaveCSS('background-color', danger);
+    await expect(frozen).toHaveCSS('background-color', danger);
+    await expect(success.locator('td.star-table__cell--frozen')).not.toHaveCSS(
+      'background-color',
+      danger,
+    );
+    // The header is not tinted.
+    await expect(table.getByRole('columnheader', { name: 'Time' })).toHaveCSS(
+      'background-color',
+      'rgb(248, 250, 252)',
+    );
+
+    // Hover: a stronger tint, the same on the frozen cell.
+    await failed.locator('td').nth(2).hover();
+    await expect(failed).not.toHaveCSS('background-color', danger);
+    // The row fades to the hover fill (a transition): wait until it matches the frozen cell.
+    await expect
+      .poll(async () => {
+        const row = await failed.evaluate((item) => getComputedStyle(item).backgroundColor);
+        const cell = await frozen.evaluate((item) => getComputedStyle(item).backgroundColor);
+        return row === cell;
+      })
+      .toBe(true);
+
+    // A selected row shows the selection fill (--star-primary-soft), also on the frozen cell.
+    await failed.getByRole('checkbox').check();
+    await page.mouse.move(0, 0);
+    await expect(failed).toHaveAttribute('aria-selected', 'true');
+    await expect(failed).toHaveCSS('background-color', 'rgb(224, 231, 255)');
+    await expect(frozen).toHaveCSS('background-color', 'rgb(224, 231, 255)');
+  });
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`toned rows have AA contrast in the ${theme} theme`, async ({ page }) => {
+      await page.addInitScript((value) => localStorage.setItem('star-theme', value), theme);
+      await openPage(page, '/controls/table', 'Table');
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      const live = example(page, 'Row tones and row classes');
+      await live.scrollIntoViewIfNeeded();
+      // The row paints the fill and sets the text color; a frozen cell has its own fill.
+      const toned = live.locator(
+        'tr.star-table__row--tone, tr.star-table__row--tone > td.star-table__cell--frozen',
+      );
+      await expect(toned.first()).toBeVisible();
+      expect(await toned.count()).toBeGreaterThanOrEqual(5);
+      // Wait for the end of the background transition.
+      await page.waitForTimeout(300);
+      expect(await lowContrast(toned)).toEqual([]);
+
+      // Under the pointer: the hover fill of a danger row and of a muted row.
+      for (const name of ['Sign-in log', 'Days off']) {
+        const row = live.getByRole('table', { name }).locator('tr.star-table__row--tone').first();
+        await row.hover();
+        await page.waitForTimeout(300);
+        expect(await lowContrast(row), name).toEqual([]);
       }
     });
   }

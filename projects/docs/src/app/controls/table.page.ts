@@ -8,6 +8,7 @@ import {
   StarHeaderCellTemplate,
   StarRowExpansionTemplate,
   StarTable,
+  StarTableRowTone,
 } from '@star-ng/ui/table';
 import { StarTag } from '@star-ng/ui/tag';
 import { DOCS, DocsRow } from '../shared/docs';
@@ -21,6 +22,39 @@ import {
   ORDERS,
   STATUS_SEVERITY,
 } from './table-demo';
+
+/** A sign-in log entry (example data). */
+interface Login {
+  id: number;
+  time: string;
+  ip: string;
+  device: string;
+  status: 'Success' | 'Failed';
+}
+
+const LOGINS: readonly Login[] = [
+  { id: 1, time: '2026-11-03 08:02', ip: '192.0.2.10', device: 'Laptop', status: 'Success' },
+  { id: 2, time: '2026-11-03 09:41', ip: '192.0.2.43', device: 'Phone', status: 'Failed' },
+  { id: 3, time: '2026-11-03 09:42', ip: '192.0.2.43', device: 'Phone', status: 'Failed' },
+  { id: 4, time: '2026-11-03 09:45', ip: '192.0.2.43', device: 'Phone', status: 'Success' },
+  { id: 5, time: '2026-11-04 07:58', ip: '198.51.100.7', device: 'Desktop', status: 'Success' },
+  { id: 6, time: '2026-11-04 12:15', ip: '203.0.113.9', device: 'Tablet', status: 'Failed' },
+];
+
+/** A day off (example data). */
+interface Leave {
+  id: number;
+  day: string;
+  kind: string;
+  state: 'Approved' | 'Pending' | 'Withdrawn';
+}
+
+const LEAVES: readonly Leave[] = [
+  { id: 1, day: '2026-11-03', kind: 'Annual leave', state: 'Approved' },
+  { id: 2, day: '2026-11-10', kind: 'Annual leave', state: 'Withdrawn' },
+  { id: 3, day: '2026-11-17', kind: 'Training', state: 'Pending' },
+  { id: 4, day: '2026-11-24', kind: 'Annual leave', state: 'Withdrawn' },
+];
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -126,6 +160,39 @@ import {
             scrollHeight="14rem"
           />
         </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Row tones and row classes"
+        source="table/row-tones"
+        [script]="toneScript"
+        note="rowTone tints a whole row from the row data: danger, warn, success, info or muted (soft text on a subtle surface). Frozen and pinned cells get the tint too; the header does not. A selected row shows the selection fill. rowClass adds your own classes to a row (a string, a list or a record, as in [class]); they add to the classes of the table and never replace them. The tint is decorative: keep the state as text in a cell, as the Status column does here."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="logins"
+              [columns]="loginColumns"
+              dataKey="id"
+              ariaLabel="Sign-in log"
+              striped
+              stickyHeader
+              selectionMode="multiple"
+              [rowTone]="loginTone"
+              [rowClass]="loginClass"
+            />
+          </docs-fill>
+          <docs-fill>
+            <star-table
+              [value]="leaves"
+              [columns]="leaveColumns"
+              dataKey="id"
+              ariaLabel="Days off"
+              size="sm"
+              [rowTone]="leaveTone"
+            />
+          </docs-fill>
+        </div>
       </docs-example>
 
       <docs-example
@@ -316,6 +383,54 @@ readonly severityOf = (status: Order['status']) => STATUS_SEVERITY[status];`;
   { field: 'quantity', header: 'Quantity', align: 'center' },
   { field: 'total', header: 'Total', align: 'end', format: (row) => formatMoney(row.total) },
 ];`;
+  protected readonly logins: readonly Login[] = LOGINS;
+  protected readonly loginColumns: StarColumn<Login>[] = [
+    { field: 'time', header: 'Time', frozen: true },
+    { field: 'ip', header: 'IP address' },
+    { field: 'device', header: 'Device' },
+    { field: 'status', header: 'Status' },
+  ];
+  protected readonly loginTone = (row: Login): StarTableRowTone | null =>
+    row.status === 'Failed' ? 'danger' : null;
+  protected readonly loginClass = (row: Login) => ({
+    'login-row--failed': row.status === 'Failed',
+  });
+  protected readonly leaves: readonly Leave[] = LEAVES;
+  protected readonly leaveColumns: StarColumn<Leave>[] = [
+    { field: 'day', header: 'Day' },
+    { field: 'kind', header: 'Kind' },
+    { field: 'state', header: 'State' },
+  ];
+  protected readonly leaveTone = (row: Leave): StarTableRowTone | null =>
+    row.state === 'Withdrawn' ? 'muted' : null;
+  protected readonly toneScript = `// Import StarTableRowTone from '@star-ng/ui/table'.
+interface Login {
+  id: number;
+  time: string;
+  ip: string;
+  device: string;
+  status: 'Success' | 'Failed';
+}
+
+interface Leave {
+  id: number;
+  day: string;
+  kind: string;
+  state: 'Approved' | 'Pending' | 'Withdrawn';
+}
+
+// A failed sign-in gets the danger tone; the Status cell keeps the text.
+readonly loginTone = (row: Login): StarTableRowTone | null =>
+  row.status === 'Failed' ? 'danger' : null;
+// Your own classes: a string, a list or a record. The table keeps its own classes.
+readonly loginClass = (row: Login) => ({ 'login-row--failed': row.status === 'Failed' });
+
+// A withdrawn day off gets the muted tone: soft text on a subtle surface.
+readonly leaveTone = (row: Leave): StarTableRowTone | null =>
+  row.state === 'Withdrawn' ? 'muted' : null;
+
+// Change the tint with tokens, no ::ng-deep:
+// star-table { --star-table-row-danger-surface: #fde8e8; }`;
   protected readonly statesScript = `readonly loading = signal(false);`;
   protected readonly slotOrders: readonly Order[] = ORDERS.slice(0, 8);
   protected readonly slotQuery = signal('');
@@ -382,6 +497,21 @@ readonly slotLoading = signal(false);`;
     { name: '--star-border', description: 'Table border and the lines between rows.' },
     { name: '--star-border-strong', description: 'Line above the footer and the resize handle.' },
     { name: '--star-primary-soft', description: 'Background of a selected row.' },
+    {
+      name: '--star-table-row-<tone>-surface',
+      description:
+        'Fill of a row with that rowTone (danger, warn, success, info, muted), also on its frozen and pinned cells. Default: the soft color of the role (--star-danger-soft, --star-warning-soft, --star-success-soft, --star-accent-soft) or --star-surface-muted.',
+    },
+    {
+      name: '--star-table-row-<tone>-surface-hover',
+      description:
+        'Fill of a toned row under the pointer. Default: the surface mixed with the role color.',
+    },
+    {
+      name: '--star-table-row-<tone>-text',
+      description:
+        'Text color of a toned row. Default: --star-text; muted: --star-text-muted mixed with --star-text (4.5:1 also on the hover fill).',
+    },
     {
       name: '--star-primary',
       description: 'Drop mark of a column move and the resize handle hover.',
@@ -588,6 +718,17 @@ readonly slotLoading = signal(false);`;
       name: 'StarRowContext<T>',
       type: '{ $implicit: T; index: number }',
       description: 'Context of a starRowExpansion template.',
+    },
+    {
+      name: 'StarTableRowTone',
+      type: "'success' | 'info' | 'warn' | 'danger' | 'muted'",
+      description: 'Built-in tint of a row (rowTone).',
+    },
+    {
+      name: 'StarTableRowClass',
+      type: 'string | readonly string[] | Record<string, boolean> | null | undefined',
+      description:
+        'Classes for a row (rowClass). The function gets the row and its position in the shown rows (-1 for a pinned row).',
     },
     {
       name: 'StarSortState',

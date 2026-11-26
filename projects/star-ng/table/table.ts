@@ -156,6 +156,7 @@ import {
   withRowPin,
 } from './table-row-pins';
 import { rowSpans } from './table-row-span';
+import { starRowClasses, StarTableRowClassFn, StarTableRowToneFn } from './table-row-tone';
 import type { StarTableTextPart } from './table-search';
 import {
   StarHeaderCheckboxToggleEvent,
@@ -571,6 +572,18 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   readonly loading = input(false, { transform: booleanAttribute });
   readonly emptyMessage = input<string | null>(null);
   readonly striped = input(this.defaults.striped ?? false, { transform: booleanAttribute });
+  /**
+   * Classes for a body row from the row data: a string, a list or a record (the forms of
+   * `[class]`). They add to the classes of the table (selected, striped, focused); they never
+   * replace them. `index` is the position in the shown rows, -1 for a pinned row.
+   */
+  readonly rowClass = input<StarTableRowClassFn<T> | null>(null);
+  /**
+   * Built-in tint of a whole row from the row data: `'danger'`, `'warn'`, `'success'`, `'info'`
+   * or `'muted'` (soft text). Pinned cells get the tint too; a selected row shows the selection
+   * fill. The tint is decorative: keep the state as text in a cell.
+   */
+  readonly rowTone = input<StarTableRowToneFn<T> | null>(null);
   /** Row density. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
   readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
   readonly stickyHeader = input(this.defaults.stickyHeader ?? false, {
@@ -2715,6 +2728,14 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   /** The cell has a pending change (`batchEdit`). */
   protected isChanged(row: T, column: StarColumn<T>): boolean {
     return !!this.batch.pending(row, column.field);
+  }
+
+  /** The classes of `rowTone` and `rowClass` for a body row; null without the inputs. */
+  protected rowClasses(row: T, index: number): string[] | null {
+    const tone = this.rowTone();
+    const extra = this.rowClass();
+    if (!tone && !extra) return null;
+    return starRowClasses(tone?.(row), extra?.(row, index < 0 ? -1 : index));
   }
 
   /** The row is deleted in the pending change set (`batchEdit`). */
