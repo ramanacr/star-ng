@@ -55,6 +55,8 @@ const REQUIRED = [
   'styles/star-ng.css',
   'styles/star-ng.min.css',
   'styles/star-ng.scss',
+  'styles/themes/_glass.scss',
+  'styles/themes/glass.css',
   'theme/star-theme-first-paint.js',
 ];
 for (const file of REQUIRED) {
