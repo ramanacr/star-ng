@@ -669,7 +669,10 @@ const HOST = {
   '[class.star-select--open]': 'panelVisible()',
   '[class.star-select--disabled]': 'disabled()',
   '[class.star-select--invalid]': 'showInvalid()',
+  // `size` (from StarOptionListBase): `star-select--sm` shares the small rules of the select
+  // family, `star-ac--sm` is the hook of the autocomplete-only rules (input, chips, icon field).
   '[class.star-select--sm]': "size() === 'sm'",
+  '[class.star-ac--sm]': "size() === 'sm'",
 };
 
 /**

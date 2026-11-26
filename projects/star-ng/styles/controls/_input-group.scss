@@ -36,7 +36,7 @@
   .star-ac__control {
     padding-inline-start: 2.5rem;
   }
-  .star-select--sm .star-ac__control {
+  .star-ac--sm .star-ac__control {
     padding-inline-start: 2rem;
   }
   .star-icon-field__icon {
@@ -47,20 +47,25 @@
   &:has(> .star-ac--multi) .star-icon-field__icon {
     inset-block-start: calc(1px + 0.25rem);
   }
-  &:has(> .star-select--sm) .star-icon-field__icon {
+  // Small: the icon of `input starInput size="sm"`, centred on one small input row
+  // (`--star-ac-row` of `_autocomplete.scss`).
+  &:has(> .star-ac--sm) .star-icon-field__icon {
     inset-inline-start: 0.75rem;
-    block-size: 2.25rem;
+    block-size: 2.375rem;
     font-size: 1rem;
+  }
+  &:has(> .star-ac--sm.star-ac--multi) .star-icon-field__icon {
+    block-size: 1.875rem;
   }
 }
 .star-icon-field--end:has(> .star-ac) {
   .star-ac__control {
     padding-inline: 0.75rem 2.5rem;
   }
-  .star-select--sm .star-ac__control {
+  .star-ac--sm .star-ac__control {
     padding-inline: 0.75rem 2rem;
   }
-  &:has(> .star-select--sm) .star-icon-field__icon {
+  &:has(> .star-ac--sm) .star-icon-field__icon {
     inset-inline: auto 0.75rem;
   }
 }

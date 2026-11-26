@@ -230,7 +230,11 @@ export abstract class StarOptionListBase<TOption, TValue> {
    * The default comes from `overlay.appendTo` of `provideStarNg` when it is set.
    */
   readonly appendTo = input<'self' | 'body'>(this.defaults.appendTo ?? 'self');
-  /** Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
+  /**
+   * Size. `sm` is the compact control: the same height, font size and padding as
+   * `input starInput size="sm"`, for dense form rows. Default: `size` of `provideStarNg`
+   * (`small` or `medium`), else `md`.
+   */
   readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
   readonly ariaLabel = input<string | null>(null);
   readonly ariaLabelledBy = input<string | null>(null);
