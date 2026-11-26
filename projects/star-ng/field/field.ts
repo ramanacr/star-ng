@@ -1,10 +1,12 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   DestroyRef,
   Directive,
   DOCUMENT,
@@ -33,6 +35,23 @@ export interface StarFieldStateLike {
 }
 
 /**
+ * Marks content for the end of the label row of a `star-field`: metadata such as the author and
+ * time of a value, or a link such as "Forgot password?". The content sits at the inline end of the
+ * row (the right in LTR, the left in RTL) in muted text, outside the label element, so it is not
+ * part of the accessible name of the control or of its description. Interactive content (a link, a
+ * button) is in the tab order before the control. Import `StarFieldLabelEnd` with `StarField`: an
+ * element whose directive is not imported is not shown.
+ * ```html
+ * <star-field label="Password">
+ *   <a starFieldLabelEnd href="/reset">Forgot password?</a>
+ *   <input starInput type="password" />
+ * </star-field>
+ * ```
+ */
+@Directive({ selector: '[starFieldLabelEnd]' })
+export class StarFieldLabelEnd {}
+
+/**
  * Form field wrapper: uppercase label, the control, a hint and an error message
  * (PrimeNG `p-floatlabel` / `p-iftalabel` + `p-message` in one, StarNG style).
  *
@@ -45,6 +64,7 @@ export interface StarFieldStateLike {
  */
 @Component({
   selector: 'star-field',
+  imports: [NgTemplateOutlet],
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,25 +75,40 @@ export interface StarFieldStateLike {
     '[attr.aria-busy]': 'pending() || null',
   },
   template: `
-    @if (label()) {
-      <!-- A click on the label only moves the focus to the control (see onLabelClick). Keyboard
-           users reach the control itself with Tab, so the label needs no key handler. -->
-      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-      <label
-        data-star-part="label"
-        class="star-field__label"
-        [id]="labelId"
-        [attr.for]="labelFor()"
-        (click)="onLabelClick($event)"
-      >
-        {{ label() }}
-        @if (isRequired()) {
-          <span data-star-part="requiredText" class="star-field__required" aria-hidden="true"
-            >*</span
-          >
-        }
-      </label>
+    @if (hasLabelEnd()) {
+      <!-- The end content sits outside the label element and is in no aria-labelledby or
+           aria-describedby: it is metadata next to the label, not part of the control name. -->
+      <div data-star-part="labelRow" class="star-field__label-row">
+        <ng-container [ngTemplateOutlet]="labelTemplate" />
+        <span data-star-part="labelEndPanel" class="star-field__label-end">
+          {{ labelEnd() }}
+          <ng-content select="[starFieldLabelEnd]" />
+        </span>
+      </div>
+    } @else {
+      <ng-container [ngTemplateOutlet]="labelTemplate" />
     }
+    <ng-template #labelTemplate>
+      @if (label()) {
+        <!-- A click on the label only moves the focus to the control (see onLabelClick). Keyboard
+             users reach the control itself with Tab, so the label needs no key handler. -->
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+        <label
+          data-star-part="label"
+          class="star-field__label"
+          [id]="labelId"
+          [attr.for]="labelFor()"
+          (click)="onLabelClick($event)"
+        >
+          {{ label() }}
+          @if (isRequired()) {
+            <span data-star-part="requiredText" class="star-field__required" aria-hidden="true"
+              >*</span
+            >
+          }
+        </label>
+      }
+    </ng-template>
     <ng-content />
     @if (errorText(); as error) {
       <p data-star-part="errorText" class="star-field__error" [id]="errorId" role="alert">
@@ -99,6 +134,12 @@ export interface StarFieldStateLike {
 export class StarField {
   readonly label = input('');
   readonly hint = input('');
+  /**
+   * Plain text at the inline end of the label row, in muted text (for example the author and time
+   * of a value). For rich or interactive content (a link), use an element with `starFieldLabelEnd`
+   * instead. Not part of the accessible name of the control, and not in its description.
+   */
+  readonly labelEnd = input('');
   /** Explicit error text. Wins over `state` errors. */
   readonly error = input<string | null>(null);
   readonly state = input<StarFieldStateLike | null>(null);
@@ -110,6 +151,10 @@ export class StarField {
    * (see `linkControl`). Set it only for a native control that is not a StarNG control.
    */
   readonly for = input<string | null>(null);
+
+  private readonly labelEndContent = contentChild(StarFieldLabelEnd);
+  /** The label row has end content: the `labelEnd` text or an element with `starFieldLabelEnd`. */
+  protected readonly hasLabelEnd = computed(() => !!this.labelEnd() || !!this.labelEndContent());
 
   private readonly ids = inject(_IdGenerator);
   private readonly document = inject(DOCUMENT);

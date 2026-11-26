@@ -15,6 +15,33 @@
   color: var(--star-text-muted);
 }
 
+.star-field__label {
+  // In a label row (end content set) the label shrinks and wraps before the end content does.
+  .star-field__label-row > & {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+
+// Label row (`labelEnd` or `starFieldLabelEnd`): the label at the start, the end content at the
+// inline end (mirrored in RTL). On a narrow field the end content wraps to its own line and stays
+// at the end. The row exists only when there is end content.
+.star-field__label-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.75rem;
+  row-gap: 0.25rem;
+}
+.star-field__label-end {
+  margin-inline-start: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--star-field-label-end-color, var(--star-text-muted));
+  overflow-wrap: anywhere;
+}
+
 .star-input {
   width: 100%;
   border-radius: var(--star-input-radius);
