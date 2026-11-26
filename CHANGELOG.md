@@ -2,6 +2,14 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+#### Scheduler
+
+- Scheduler: a muted event colour, cancelled events, and a scheduler without its toolbar. `StarSchedulerColor` (the `color` of `StarSchedulerEvent` and `StarSchedulerResource`) accepts `'muted'`: a neutral tone outside the chart palette 1–8, in every view (day, week, work-week, month, agenda, timeline and the "+N more" list), class `star-scheduler__event--muted`, tokens `--star-scheduler-event-muted-surface`, `--star-scheduler-event-muted-edge` and `--star-scheduler-event-muted-text` (from the neutral theme tokens). `StarSchedulerEvent.cancelled`: the title is struck through and of normal weight, the surface and the edge are lighter, and the text keeps AA contrast in the light and dark themes (token `--star-scheduler-event-cancelled-text`, class `star-scheduler__event--cancelled`). It works with every colour, including `'muted'`. The accessible name gets the new text key `eventCancelled` ("(cancelled)", German "(abgesagt)", Spanish "(cancelado)") after the title. A cancelled event is still selected, moved and resized as before; set `readonly` to stop that. Input `showToolbar` (default `true`): with `false` the toolbar is not shown, and the page puts the navigation in its own toolbar with the public `page(-1)`, `page(1)`, `goToday()` and the now public signal `rangeTitle()`. The range title stays in the page for screen readers as the name of the grid. Without the new options the scheduler works and looks as before ([#166](https://github.com/ramanacr/star-ng/issues/166)).
+
 ## [0.8.0] - 2026-11-26
 
 ### Added

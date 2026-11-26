@@ -18098,6 +18098,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Shows the current-time line in the browser."
       },
       {
+        "name": "showToolbar",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the toolbar (Today, previous, next, the range title and the views). Without it, put the navigation in your own toolbar: call `page(-1)`, `page(1)` and `goToday()`, show `rangeTitle()` and set `view`. The range title stays in the page for screen readers as the name of the grid."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
@@ -24419,6 +24426,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "ripple/basic": "<button type=\"button\" class=\"star-btn star-btn--secondary star-btn--md\" starRipple>\n  Save\n</button>\n<button type=\"button\" class=\"star-btn star-btn--primary star-btn--md\" starRipple>\n  Submit order\n</button>",
   "rtl/island": "<div class=\"docs-stack\" dir=\"rtl\">\n  <star-breadcrumb [items]=\"trail\" ariaLabel=\"Island trail\" />\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Island tabs\">\n    <star-tab value=\"one\" label=\"One\">First panel</star-tab>\n    <star-tab value=\"two\" label=\"Two\">Second panel</star-tab>\n    <star-tab value=\"three\" label=\"Three\">Third panel</star-tab>\n  </star-tabs>\n  <star-select-button\n    [options]=\"['Day', 'Week', 'Month']\"\n    [(value)]=\"period\"\n    ariaLabel=\"Island period\"\n  />\n  <star-paginator [totalRecords]=\"60\" [rows]=\"10\" />\n</div>",
   "scheduler/agenda": "<star-scheduler\n  [events]=\"agendaEvents\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"agenda\"\n  [date]=\"march2\"\n  [views]=\"['agenda', 'week']\"\n  ariaLabel=\"Agenda\"\n>\n  <ng-template starSchedulerEvent let-occurrence>\n    <strong>{{ occurrence.event.title }}</strong>\n    <span class=\"event-room\">{{ roomName(occurrence.event.resourceId) }}</span>\n  </ng-template>\n</star-scheduler>",
+  "scheduler/days-off": "<div class=\"docs-stack\">\n  <div class=\"days-off-bar\">\n    <h3 aria-live=\"polite\">{{ teamDaysOff.rangeTitle() }}</h3>\n    <star-button\n      variant=\"ghost\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-caret-left\"\n      ariaLabel=\"Previous month\"\n      (click)=\"teamDaysOff.page(-1)\"\n    />\n    <star-button\n      variant=\"ghost\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-caret-right\"\n      ariaLabel=\"Next month\"\n      (click)=\"teamDaysOff.page(1)\"\n    />\n    <star-button variant=\"secondary\" label=\"Today\" (click)=\"teamDaysOff.goToday()\" />\n  </div>\n  <star-scheduler\n    #teamDaysOff\n    [events]=\"daysOff\"\n    locale=\"en-GB\"\n    view=\"month\"\n    [date]=\"march\"\n    [views]=\"['month']\"\n    [showToolbar]=\"false\"\n    ariaLabel=\"Days off of the team\"\n  />\n</div>",
   "scheduler/month": "<star-scheduler\n  [events]=\"busyMonth\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"month\"\n  [date]=\"march\"\n  [views]=\"['month', 'agenda']\"\n  ariaLabel=\"Month of March\"\n/>",
   "scheduler/team": "<div class=\"docs-stack\">\n  <star-scheduler\n    [events]=\"events()\"\n    [resources]=\"rooms\"\n    locale=\"en-GB\"\n    [(view)]=\"view\"\n    [(date)]=\"date\"\n    workDayStart=\"08:00\"\n    workDayEnd=\"18:00\"\n    ariaLabel=\"Team calendar\"\n    (eventChange)=\"onChange($event)\"\n    (slotSelect)=\"onSlot($event)\"\n    (eventSelect)=\"onSelect($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
   "scheduler/timeline": "<star-scheduler\n  [events]=\"roomEvents()\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"timeline-day\"\n  [date]=\"march3\"\n  [views]=\"['timeline-day', 'day']\"\n  editor\n  ariaLabel=\"Room bookings\"\n  (editorSave)=\"onSave($event)\"\n  (eventChange)=\"onRoomChange($event)\"\n  (eventDelete)=\"onDelete($event)\"\n/>",

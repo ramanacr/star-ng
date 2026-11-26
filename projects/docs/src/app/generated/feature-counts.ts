@@ -3,7 +3,7 @@
 export const FEATURE_COUNTS = {
   "lib": {
     "input": {
-      "uses": 1342,
+      "uses": 1343,
       "files": 129
     },
     "inputRequired": {
@@ -107,7 +107,7 @@ export const FEATURE_COUNTS = {
       "files": 27
     },
     "if": {
-      "uses": 835,
+      "uses": 836,
       "files": 108
     },
     "for": {
@@ -135,7 +135,7 @@ export const FEATURE_COUNTS = {
       "files": 49
     },
     "booleanAttribute": {
-      "uses": 548,
+      "uses": 549,
       "files": 100
     },
     "numberAttribute": {

@@ -724,6 +724,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   noEvents: 'Keine Termine',
   timeRange: (start, end) => `${start} bis ${end}`,
   repeats: 'Wiederholt sich',
+  eventCancelled: '(abgesagt)',
   eventMoveHint:
     'Alt und die Pfeiltasten verschieben, Alt, Umschalt und die Pfeiltasten ändern die Dauer.',
   eventMoved: (label, when) => `${label} verschoben auf ${when}`,
