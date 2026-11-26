@@ -762,6 +762,26 @@ kbd {
   align-items: center;
   gap: var(--star-space-4);
 }
+// Rows of compact form controls side by side (for example the small sizes): a grid, so the boxes of
+// one row share their top edge and can be compared.
+.docs-form-grid {
+  display: grid;
+  gap: var(--star-space-4);
+  width: min(100%, 40rem);
+}
+.docs-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  align-items: start;
+  gap: var(--star-space-3);
+
+  > * {
+    min-width: 0;
+  }
+}
+.docs-form-row--wide {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
 .docs-output {
   margin: 0;
   color: var(--star-text-muted);

@@ -972,3 +972,96 @@ test.describe('autocomplete leading icon (star-icon-field)', () => {
     });
   }
 });
+
+test.describe('autocomplete size sm', () => {
+  /** Top, height and font size of a control box. */
+  async function measure(box: Locator, text: Locator) {
+    const rect = await box.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { y: r.y, height: r.height };
+    });
+    const fontSize = await text.evaluate((el) => getComputedStyle(el).fontSize);
+    return { ...rect, fontSize };
+  }
+
+  for (const dir of ['ltr', 'rtl'] as const) {
+    test(`small autocompletes are as high as small selects and inputs (${dir})`, async ({
+      page,
+    }) => {
+      if (dir === 'rtl') {
+        await page.addInitScript(() => localStorage.setItem('star-direction', 'rtl'));
+      }
+      await openPage(page, '/controls/autocomplete', 'Autocomplete');
+      await expect(page.locator('html')).toHaveAttribute('dir', dir);
+      const live = example(page, 'Small size');
+      const rows = live.locator('.docs-form-row');
+
+      // Row 1: autocomplete, select and input.
+      const row = rows.nth(0);
+      const ac = row.locator('star-autocomplete');
+      await expect(ac).toHaveClass(/star-ac--sm/);
+      const single = await measure(ac.locator('.star-ac__control'), ac.locator('.star-ac__input'));
+      const select = await measure(
+        row.locator('star-select .star-select__control'),
+        row.locator('star-select .star-select__trigger'),
+      );
+      const input = await measure(row.locator('input.star-input'), row.locator('input.star-input'));
+      expect(single.height).toBeCloseTo(select.height, 1);
+      expect(single.height).toBeCloseTo(input.height, 1);
+      expect(single.y).toBeCloseTo(select.y, 1);
+      expect(single.fontSize).toBe(select.fontSize);
+      expect(single.fontSize).toBe(input.fontSize);
+      // Smaller than the default size.
+      const md = page.locator('star-autocomplete:not(.star-ac--sm) .star-ac__control').first();
+      expect(single.height).toBeLessThan((await md.boundingBox())!.height);
+
+      // Row 2: in star-icon-field, as high as an icon field input, the icon centred.
+      const fields = rows.nth(1).locator('star-icon-field');
+      const iconAc = await measure(
+        fields.nth(0).locator('.star-ac__control'),
+        fields.nth(0).locator('.star-ac__input'),
+      );
+      const iconInput = await measure(
+        fields.nth(1).locator('input'),
+        fields.nth(1).locator('input'),
+      );
+      expect(iconAc.height).toBeCloseTo(iconInput.height, 1);
+      expect(iconAc.height).toBeCloseTo(input.height, 1);
+      for (const [index, part] of [
+        [0, '.star-ac__control'],
+        [1, 'input'],
+      ] as const) {
+        const field = fields.nth(index);
+        const icon = (await field.locator('.star-icon-field__icon').boundingBox())!;
+        const box = (await field.locator(part).boundingBox())!;
+        expect(icon.y + icon.height / 2).toBeCloseTo(box.y + box.height / 2, 0);
+        // The icon is at the inline start.
+        if (dir === 'ltr') expect(icon.x - box.x).toBeLessThan(box.width / 4);
+        else expect(box.x + box.width - (icon.x + icon.width)).toBeLessThan(box.width / 4);
+      }
+
+      // Row 3: multiple with a chip, as high as the select beside it.
+      const wide = rows.nth(2);
+      const multiHost = wide.locator('star-multi-autocomplete');
+      await expect(multiHost.locator('.star-chip')).toHaveCount(1);
+      const multi = await measure(
+        multiHost.locator('.star-ac__control'),
+        multiHost.locator('.star-ac__input'),
+      );
+      const select2 = await measure(
+        wide.locator('star-select .star-select__control'),
+        wide.locator('star-select .star-select__trigger'),
+      );
+      expect(multi.height).toBeCloseTo(select2.height, 1);
+      expect(multi.height).toBeCloseTo(select.height, 1);
+      expect(multi.fontSize).toBe(select2.fontSize);
+      // The chip and the Clear button are centred in the box.
+      const control = (await multiHost.locator('.star-ac__control').boundingBox())!;
+      const middle = control.y + control.height / 2;
+      const chip = (await multiHost.locator('.star-chip').boundingBox())!;
+      const clear = (await multiHost.getByRole('button', { name: 'Clear' }).boundingBox())!;
+      expect(chip.y + chip.height / 2).toBeCloseTo(middle, 0);
+      expect(clear.y + clear.height / 2).toBeCloseTo(middle, 0);
+    });
+  }
+});
