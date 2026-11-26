@@ -56,6 +56,12 @@ import {
   starTimeOf,
   starWithTime as withTime,
 } from './date-format';
+import {
+  starFormatPattern,
+  starParsePattern,
+  starPatternHint,
+  starTimePattern,
+} from './date-pattern';
 import { STAR_DATE_PICKER_DEFAULTS } from './date-picker-defaults';
 import { STAR_DATE_HOST, STAR_DATE_TEMPLATE } from './date-picker.template';
 import { StarDateSheet } from './date-sheet';
@@ -143,6 +149,30 @@ export abstract class StarDateInputBase<TValue> {
    * Default: `dateFormat`.
    */
   readonly inputFormat = input<Intl.DateTimeFormatOptions | null>(null);
+  /**
+   * One fixed pattern of the shown text and of the typed text, for example `'dd-MMM-yyyy'`
+   * (`05-Nov-2026`), as one date format for a whole app. It wins over `dateFormat`,
+   * `displayFormat` and `inputFormat`, and is the placeholder unless `placeholder` is set.
+   * Default: `null`, the `Intl` formats. Not used for `view="month"` and `view="year"`.
+   *
+   * Tokens: `d` / `dd` day; `M` / `MM` month number; `MMM` short month name of the locale
+   * without a trailing dot (`Nov`); `MMMM` long month name (`November`); `yy` two-digit year;
+   * `yyyy` year; `H` / `HH` hour 0–23; `h` / `hh` hour 1–12; `mm` minutes; `ss` seconds; `a`
+   * day period (`AM` / `PM`). Text in single quotes is literal (`'T'`); every other character is
+   * literal too.
+   *
+   * With `showTime`, a pattern without a time token gets ` HH:mm` (` HH:mm:ss` with
+   * `showSeconds`), or ` hh:mm a` with `hourFormat="12"`: `dd-MMM-yyyy HH:mm` gives
+   * `05-Nov-2026 09:26`. A date typed without the time then keeps the time of the value.
+   *
+   * Typed text is read with tolerance: any case (`05-nov-2026`), short or long month names
+   * with or without a dot (`Nov.`), the month number (`05-11-2026`), one digit fewer
+   * (`5-Nov-2026`), and any of the separators space, `-`, `/`, `.`, `,`, `:` for a separator of
+   * the pattern. Text that is not a real date (`31-Feb-2026`) is not a date.
+   * Keep the separator of the range picker (` – `) and of the multiple-date picker (`,`, `;`)
+   * out of the pattern. Default: `datePattern` of `provideStarDatePickerDefaults`.
+   */
+  readonly datePattern = input<string | null>(this.defaults.datePattern ?? null);
   /**
    * Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked
    * invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without
@@ -269,7 +299,27 @@ export abstract class StarDateInputBase<TValue> {
   );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   protected readonly interactive = computed(() => !this.disabled() && !this.readonly());
-  protected readonly hint = computed(() => this.placeholder() ?? formatHint(this.locale()));
+  protected readonly hint = computed(
+    () => this.placeholder() ?? this.patternHint() ?? formatHint(this.locale()),
+  );
+  /**
+   * The pattern of the text (`datePattern` with the time of `showTime`), or `null`: the text
+   * follows the `Intl` formats. Only for days, not for `view="month"` or `view="year"`.
+   */
+  protected readonly textPattern = computed(() => {
+    const pattern = this.datePattern();
+    if (!pattern || this.granularity() !== 'day') return null;
+    return starTimePattern(pattern, this.timeEnabled(), this.hourFormat(), this.showSeconds());
+  });
+  /** The placeholder of `datePattern`, or `null`. */
+  protected patternHint(): string | null {
+    const pattern = this.textPattern();
+    return pattern ? starPatternHint(pattern) : null;
+  }
+  /** Month names and day periods need letters; numeric dates the number keyboard. */
+  protected readonly inputMode = computed(() =>
+    /M{3}|a/.test(this.textPattern()?.replace(/'[^']*'/g, '') ?? '') ? 'text' : 'numeric',
+  );
 
   /** Time fields in the popup (`showTime` on the single and the range picker). */
   protected readonly timeEnabled: () => boolean = () => false;
@@ -316,6 +366,8 @@ export abstract class StarDateInputBase<TValue> {
   protected abstract pickToday(today: Date): void;
 
   protected format(date: Date | null): string {
+    const pattern = this.textPattern();
+    if (pattern) return starFormatPattern(date, pattern, this.locale());
     return formatDate(date, this.locale(), this.textFormat());
   }
 
@@ -488,8 +540,41 @@ export abstract class StarDateInputBase<TValue> {
   }
 
   protected parseOne(text: string): Date | null | undefined {
-    const date = parseDate(text, this.locale(), this.inputFormat() ?? this.dateFormat());
+    const pattern = this.textPattern();
+    const parsed = pattern
+      ? starParsePattern(text, pattern, this.locale())
+      : parseDate(text, this.locale(), this.inputFormat() ?? this.dateFormat());
+    // A pattern with a time token keeps the day only, without `showTime`.
+    const date = parsed && pattern ? startOfDay(parsed) : parsed;
     return date && this.allowed(date) ? date : undefined;
+  }
+
+  /**
+   * Text typed in `datePattern` with the time of `showTime`. Text in the date part of the pattern
+   * alone (when the picker added the time) takes the fallback time.
+   */
+  private parsePatternDateTime(text: string, pattern: string, fallback: Date): Date | undefined {
+    const locale = this.locale();
+    const typed = starParsePattern(text, pattern, locale);
+    const datePattern = this.datePattern();
+    const day =
+      !typed && datePattern && datePattern !== pattern
+        ? starParsePattern(text, datePattern, locale)
+        : null;
+    const date = typed ?? day;
+    if (!date || !this.allowed(date)) return undefined;
+    if (!typed) {
+      return this.clampTime(
+        atTime(date, fallback.getHours(), fallback.getMinutes(), fallback.getSeconds()),
+      );
+    }
+    const time = atTime(
+      typed,
+      typed.getHours(),
+      typed.getMinutes(),
+      this.showSeconds() ? typed.getSeconds() : 0,
+    );
+    return this.clampTime(time).getTime() === time.getTime() ? time : undefined;
   }
 
   /**
@@ -498,6 +583,8 @@ export abstract class StarDateInputBase<TValue> {
    * `undefined`: the text is not a valid date and time.
    */
   protected parseDateTime(text: string, fallback: Date): Date | undefined {
+    const pattern = this.textPattern();
+    if (pattern) return this.parsePatternDateTime(text, pattern, fallback);
     const time = starSplitDateTime(text);
     if (time === undefined) return undefined;
     const date = this.parseOne(time ? time.date : text);
@@ -535,6 +622,8 @@ export abstract class StarDateInputBase<TValue> {
   }
 
   protected formatDateTime(date: Date | null): string {
+    const pattern = this.textPattern();
+    if (pattern) return starFormatPattern(date, pattern, this.locale());
     return starFormatDateTime(
       date,
       this.locale(),
@@ -626,6 +715,8 @@ export class StarDatePicker<T extends Date | string = Date>
     if (this.placeholder()) return this.placeholder()!;
     if (this.view() === 'month') return 'mm/yyyy';
     if (this.view() === 'year') return 'yyyy';
+    const pattern = this.patternHint();
+    if (pattern) return pattern;
     return formatHint(this.locale()) + (this.showTime() ? this.timeHint() : '');
   });
   protected readonly displayText = () => {
@@ -753,7 +844,9 @@ export class StarDateRangePicker<T extends Date | string = Date>
   protected override readonly timeStep = () => Math.max(1, this.stepMinute()) * 60;
   protected override readonly hint = computed(
     () =>
-      this.placeholder() ?? formatHint(this.locale()) + (this.showTime() ? this.timeHint() : ''),
+      this.placeholder() ??
+      this.patternHint() ??
+      formatHint(this.locale()) + (this.showTime() ? this.timeHint() : ''),
   );
   private readonly show = (date: Date | null) =>
     this.showTime() ? this.formatDateTime(date) : this.format(date);

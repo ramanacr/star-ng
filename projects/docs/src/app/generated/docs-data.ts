@@ -4722,6 +4722,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`."
       },
       {
+        "name": "datePattern",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "One fixed pattern of the shown text and of the typed text, for example `'dd-MMM-yyyy'` (`05-Nov-2026`), as one date format for a whole app. It wins over `dateFormat`, `displayFormat` and `inputFormat`, and is the placeholder unless `placeholder` is set. Default: `null`, the `Intl` formats. Not used for `view=\"month\"` and `view=\"year\"`."
+      },
+      {
         "name": "keepInvalid",
         "type": "boolean",
         "default": "false",
@@ -5063,6 +5070,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "datePattern",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "One fixed pattern of the shown text and of the typed text, for example `'dd-MMM-yyyy'` (`05-Nov-2026`), as one date format for a whole app. It wins over `dateFormat`, `displayFormat` and `inputFormat`, and is the placeholder unless `placeholder` is set. Default: `null`, the `Intl` formats. Not used for `view=\"month\"` and `view=\"year\"`.",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -5497,6 +5512,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "datePattern",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "One fixed pattern of the shown text and of the typed text, for example `'dd-MMM-yyyy'` (`05-Nov-2026`), as one date format for a whole app. It wins over `dateFormat`, `displayFormat` and `inputFormat`, and is the placeholder unless `placeholder` is set. Default: `null`, the `Intl` formats. Not used for `view=\"month\"` and `view=\"year\"`.",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -14093,6 +14116,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "datePattern",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "One fixed pattern of the shown text and of the typed text, for example `'dd-MMM-yyyy'` (`05-Nov-2026`), as one date format for a whole app. It wins over `dateFormat`, `displayFormat` and `inputFormat`, and is the placeholder unless `placeholder` is set. Default: `null`, the `Intl` formats. Not used for `view=\"month\"` and `view=\"year\"`.",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -24168,6 +24199,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "data-view/sorting": "<star-data-view [items]=\"sorted()\">\n  <div starDataViewHeader>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('name')\">\n      Sort by name\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('price')\">\n      Sort by price\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"sorted()\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",
   "date-picker/basic": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"delivery\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    ariaLabel=\"Delivery date\"\n    showButtonBar\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\n</div>",
   "date-picker/data-type": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"issuedOn\"\n    locale=\"en-GB\"\n    dataType=\"string\"\n    ariaLabel=\"Invoice issued on\"\n  />\n  <star-date-range-picker\n    [(value)]=\"billingPeriod\"\n    locale=\"en-GB\"\n    dataType=\"string\"\n    ariaLabel=\"Billing period\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Issued: {{ issuedOn() ?? 'none' }}. Period: {{ billingPeriod()?.start ?? 'none' }} to\n    {{ billingPeriod()?.end ?? 'none' }}\n  </p>\n</div>",
+  "date-picker/date-pattern": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"dispatchAt\"\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    dataType=\"string\"\n    showTime\n    ariaLabel=\"Dispatch time\"\n  />\n  <star-date-range-picker\n    [(value)]=\"projectPhase\"\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    ariaLabel=\"Project phase\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Dispatch: {{ dispatchAt() ?? 'none' }}. Phase:\n    {{ iso(projectPhase()?.start ?? null) }} to {{ iso(projectPhase()?.end ?? null) }}\n  </p>\n</div>",
   "date-picker/display-input-format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"dueDate\"\n    locale=\"en-GB\"\n    [displayFormat]=\"displayLong\"\n    [inputFormat]=\"inputNumeric\"\n    keepInvalid\n    ariaLabel=\"Invoice due date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Due: {{ iso(dueDate()) }}</p>\n</div>",
   "date-picker/events": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"eventsDate\"\n    locale=\"en-GB\"\n    showButtonBar\n    showClear\n    (todayClick)=\"lastEvent.set('Today')\"\n    (clearClick)=\"lastEvent.set('Clear')\"\n    (monthChange)=\"lastEvent.set('Month ' + $event.month + '/' + $event.year)\"\n    ariaLabel=\"Invoice review date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last event: {{ lastEvent() }}</p>\n</div>",
   "date-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Delivery date\" for=\"date-form-delivery\" [state]=\"order.deliveryDate()\">\n    <star-date-picker\n      inputId=\"date-form-delivery\"\n      [formField]=\"order.deliveryDate\"\n      locale=\"en-GB\"\n      [minDate]=\"minDate\"\n      ariaLabel=\"Required delivery date\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ order().valid() }}</p>\n</div>",
