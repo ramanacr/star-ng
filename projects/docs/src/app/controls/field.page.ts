@@ -8,7 +8,7 @@ import {
 import { email, form, FormField, required, validateAsync } from '@angular/forms/signals';
 import { StarButton } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
-import { StarField, StarFieldLabelEnd, StarInput } from '@star-ng/ui/field';
+import { StarField, StarFieldLabelEnd, StarFieldLabelSuffix, StarInput } from '@star-ng/ui/field';
 import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -22,6 +22,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     StarCheckbox,
     StarField,
     StarFieldLabelEnd,
+    StarFieldLabelSuffix,
     StarInput,
     StarRadio,
     StarRadioGroup,
@@ -54,6 +55,34 @@ import { DOCS, DocsRow } from '../shared/docs';
           <star-field label="Password">
             <a starFieldLabelEnd href="#forgot-password">Forgot password?</a>
             <input starInput type="password" autocomplete="current-password" />
+          </star-field>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Marker right after the label"
+        source="field/label-suffix"
+        note="labelSuffix puts a short marker right after the label text, after the required asterisk, in a warning tone (for example # for a value that is required to close or transmit the record). labelSuffixTooltip gives its meaning: a tooltip on hover of the marker and while the control has the focus, and the description of the control for screen readers. The marker itself is hidden from assistive technology, so the accessible name stays the label text. For an icon or other rich content, add an element with starFieldLabelSuffix."
+      >
+        <div class="docs-stack">
+          <star-field
+            label="Received Date"
+            labelSuffix="#"
+            labelSuffixTooltip="Required to close/transmit"
+          >
+            <input starInput type="date" />
+          </star-field>
+          <star-field
+            label="Description"
+            required
+            labelSuffix="#"
+            labelSuffixTooltip="Required to close/transmit"
+          >
+            <textarea starInput></textarea>
+          </star-field>
+          <star-field label="Approved by" labelSuffixTooltip="Locked after approval">
+            <i starFieldLabelSuffix class="ph-bold ph-lock-simple"></i>
+            <input starInput value="Avery Stone" readonly />
           </star-field>
         </div>
       </docs-example>
@@ -139,7 +168,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-api
-        [of]="['StarField', 'StarFieldLabelEnd', 'StarInput']"
+        [of]="['StarField', 'StarFieldLabelEnd', 'StarFieldLabelSuffix', 'StarInput']"
         [slots]="slots"
         [cssVars]="cssVars"
       />
@@ -203,6 +232,11 @@ readonly account = form(this.model, (path) => {
       description:
         'Content at the inline end of the label row, outside the label (for example a "Forgot password?" link). Not part of the accessible name. Import StarFieldLabelEnd.',
     },
+    {
+      name: '[starFieldLabelSuffix]',
+      description:
+        'Rich marker right after the label text, after the required asterisk (for example an icon). Hidden from assistive technology; set labelSuffixTooltip for its meaning. Not interactive. Import StarFieldLabelSuffix.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-input-radius', description: 'Corner radius of the input.' },
@@ -215,6 +249,11 @@ readonly account = form(this.model, (path) => {
     {
       name: '--star-field-label-end-color',
       description: 'Color of the end content of the label row. Default: --star-text-muted.',
+    },
+    {
+      name: '--star-field-label-suffix-color',
+      description:
+        'Color of the marker after the label text (labelSuffix). Default: --star-warning mixed with --star-text-strong (4.5:1 in both themes).',
     },
     {
       name: '--star-field-pending-color',

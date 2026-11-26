@@ -8288,6 +8288,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Plain text at the inline end of the label row, in muted text (for example the author and time of a value). For rich or interactive content (a link), use an element with `starFieldLabelEnd` instead. Not part of the accessible name of the control, and not in its description."
       },
       {
+        "name": "labelSuffix",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Short marker right after the label text, next to the required `*` (for example `#` for \"required to close\"). Its color is `--star-field-label-suffix-color` (default: a warning tone). Hidden from assistive technology: set `labelSuffixTooltip` to give it a meaning. For rich content (an icon), use an element with `starFieldLabelSuffix` instead."
+      },
+      {
+        "name": "labelSuffixTooltip",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Meaning of the label suffix: a tooltip on the marker (on hover, and while the control has the focus), and the accessible description of the control (with `aria-describedby`, after the hint or error), so a screen reader reads it after the name."
+      },
+      {
         "name": "error",
         "type": "string | null",
         "default": "null",
@@ -8347,6 +8361,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "labelEndPanel",
       "label",
       "requiredText",
+      "labelSuffixPanel",
       "errorText",
       "hintText",
       "pendingIcon"
@@ -8357,6 +8372,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "selector": "[starFieldLabelEnd]",
     "entry": "@star-ng/ui/field",
     "description": "Marks content for the end of the label row of a `star-field`: metadata such as the author and time of a value, or a link such as \"Forgot password?\". The content sits at the inline end of the row (the right in LTR, the left in RTL) in muted text, outside the label element, so it is not part of the accessible name of the control or of its description. Interactive content (a link, a button) is in the tab order before the control. Import `StarFieldLabelEnd` with `StarField`: an element whose directive is not imported is not shown.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarFieldLabelSuffix": {
+    "kind": "directive",
+    "selector": "[starFieldLabelSuffix]",
+    "entry": "@star-ng/ui/field",
+    "description": "Marks rich content for the marker right after the label text of a `star-field` (an icon, a short styled text), next to the required `*`. For a plain marker such as `#`, use the `labelSuffix` input. The marker is hidden from assistive technology (`aria-hidden`), so it is not part of the accessible name of the control: put its meaning in `labelSuffixTooltip`, which the control gets as its description. Use only content that is not interactive. Import `StarFieldLabelSuffix` with `StarField`: an element whose directive is not imported is not shown.",
     "inputs": [],
     "models": [],
     "outputs": []
@@ -9837,6 +9861,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "''",
         "required": false,
         "description": "Plain text at the inline end of the label row, in muted text (for example the author and time of a value). For rich or interactive content (a link), use an element with `starFieldLabelEnd` instead. Not part of the accessible name of the control, and not in its description.",
+        "inheritedFrom": "StarField"
+      },
+      {
+        "name": "labelSuffix",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Short marker right after the label text, next to the required `*` (for example `#` for \"required to close\"). Its color is `--star-field-label-suffix-color` (default: a warning tone). Hidden from assistive technology: set `labelSuffixTooltip` to give it a meaning. For rich content (an icon), use an element with `starFieldLabelSuffix` instead.",
+        "inheritedFrom": "StarField"
+      },
+      {
+        "name": "labelSuffixTooltip",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Meaning of the label suffix: a tooltip on the marker (on hover, and while the control has the focus), and the accessible description of the control (with `aria-describedby`, after the hint or error), so a screen reader reads it after the name.",
         "inheritedFrom": "StarField"
       },
       {
@@ -24247,6 +24287,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/groups": "<div class=\"docs-stack\">\n  <star-field label=\"Toppings\" hint=\"Pick one or more.\" [error]=\"groupError()\">\n    <star-checkbox>Cheese</star-checkbox>\n    <star-checkbox>Olives</star-checkbox>\n    <star-checkbox>Peppers</star-checkbox>\n  </star-field>\n  <star-field label=\"Plan\" hint=\"You can change it later.\" [error]=\"groupError()\">\n    <star-radio-group>\n      <star-radio value=\"free\">Free</star-radio>\n      <star-radio value=\"pro\">Pro</star-radio>\n    </star-radio-group>\n  </star-field>\n  <star-button variant=\"secondary\" (pressed)=\"toggleGroupError()\">\n    {{ groupError() ? 'Clear the errors' : 'Show the errors' }}\n  </star-button>\n</div>",
   "field/label-end": "<div class=\"docs-stack\">\n  <star-field label=\"Reason\" required labelEnd=\"jdoe · 25 Nov 2026 09:26\">\n    <textarea starInput placeholder=\"Why is this item closed?\"></textarea>\n  </star-field>\n  <star-field label=\"Password\">\n    <a starFieldLabelEnd href=\"#forgot-password\">Forgot password?</a>\n    <input starInput type=\"password\" autocomplete=\"current-password\" />\n  </star-field>\n</div>",
+  "field/label-suffix": "<div class=\"docs-stack\">\n  <star-field\n    label=\"Received Date\"\n    labelSuffix=\"#\"\n    labelSuffixTooltip=\"Required to close/transmit\"\n  >\n    <input starInput type=\"date\" />\n  </star-field>\n  <star-field\n    label=\"Description\"\n    required\n    labelSuffix=\"#\"\n    labelSuffixTooltip=\"Required to close/transmit\"\n  >\n    <textarea starInput></textarea>\n  </star-field>\n  <star-field label=\"Approved by\" labelSuffixTooltip=\"Locked after approval\">\n    <i starFieldLabelSuffix class=\"ph-bold ph-lock-simple\"></i>\n    <input starInput value=\"Avery Stone\" readonly />\n  </star-field>\n</div>",
   "field/sizes": "<div class=\"docs-stack\">\n  <input starInput size=\"sm\" aria-label=\"Small\" placeholder=\"Small\" />\n  <input starInput aria-label=\"Medium\" placeholder=\"Medium\" />\n  <input starInput size=\"lg\" aria-label=\"Large\" placeholder=\"Large\" />\n</div>",
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",
   "field/textarea": "<div class=\"docs-stack\">\n  <star-field label=\"Notes\">\n    <textarea starInput autoResize placeholder=\"Add a note\"></textarea>\n  </star-field>\n</div>",

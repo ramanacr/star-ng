@@ -15,6 +15,7 @@ import {
   input,
   Signal,
   signal,
+  viewChild,
 } from '@angular/core';
 import {
   injectStarControlDefaults,
@@ -23,6 +24,7 @@ import {
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
+import { StarTooltip } from '@star-ng/ui/tooltip';
 
 /** The part of a Signal Forms `FieldState` that the field wrapper reads. */
 export interface StarFieldStateLike {
@@ -52,6 +54,23 @@ export interface StarFieldStateLike {
 export class StarFieldLabelEnd {}
 
 /**
+ * Marks rich content for the marker right after the label text of a `star-field` (an icon, a short
+ * styled text), next to the required `*`. For a plain marker such as `#`, use the `labelSuffix`
+ * input. The marker is hidden from assistive technology (`aria-hidden`), so it is not part of the
+ * accessible name of the control: put its meaning in `labelSuffixTooltip`, which the control gets
+ * as its description. Use only content that is not interactive. Import `StarFieldLabelSuffix` with
+ * `StarField`: an element whose directive is not imported is not shown.
+ * ```html
+ * <star-field label="Received date" labelSuffixTooltip="Required to close">
+ *   <i starFieldLabelSuffix class="ph-bold ph-lock-simple"></i>
+ *   <input starInput type="date" />
+ * </star-field>
+ * ```
+ */
+@Directive({ selector: '[starFieldLabelSuffix]' })
+export class StarFieldLabelSuffix {}
+
+/**
  * Form field wrapper: uppercase label, the control, a hint and an error message
  * (PrimeNG `p-floatlabel` / `p-iftalabel` + `p-message` in one, StarNG style).
  *
@@ -64,7 +83,7 @@ export class StarFieldLabelEnd {}
  */
 @Component({
   selector: 'star-field',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, StarTooltip],
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -73,6 +92,9 @@ export class StarFieldLabelEnd {}
     '[class.star-field--invalid]': 'errorText()',
     '[class.star-field--pending]': 'pending()',
     '[attr.aria-busy]': 'pending() || null',
+    '(focusin)': 'onFocusIn($event)',
+    '(focusout)': 'suffixTooltip()?.hide()',
+    '(keydown.escape)': 'suffixTooltip()?.hide()',
   },
   template: `
     @if (hasLabelEnd()) {
@@ -80,7 +102,7 @@ export class StarFieldLabelEnd {}
            aria-describedby: it is metadata next to the label, not part of the control name. -->
       <div data-star-part="labelRow" class="star-field__label-row">
         <ng-container [ngTemplateOutlet]="labelTemplate" />
-        <span data-star-part="labelEndPanel" class="star-field__label-end">
+        <span #labelEndPanel data-star-part="labelEndPanel" class="star-field__label-end">
           {{ labelEnd() }}
           <ng-content select="[starFieldLabelEnd]" />
         </span>
@@ -106,6 +128,17 @@ export class StarFieldLabelEnd {}
               >*</span
             >
           }
+          <!-- The marker after the label text is hidden from assistive technology, so it is not
+               in the accessible name; its tooltip text is the description of the control. -->
+          @if (hasLabelSuffix()) {
+            <span
+              data-star-part="labelSuffixPanel"
+              class="star-field__label-suffix"
+              aria-hidden="true"
+              [starTooltip]="labelSuffixTooltip()"
+              >{{ labelSuffix() }}<ng-content select="[starFieldLabelSuffix]"
+            /></span>
+          }
         </label>
       }
     </ng-template>
@@ -129,6 +162,9 @@ export class StarFieldLabelEnd {}
     <!-- Polite status while an async validator runs: most screen readers do not announce
          aria-busy. It stays in the DOM, so a live region exists before its text changes. -->
     <span class="star-sr-only" aria-live="polite">{{ pending() ? text.fieldPending : '' }}</span>
+    @if (suffixDescribedBy()) {
+      <span class="star-sr-only" [id]="suffixId">{{ labelSuffixTooltip() }}</span>
+    }
   `,
 })
 export class StarField {
@@ -140,6 +176,19 @@ export class StarField {
    * instead. Not part of the accessible name of the control, and not in its description.
    */
   readonly labelEnd = input('');
+  /**
+   * Short marker right after the label text, next to the required `*` (for example `#` for
+   * "required to close"). Its color is `--star-field-label-suffix-color` (default: a warning tone).
+   * Hidden from assistive technology: set `labelSuffixTooltip` to give it a meaning. For rich
+   * content (an icon), use an element with `starFieldLabelSuffix` instead.
+   */
+  readonly labelSuffix = input('');
+  /**
+   * Meaning of the label suffix: a tooltip on the marker (on hover, and while the control has the
+   * focus), and the accessible description of the control (with `aria-describedby`, after the
+   * hint or error), so a screen reader reads it after the name.
+   */
+  readonly labelSuffixTooltip = input('');
   /** Explicit error text. Wins over `state` errors. */
   readonly error = input<string | null>(null);
   readonly state = input<StarFieldStateLike | null>(null);
@@ -156,12 +205,22 @@ export class StarField {
   /** The label row has end content: the `labelEnd` text or an element with `starFieldLabelEnd`. */
   protected readonly hasLabelEnd = computed(() => !!this.labelEnd() || !!this.labelEndContent());
 
+  private readonly labelSuffixContent = contentChild(StarFieldLabelSuffix);
+  /** The label has a suffix marker: the `labelSuffix` text or an element with `starFieldLabelSuffix`. */
+  protected readonly hasLabelSuffix = computed(
+    () => !!this.labelSuffix() || !!this.labelSuffixContent(),
+  );
+  protected readonly suffixTooltip = viewChild(StarTooltip);
+  private readonly labelEndPanel = viewChild<ElementRef<HTMLElement>>('labelEndPanel');
+
   private readonly ids = inject(_IdGenerator);
   private readonly document = inject(DOCUMENT);
   protected readonly text = inject(STAR_UI_TEXT);
   readonly labelId = this.ids.getId('star-field-label-');
   readonly hintId = this.ids.getId('star-field-hint-');
   readonly errorId = this.ids.getId('star-field-error-');
+  /** Id of the hidden description with the text of `labelSuffixTooltip`. */
+  readonly suffixId = this.ids.getId('star-field-suffix-');
   readonly defaultControlId = this.ids.getId('star-field-control-');
 
   /** The StarNG control inside the field that registered with `linkControl`. */
@@ -206,9 +265,17 @@ export class StarField {
     return first.message ?? this.messages()[first.kind] ?? first.kind;
   });
 
-  /** Ids for `aria-describedby` of the control. */
+  /** Id of the suffix description, when the field shows a label suffix with a tooltip. */
+  protected readonly suffixDescribedBy = computed(() =>
+    this.label() && this.hasLabelSuffix() && this.labelSuffixTooltip() ? this.suffixId : null,
+  );
+
+  /** Ids for `aria-describedby` of the control: the error or the hint, then the suffix meaning. */
   readonly describedBy = computed(() =>
-    this.errorText() ? this.errorId : this.hint() ? this.hintId : null,
+    starJoinIds(
+      this.errorText() ? this.errorId : this.hint() ? this.hintId : null,
+      this.suffixDescribedBy(),
+    ),
   );
 
   /**
@@ -251,6 +318,18 @@ export class StarField {
   /** Ends the link of the control that linked with `controlId` (see `linkControl`). */
   unlinkControl(controlId: Signal<string> | (() => string) | null): void {
     if (this.linked()?.id === controlId) this.linked.set(null);
+  }
+
+  /**
+   * The tooltip of the label suffix also shows while the control has the focus, so a keyboard user
+   * sees it too (the marker itself is not focusable). Focus on the end content of the label row
+   * (a link) does not show it. Focus leaving the field and Escape hide it.
+   */
+  protected onFocusIn(event: FocusEvent): void {
+    const tooltip = this.suffixTooltip();
+    if (!tooltip) return;
+    if (this.labelEndPanel()?.nativeElement.contains(event.target as Node)) return;
+    tooltip.show();
   }
 
   /**
