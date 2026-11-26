@@ -9,9 +9,9 @@ import {
 } from '@star-ng/ui/autocomplete';
 import { StarButton } from '@star-ng/ui/button';
 import { STAR_SLOTS } from '@star-ng/ui/core';
-import { StarField } from '@star-ng/ui/field';
+import { StarField, StarInput } from '@star-ng/ui/field';
 import { StarIconField } from '@star-ng/ui/input-group';
-import { StarOptionTemplate } from '@star-ng/ui/select';
+import { StarOptionTemplate, StarSelect } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 import { lazyOrders } from '../shared/lazy-orders';
 
@@ -48,6 +48,8 @@ interface OfficeCity {
     StarOptionTemplate,
     STAR_SLOTS,
     StarField,
+    StarInput,
+    StarSelect,
     FormField,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -175,6 +177,68 @@ interface OfficeCity {
               showClear
             />
           </star-icon-field>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Small size"
+        source="autocomplete/size"
+        note="size sm makes the control as high as star-select size sm and input starInput size sm, with the same font size and padding, so type-ahead fields line up with the other controls of a compact form row. In star-multi-autocomplete one row of small chips is as high as the single control; more chips wrap to new rows. It also works in star-icon-field. provideStarNg size small sets it for the whole app."
+      >
+        <div class="docs-form-grid">
+          <div class="docs-form-row">
+            <star-autocomplete
+              size="sm"
+              [options]="countries"
+              [(value)]="smallCountry"
+              placeholder="Country"
+              ariaLabel="Country (small)"
+              dropdown
+              showClear
+            />
+            <star-select
+              size="sm"
+              [options]="regions"
+              placeholder="Region"
+              ariaLabel="Region (small)"
+            />
+            <input starInput size="sm" placeholder="Company name" aria-label="Company (small)" />
+          </div>
+          <div class="docs-form-row">
+            <star-icon-field icon="ph-bold ph-globe">
+              <star-autocomplete
+                size="sm"
+                [options]="countries"
+                placeholder="Search a country"
+                ariaLabel="Country with icon (small)"
+                showClear
+              />
+            </star-icon-field>
+            <star-icon-field icon="ph-bold ph-globe">
+              <input
+                starInput
+                size="sm"
+                placeholder="Postal code"
+                aria-label="Postal code (small)"
+              />
+            </star-icon-field>
+          </div>
+          <div class="docs-form-row docs-form-row--wide">
+            <star-multi-autocomplete
+              size="sm"
+              [options]="countries"
+              [(value)]="smallCountries"
+              placeholder="Add countries"
+              ariaLabel="Countries (small)"
+              showClear
+            />
+            <star-select
+              size="sm"
+              [options]="regions"
+              placeholder="Region"
+              ariaLabel="Second region (small)"
+            />
+          </div>
         </div>
       </docs-example>
 
@@ -557,6 +621,14 @@ readonly lazyList = lazyOrders();`;
     'Finland',
   ];
   protected readonly country = signal<string | null>(null);
+  protected readonly smallCountry = signal<string | null>(null);
+  protected readonly smallCountries = signal<readonly string[]>(['Austria']);
+  protected readonly regions: readonly string[] = [
+    'Americas',
+    'Asia Pacific',
+    'Europe',
+    'Middle East',
+  ];
   protected readonly officeCity = signal<string | null>(null);
   protected readonly officesLoading = signal(false);
   private officesTimer: ReturnType<typeof setTimeout> | undefined;

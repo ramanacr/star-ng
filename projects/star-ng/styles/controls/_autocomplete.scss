@@ -55,12 +55,26 @@
 .star-ac--multi .star-ac__control {
   padding-block: 0.25rem;
 }
-.star-select--sm .star-ac__control {
-  --star-ac-row: 2.25rem;
+// Small (`size="sm"`): the height, font size and padding of `input starInput size="sm"` and
+// `star-select size="sm"`. One input row is 2 x 0.5rem padding plus one line.
+.star-ac--sm .star-ac__control {
+  --star-ac-row: 2.375rem;
+  padding-inline-start: 0.75rem;
 }
-.star-select--sm .star-ac__input {
+.star-ac--sm .star-ac__input {
   padding-block: 0.5rem;
   font-size: 0.8125rem;
+}
+// Small multiple: the control keeps its 0.25rem block padding (so wrapped chips do not touch the
+// border) and the input gives it back, so one row is as high as the single control. The chips stay
+// `star-chip--sm`, which fits in the row.
+.star-ac--sm.star-ac--multi {
+  .star-ac__control {
+    --star-ac-row: 1.875rem;
+  }
+  .star-ac__input {
+    padding-block: 0.25rem;
+  }
 }
 .star-ac__match {
   background: transparent;

@@ -4,7 +4,7 @@
  * Rules and fonts: @phosphor-icons/web (MIT licence, see THIRD_PARTY_NOTICES.md).
  */
 
-/* bold: 212 of 1530 icons */
+/* bold: 213 of 1530 icons */
 @font-face {
   font-family: "Phosphor-Bold";
   src: url("../../../../node_modules/@phosphor-icons/web/src/bold/Phosphor-Bold.woff2") format("woff2");
@@ -346,6 +346,9 @@
 }
 .ph-bold.ph-github-logo:before {
   content: "\e576";
+}
+.ph-bold.ph-globe:before {
+  content: "\e288";
 }
 .ph-bold.ph-globe-hemisphere-west:before {
   content: "\e28c";

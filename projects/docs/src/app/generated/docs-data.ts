@@ -940,7 +940,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "description": "Size. `sm` is the compact control: the same height, font size and padding as `input starInput size=\"sm\"`, for dense form rows. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
         "inheritedFrom": "StarOptionListBase"
       },
       {
@@ -1429,7 +1429,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "description": "Size. `sm` is the compact control: the same height, font size and padding as `input starInput size=\"sm\"`, for dense form rows. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
         "inheritedFrom": "StarOptionListBase"
       },
       {
@@ -13346,7 +13346,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "description": "Size. `sm` is the compact control: the same height, font size and padding as `input starInput size=\"sm\"`, for dense form rows. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
         "inheritedFrom": "StarOptionListBase"
       },
       {
@@ -13856,7 +13856,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "description": "Size. `sm` is the compact control: the same height, font size and padding as `input starInput size=\"sm\"`, for dense form rows. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
         "inheritedFrom": "StarOptionListBase"
       },
       {
@@ -14665,7 +14665,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "description": "Size. `sm` is the compact control: the same height, font size and padding as `input starInput size=\"sm\"`, for dense form rows. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
         "inheritedFrom": "StarOptionListBase"
       },
       {
@@ -15102,7 +15102,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
+        "description": "Size. `sm` is the compact control: the same height, font size and padding as `input starInput size=\"sm\"`, for dense form rows. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "ariaLabel",
@@ -18590,7 +18590,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "description": "Size. `sm` is the compact control: the same height, font size and padding as `input starInput size=\"sm\"`, for dense form rows. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
         "inheritedFrom": "StarOptionListBase"
       },
       {
@@ -24095,6 +24095,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "autocomplete/local": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"city\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ city() ?? 'none' }}</p>\n</div>",
   "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",
+  "autocomplete/size": "<div class=\"docs-form-grid\">\n  <div class=\"docs-form-row\">\n    <star-autocomplete\n      size=\"sm\"\n      [options]=\"countries\"\n      [(value)]=\"smallCountry\"\n      placeholder=\"Country\"\n      ariaLabel=\"Country (small)\"\n      dropdown\n      showClear\n    />\n    <star-select\n      size=\"sm\"\n      [options]=\"regions\"\n      placeholder=\"Region\"\n      ariaLabel=\"Region (small)\"\n    />\n    <input starInput size=\"sm\" placeholder=\"Company name\" aria-label=\"Company (small)\" />\n  </div>\n  <div class=\"docs-form-row\">\n    <star-icon-field icon=\"ph-bold ph-globe\">\n      <star-autocomplete\n        size=\"sm\"\n        [options]=\"countries\"\n        placeholder=\"Search a country\"\n        ariaLabel=\"Country with icon (small)\"\n        showClear\n      />\n    </star-icon-field>\n    <star-icon-field icon=\"ph-bold ph-globe\">\n      <input\n        starInput\n        size=\"sm\"\n        placeholder=\"Postal code\"\n        aria-label=\"Postal code (small)\"\n      />\n    </star-icon-field>\n  </div>\n  <div class=\"docs-form-row docs-form-row--wide\">\n    <star-multi-autocomplete\n      size=\"sm\"\n      [options]=\"countries\"\n      [(value)]=\"smallCountries\"\n      placeholder=\"Add countries\"\n      ariaLabel=\"Countries (small)\"\n      showClear\n    />\n    <star-select\n      size=\"sm\"\n      [options]=\"regions\"\n      placeholder=\"Region\"\n      ariaLabel=\"Second region (small)\"\n    />\n  </div>\n</div>",
   "autocomplete/slots": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"officeCities\"\n    [(value)]=\"officeCity\"\n    [loading]=\"officesLoading()\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionGroup=\"country\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"Office city\"\n  >\n    <ng-template starHeader> Cities with an office </ng-template>\n    <ng-template starGroup let-country let-count=\"count\">\n      {{ country }} ({{ count }})\n    </ng-template>\n    <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n    <ng-template starLoading>\n      <p class=\"docs-output\">Loading the office list...</p>\n    </ng-template>\n    <ng-template starFooter>\n      {{ officeCities.length }} cities\n      <button\n        type=\"button\"\n        class=\"star-btn star-btn--sm star-btn--ghost\"\n        (click)=\"reloadOffices()\"\n      >\n        Reload\n      </button>\n    </ng-template>\n  </star-autocomplete>\n  <p class=\"docs-output\" role=\"status\">City: {{ officeCity() ?? 'none' }}</p>\n</div>",
   "autocomplete/tokens": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"tokens\"\n    [separator]=\"tokenSeparator\"\n    addOnTab\n    addOnBlur\n    allowCustomValues\n    [unique]=\"false\"\n    placeholder=\"Type keywords, separated by commas\"\n    ariaLabel=\"Keywords as tokens\"\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ tokens().join(', ') || 'none' }}</p>\n</div>",
   "avatar-group/max": "<star-avatar-group [max]=\"3\" ariaLabel=\"Project team\">\n  @for (member of team; track member) {\n    <star-avatar [name]=\"member\" />\n  }\n</star-avatar-group>",
