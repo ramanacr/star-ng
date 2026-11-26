@@ -2,6 +2,14 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+#### Table
+
+- Table: row classes and row tones from the row data, so a consumer can tint whole rows with no `::ng-deep` ([#165](https://github.com/ramanacr/star-ng/issues/165)). Input `rowClass` (`StarTableRowClassFn<T>`: `(row, index) => string | string[] | Record<string, boolean> | null | undefined`; `index` is the position in the shown rows, `-1` for a pinned row) adds classes to the body row `tr.star-table__row`; they add to the classes of the table (selected, striped, pinned, focused) and never replace them. Input `rowTone` (`StarTableRowToneFn<T>`: `(row) => StarTableRowTone | null`) adds a built-in tint: `danger`, `warn`, `success`, `info` (the `StarSeverity` names) or `muted` (soft text on a subtle surface), with the classes `star-table__row--tone` and `star-table__row--tone-<tone>`. Tokens per tone: `--star-table-row-<tone>-surface`, `--star-table-row-<tone>-surface-hover` and `--star-table-row-<tone>-text`, with defaults from the color roles (text AA in both themes, also on hover). Frozen and pinned cells and the sticky lead and trail columns take the tint; the header does not. A selected row shows the selection fill (selection wins) and keeps the tone text; a cell with cell or column selection keeps its fill. Keyboard and accessibility do not change: the tint is decorative, so keep the state as text in a cell. Without the inputs the markup and the look do not change.
+
 ## [0.8.0] - 2026-11-26
 
 ### Added

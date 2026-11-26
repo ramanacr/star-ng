@@ -530,7 +530,9 @@ star-select.star-table__filter {
     background: var(--star-surface-muted);
   }
 }
-.star-table__row--selected {
+// Also on a striped row: the striped rule above has a stronger selector.
+.star-table__row--selected,
+.star-table--striped .star-table__row--selected {
   .star-table__cell--frozen,
   .star-table__cell--pinned-end {
     background: var(--star-primary-soft);
@@ -898,4 +900,86 @@ star-select.star-table__editor {
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+// Row tones (`rowTone`): a tint of the whole body row from the row data. Each tone reads its
+// public tokens (`--star-table-row-<tone>-surface`, `-surface-hover`, `-text`) with a default
+// from the color roles; the rules below read the copy of the row. A selected row keeps the
+// selection fill (the tone rules skip it) and the tone text. The pinned cells have their own
+// fill, so they take the tint too. The header is not a body row and stays as it is.
+.star-table__row--tone-danger {
+  --star-row-tone-surface: var(--star-table-row-danger-surface, var(--star-danger-soft));
+  --star-row-tone-surface-hover: var(
+    --star-table-row-danger-surface-hover,
+    color-mix(in srgb, var(--star-danger-soft) 85%, var(--star-danger))
+  );
+  --star-row-tone-text: var(--star-table-row-danger-text, var(--star-text));
+}
+.star-table__row--tone-warn {
+  --star-row-tone-surface: var(--star-table-row-warn-surface, var(--star-warning-soft));
+  --star-row-tone-surface-hover: var(
+    --star-table-row-warn-surface-hover,
+    color-mix(in srgb, var(--star-warning-soft) 85%, var(--star-warning))
+  );
+  --star-row-tone-text: var(--star-table-row-warn-text, var(--star-text));
+}
+.star-table__row--tone-success {
+  --star-row-tone-surface: var(--star-table-row-success-surface, var(--star-success-soft));
+  --star-row-tone-surface-hover: var(
+    --star-table-row-success-surface-hover,
+    color-mix(in srgb, var(--star-success-soft) 85%, var(--star-success))
+  );
+  --star-row-tone-text: var(--star-table-row-success-text, var(--star-text));
+}
+.star-table__row--tone-info {
+  --star-row-tone-surface: var(--star-table-row-info-surface, var(--star-accent-soft));
+  --star-row-tone-surface-hover: var(
+    --star-table-row-info-surface-hover,
+    color-mix(in srgb, var(--star-accent-soft) 85%, var(--star-accent))
+  );
+  --star-row-tone-text: var(--star-table-row-info-text, var(--star-text));
+}
+// Muted: soft text on a subtle surface. The text is a little darker than `--star-text-muted`, so
+// it keeps 4.5:1 on the hover fill too.
+.star-table__row--tone-muted {
+  --star-row-tone-surface: var(--star-table-row-muted-surface, var(--star-surface-muted));
+  --star-row-tone-surface-hover: var(
+    --star-table-row-muted-surface-hover,
+    color-mix(in srgb, var(--star-surface-muted) 88%, var(--star-text-muted))
+  );
+  --star-row-tone-text: var(
+    --star-table-row-muted-text,
+    color-mix(in srgb, var(--star-text-muted) 70%, var(--star-text))
+  );
+}
+.star-table__row--tone {
+  color: var(--star-row-tone-text);
+}
+// After the striped, hover and pinned rules above, with the same or a stronger selector.
+.star-table__row--tone:not(.star-table__row--selected) {
+  background: var(--star-row-tone-surface);
+
+  > :is(
+    .star-table__cell--frozen,
+    .star-table__cell--pinned-end,
+    .star-table__reorder,
+    .star-table__expander,
+    .star-table__select,
+    .star-table__row-actions
+  ) {
+    background: var(--star-row-tone-surface);
+  }
+  // `:where`: a selected cell (cell or column selection) keeps its fill on hover.
+  &:hover,
+  &:hover
+    > :where(
+      .star-table__cell--frozen,
+      .star-table__cell--pinned-end,
+      .star-table__reorder,
+      .star-table__expander,
+      .star-table__select,
+      .star-table__row-actions
+    ) {
+    background: var(--star-row-tone-surface-hover);
+  }
 }
