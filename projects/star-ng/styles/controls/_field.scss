@@ -127,6 +127,18 @@ textarea.star-input--auto-resize {
   margin-inline-start: 0.15rem;
   color: var(--star-danger);
 }
+// Marker right after the label text (`labelSuffix` or `starFieldLabelSuffix`), after the required
+// `*`. The default tone mixes the warning role with the strong text, as the tag text does: 4.5:1 or
+// more on the surface in the light and dark themes. It keeps the case of its text.
+.star-field__label-suffix {
+  margin-inline-start: 0.15rem;
+  color: var(
+    --star-field-label-suffix-color,
+    color-mix(in srgb, var(--star-warning) 62%, var(--star-text-strong))
+  );
+  text-transform: none;
+  cursor: default;
+}
 
 // In-field top-aligned label (StarIftaLabel): the label sits inside the box of the control,
 // above the value. The text box of the control gets more space at the top for it. The label
