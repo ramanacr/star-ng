@@ -1149,6 +1149,24 @@ test.describe('popover', () => {
     expect(flipped.above).toBe(true);
     expect(flipped.end).toBeLessThan(2);
   });
+
+  test('the saved views example keeps the focus in the panel after a delete', async ({ page }) => {
+    await openPage(page, '/controls/popover', 'Popover');
+    const anchor = example(page, 'Open at the end edge').getByRole('button', { name: 'Saved' });
+    const popover = page.getByRole('dialog', { name: 'Saved views' });
+    await anchor.click();
+    await expect(popover).toBeVisible();
+
+    // The next delete button gets the focus; after the last row, the previous one.
+    await popover.getByRole('button', { name: 'Delete Open orders' }).click();
+    await expect(popover.getByRole('button', { name: 'Delete Late shipments' })).toBeFocused();
+    await popover.getByRole('button', { name: 'Delete This week' }).click();
+    await expect(popover.getByRole('button', { name: 'Delete Late shipments' })).toBeFocused();
+    // With no row left, "Save current view" gets the focus, and the panel stays open.
+    await page.keyboard.press('Enter');
+    await expect(popover.getByRole('button', { name: 'Save current view' })).toBeFocused();
+    await expect(popover).toBeVisible();
+  });
 });
 
 test.describe('tooltip', () => {
