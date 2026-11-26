@@ -33,6 +33,12 @@ export type { StarColumnSummary, StarSummaryKind } from './table-summaries';
 // Pinning helpers and the pin cell directive are internal parts of `star-table`.
 export type { StarColumnPinEvent, StarColumnPins, StarPinSide } from './table-pinning';
 export type { StarRowPinEvent, StarRowPinSide, StarRowPins } from './table-row-pins';
+export type {
+  StarTableRowClass,
+  StarTableRowClassFn,
+  StarTableRowTone,
+  StarTableRowToneFn,
+} from './table-row-tone';
 // The selection logic and the filter menu component are internal parts of `star-table`.
 export type {
   StarHeaderCheckboxToggleEvent,

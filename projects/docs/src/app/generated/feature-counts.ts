@@ -3,7 +3,7 @@
 export const FEATURE_COUNTS = {
   "lib": {
     "input": {
-      "uses": 1342,
+      "uses": 1344,
       "files": 129
     },
     "inputRequired": {
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 259,
+  "specFiles": 260,
   "pages": 146
 } as const;

@@ -802,6 +802,7 @@
     [attr.data-vi]="entry.item"
     [hidden]="isRowCollapsed(row)"
     class="star-table__row"
+    [class]="rowClasses(row, i)"
     [class.star-table__row--pinned]="i < 0"
     [class.star-table__row--alt]="i % 2 === 1"
     [class.star-table__row--selected]="isSelected(row)"

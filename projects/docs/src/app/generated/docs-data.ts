@@ -20478,6 +20478,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "rowClass",
+        "type": "StarTableRowClassFn<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes for a body row from the row data: a string, a list or a record (the forms of `[class]`). They add to the classes of the table (selected, striped, focused); they never replace them. `index` is the position in the shown rows, -1 for a pinned row."
+      },
+      {
+        "name": "rowTone",
+        "type": "StarTableRowToneFn<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Built-in tint of a whole row from the row data: `'danger'`, `'warn'`, `'success'`, `'info'` or `'muted'` (soft text). Pinned cells get the tint too; a selected row shows the selection fill. The tint is decorative: keep the state as text in a cell."
+      },
+      {
         "name": "size",
         "type": "'sm' | 'md'",
         "default": "'md'",
@@ -24545,6 +24559,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table/expansion-basic": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 4)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with detail\"\n  >\n    <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n      {{ row.quantity }} x {{ row.product }} for {{ row.customer }} ({{ row.email }}).\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table/format": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"formatColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with formatted values\"\n    paginator\n    [rows]=\"5\"\n  />\n</docs-fill>",
   "table/looks": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Compact orders\"\n    size=\"sm\"\n    striped\n    stickyHeader\n    scrollHeight=\"14rem\"\n  />\n</docs-fill>",
+  "table/row-tones": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"logins\"\n      [columns]=\"loginColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sign-in log\"\n      striped\n      stickyHeader\n      selectionMode=\"multiple\"\n      [rowTone]=\"loginTone\"\n      [rowClass]=\"loginClass\"\n    />\n  </docs-fill>\n  <docs-fill>\n    <star-table\n      [value]=\"leaves\"\n      [columns]=\"leaveColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Days off\"\n      size=\"sm\"\n      [rowTone]=\"leaveTone\"\n    />\n  </docs-fill>\n</div>",
   "table/slots": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"slotQuery()\"\n    (input)=\"slotQuery.set($any($event.target).value)\"\n  />\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"slotLoading.set(!slotLoading())\">\n    {{ slotLoading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <docs-fill>\n    <star-table\n      [value]=\"slotOrders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders by status\"\n      groupBy=\"status\"\n      [globalFilter]=\"slotQuery()\"\n      [loading]=\"slotLoading()\"\n    >\n      <ng-template starHeaderCell=\"total\" let-column>\n        {{ column.header }} (USD)\n      </ng-template>\n      <ng-template starGroup let-status let-count=\"count\">\n        {{ status }}: {{ count }} orders\n      </ng-template>\n      <ng-template starEmpty let-text>No order matches \"{{ text }}\".</ng-template>\n      <ng-template starLoading>Loading the orders.</ng-template>\n      <p starTableSummary class=\"docs-output\">{{ slotOrders.length }} orders in total</p>\n    </star-table>\n  </docs-fill>\n</div>",
   "table/states": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n    {{ loading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders being loaded\"\n    [loading]=\"loading()\"\n  />\n  <star-table\n    [value]=\"[]\"\n    [columns]=\"columns\"\n    ariaLabel=\"No orders\"\n    emptyMessage=\"No orders yet. Add the first one.\"\n  />\n</div>",
   "table/templates": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with status tags\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n      <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n    </ng-template>\n    <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n      <strong>{{ value }}</strong>\n      <br />\n      <small>{{ row.email }}</small>\n    </ng-template>\n  </star-table>\n</docs-fill>",
