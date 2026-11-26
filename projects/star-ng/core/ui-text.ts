@@ -864,6 +864,8 @@ export interface StarUiText {
   readonly timeRange: (start: string, end: string) => string;
   /** Marks an occurrence of a recurring event. */
   readonly repeats: string;
+  /** Follows the title of a cancelled event in its accessible name: "(cancelled)". */
+  readonly eventCancelled: string;
   /** Keyboard hint of a movable event or task bar. */
   readonly eventMoveHint: string;
   /** Live announcement after a keyboard move: `when` is the new time span. */
@@ -1652,6 +1654,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   noEvents: 'No events',
   timeRange: (start, end) => `${start} to ${end}`,
   repeats: 'Repeats',
+  eventCancelled: '(cancelled)',
   eventMoveHint: 'Alt and the arrow keys move it, Alt, Shift and the arrow keys change its length.',
   eventMoved: (label, when) => `${label} moved to ${when}`,
   eventResized: (label, when) => `${label} now ${when}`,

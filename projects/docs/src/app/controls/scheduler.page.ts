@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
+import { StarButton } from '@star-ng/ui/button';
 import {
   StarScheduler,
   StarSchedulerEditorSave,
@@ -57,6 +58,40 @@ function teamEvents(): StarSchedulerEvent[] {
   ];
 }
 
+/** Days off of a team: a withdrawn day off stays on its date, muted and cancelled. */
+function daysOff(): StarSchedulerEvent[] {
+  return [
+    { id: 'off-1', title: 'Anna: holiday', start: at(9), end: at(14), allDay: true, color: 1 },
+    { id: 'off-2', title: 'Ben: training', start: at(12), end: at(12), allDay: true, color: 3 },
+    {
+      id: 'off-3',
+      title: 'Ben: day off',
+      start: at(17),
+      end: at(17),
+      allDay: true,
+      color: 'muted',
+      cancelled: true,
+    },
+    {
+      id: 'off-4',
+      title: 'Office closed',
+      start: at(20),
+      end: at(20),
+      allDay: true,
+      color: 'muted',
+    },
+    {
+      id: 'off-5',
+      title: 'Clara: holiday',
+      start: at(25),
+      end: at(28),
+      allDay: true,
+      color: 6,
+      cancelled: true,
+    },
+  ];
+}
+
 /** A busy month for the month view. */
 function monthEvents(): StarSchedulerEvent[] {
   const base = teamEvents();
@@ -76,11 +111,21 @@ function monthEvents(): StarSchedulerEvent[] {
 
 @Component({
   selector: 'docs-scheduler-page-content',
-  imports: [DOCS, StarScheduler, StarSchedulerEventTemplate],
+  imports: [DOCS, StarButton, StarScheduler, StarSchedulerEventTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     .event-room {
       color: var(--star-text);
+    }
+    .days-off-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--star-space-2);
+    }
+    .days-off-bar h3 {
+      margin: 0 auto 0 0;
+      font: var(--star-type-title-sm);
     }
   `,
   template: `
@@ -128,6 +173,44 @@ function monthEvents(): StarSchedulerEvent[] {
           [views]="['month', 'agenda']"
           ariaLabel="Month of March"
         />
+      </docs-example>
+
+      <docs-example
+        heading="Muted and cancelled days off, with the page's own toolbar"
+        source="scheduler/days-off"
+        [script]="daysOffScript"
+        note="color: 'muted' gives a neutral tone outside the chart palette (the office closing day). cancelled strikes the title, lowers the emphasis and adds '(cancelled)' to the accessible name; it works with every colour. A cancelled event is still selected and moved as before. showToolbar=false hides the toolbar of the scheduler: the bar above calls page(-1), page(1) and goToday() and shows rangeTitle()."
+      >
+        <div class="docs-stack">
+          <div class="days-off-bar">
+            <h3 aria-live="polite">{{ teamDaysOff.rangeTitle() }}</h3>
+            <star-button
+              variant="ghost"
+              iconOnly
+              leadingIcon="ph-bold ph-caret-left"
+              ariaLabel="Previous month"
+              (click)="teamDaysOff.page(-1)"
+            />
+            <star-button
+              variant="ghost"
+              iconOnly
+              leadingIcon="ph-bold ph-caret-right"
+              ariaLabel="Next month"
+              (click)="teamDaysOff.page(1)"
+            />
+            <star-button variant="secondary" label="Today" (click)="teamDaysOff.goToday()" />
+          </div>
+          <star-scheduler
+            #teamDaysOff
+            [events]="daysOff"
+            locale="en-GB"
+            view="month"
+            [date]="march"
+            [views]="['month']"
+            [showToolbar]="false"
+            ariaLabel="Days off of the team"
+          />
+        </div>
       </docs-example>
 
       <docs-example
@@ -204,6 +287,7 @@ export class SchedulerPageContent {
   protected readonly date = signal(at(4));
   protected readonly log = signal('Drag, click or use the keyboard.');
   protected readonly busyMonth = monthEvents();
+  protected readonly daysOff = daysOff();
   protected readonly march = at(1);
   protected readonly march2 = at(2);
   protected readonly march3 = at(3);
@@ -277,6 +361,14 @@ onSlot(slot: StarSchedulerSlotSelect) {
   protected readonly monthScript = `readonly busyMonth: StarSchedulerEvent[] = [...];
 readonly march = new Date(2026, 2, 1);`;
 
+  protected readonly daysOffScript = `readonly daysOff: StarSchedulerEvent[] = [
+  { id: 'off-1', title: 'Anna: holiday', start: new Date(2026, 2, 9), end: new Date(2026, 2, 14), allDay: true, color: 1 },
+  // A withdrawn day off: neutral and struck through.
+  { id: 'off-3', title: 'Ben: day off', start: new Date(2026, 2, 17), end: new Date(2026, 2, 17), allDay: true, color: 'muted', cancelled: true },
+  { id: 'off-4', title: 'Office closed', start: new Date(2026, 2, 20), end: new Date(2026, 2, 20), allDay: true, color: 'muted' },
+];
+readonly march = new Date(2026, 2, 1);`;
+
   protected readonly timelineScript = `onSave(save: StarSchedulerEditorSave) {
   this.roomEvents.update((list) =>
     save.event
@@ -297,6 +389,22 @@ onDelete(deleted: StarSchedulerEventSelect) {
       description: 'Largest height of the scrolling grid (36rem).',
     },
     { name: '--star-chart-1 … --star-chart-8', description: 'Event colours (color 1 to 8).' },
+    {
+      name: '--star-scheduler-event-muted-surface',
+      description: "Background of an event with color 'muted' (a neutral tone of the theme).",
+    },
+    {
+      name: '--star-scheduler-event-muted-edge',
+      description: "Start border of an event with color 'muted' (--star-text-soft).",
+    },
+    {
+      name: '--star-scheduler-event-muted-text',
+      description: "Text of an event with color 'muted' (--star-text).",
+    },
+    {
+      name: '--star-scheduler-event-cancelled-text',
+      description: 'Text of a cancelled event (--star-text); the title is struck through.',
+    },
     {
       name: '--star-surface-muted',
       description: 'Slots outside the work day, days of other months.',

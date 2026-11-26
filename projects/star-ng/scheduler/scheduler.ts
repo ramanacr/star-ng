@@ -184,9 +184,12 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
  * Scheduler (Kendo UI Scheduler, Syncfusion Schedule, DevExtreme Scheduler; PrimeNG had the
  * deprecated `p-fullcalendar`): events in a day, week, work-week, month, agenda or timeline view.
  *
- * - `events` with `start`, `end`, `allDay`, `resourceId`, `color` (chart palette 1–8) and an RRULE
+ * - `events` with `start`, `end`, `allDay`, `resourceId`, `color` (chart palette 1–8, or the
+ *   neutral `'muted'`), `cancelled` (struck title, "(cancelled)" in the name) and an RRULE
  *   `recurrence` with `exceptions`. Overlapping events stand side by side; a month cell shows
  *   "+N more" when it is full, and the button opens the list of the day.
+ * - `showToolbar="false"` hides the toolbar, for navigation in the toolbar of the page: `page()`,
+ *   `goToday()` and `rangeTitle()` are public.
  * - The scheduler never changes `events`. A click on an empty slot emits `slotSelect`, a click on
  *   an event `eventSelect`. Dragging an event (or the top or bottom edge) emits `eventChange` on
  *   drop, snapped to `slotMinutes`; call `cancel()` to reject it.
@@ -221,71 +224,76 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
     '[style.--star-scheduler-slots]': 'slots().length',
   },
   template: `
-    <div data-star-part="toolbarPanel" class="star-scheduler__toolbar">
-      <div data-star-part="navigation" class="star-scheduler__nav">
-        <button
-          data-star-part="viewButton"
-          type="button"
-          class="star-scheduler__button"
-          (click)="goToday()"
-        >
-          {{ text.today }}
-        </button>
-        <button
-          data-star-part="viewButton"
-          type="button"
-          class="star-scheduler__button star-scheduler__button--icon"
-          [attr.aria-label]="text.previousPeriod"
-          (click)="page(-1)"
-        >
-          <i
-            data-star-part="previousIcon"
-            class="ph-bold ph-caret-left star-icon-mirror"
-            aria-hidden="true"
-          ></i>
-        </button>
-        <button
-          data-star-part="viewButton"
-          type="button"
-          class="star-scheduler__button star-scheduler__button--icon"
-          [attr.aria-label]="text.nextPeriod"
-          (click)="page(1)"
-        >
-          <i
-            data-star-part="nextIcon"
-            class="ph-bold ph-caret-right star-icon-mirror"
-            aria-hidden="true"
-          ></i>
-        </button>
-      </div>
-      <h2
-        data-star-part="titleText"
-        class="star-scheduler__title"
-        [id]="titleId"
-        aria-live="polite"
-      >
-        {{ rangeTitle() }}
-      </h2>
-      <div
-        data-star-part="viewsPanel"
-        class="star-scheduler__views"
-        role="group"
-        [attr.aria-label]="text.schedulerView"
-      >
-        @for (option of shownViews(); track option) {
+    @if (showToolbar()) {
+      <div data-star-part="toolbarPanel" class="star-scheduler__toolbar">
+        <div data-star-part="navigation" class="star-scheduler__nav">
           <button
             data-star-part="viewButton"
             type="button"
             class="star-scheduler__button"
-            [class.star-scheduler__button--active]="option === view()"
-            [attr.aria-pressed]="option === view()"
-            (click)="view.set(option)"
+            (click)="goToday()"
           >
-            {{ viewLabel(option) }}
+            {{ text.today }}
           </button>
-        }
+          <button
+            data-star-part="viewButton"
+            type="button"
+            class="star-scheduler__button star-scheduler__button--icon"
+            [attr.aria-label]="text.previousPeriod"
+            (click)="page(-1)"
+          >
+            <i
+              data-star-part="previousIcon"
+              class="ph-bold ph-caret-left star-icon-mirror"
+              aria-hidden="true"
+            ></i>
+          </button>
+          <button
+            data-star-part="viewButton"
+            type="button"
+            class="star-scheduler__button star-scheduler__button--icon"
+            [attr.aria-label]="text.nextPeriod"
+            (click)="page(1)"
+          >
+            <i
+              data-star-part="nextIcon"
+              class="ph-bold ph-caret-right star-icon-mirror"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </div>
+        <h2
+          data-star-part="titleText"
+          class="star-scheduler__title"
+          [id]="titleId"
+          aria-live="polite"
+        >
+          {{ rangeTitle() }}
+        </h2>
+        <div
+          data-star-part="viewsPanel"
+          class="star-scheduler__views"
+          role="group"
+          [attr.aria-label]="text.schedulerView"
+        >
+          @for (option of shownViews(); track option) {
+            <button
+              data-star-part="viewButton"
+              type="button"
+              class="star-scheduler__button"
+              [class.star-scheduler__button--active]="option === view()"
+              [attr.aria-pressed]="option === view()"
+              (click)="view.set(option)"
+            >
+              {{ viewLabel(option) }}
+            </button>
+          }
+        </div>
       </div>
-    </div>
+    } @else {
+      <!-- Without the toolbar the title stays for the name of the grid; the host shows the range. -->
+      <h2 class="star-sr-only" [id]="titleId">{{ rangeTitle() }}</h2>
+    }
 
     @switch (view()) {
       @case ('month') {
@@ -620,6 +628,8 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
         [class.star-scheduler__event--dragging]="preview()?.key === occurrence.key"
         [class.star-scheduler__event--continues-before]="item?.continuesBefore"
         [class.star-scheduler__event--continues-after]="item?.continuesAfter"
+        [class.star-scheduler__event--muted]="isMuted(occurrence.event)"
+        [class.star-scheduler__event--cancelled]="!!occurrence.event.cancelled"
         [style]="style"
         [style.--star-scheduler-event-color]="colorOf(occurrence.event)"
         [attr.data-event-id]="occurrence.event.id"
@@ -759,6 +769,12 @@ export class StarScheduler {
   readonly readonly = input(false, { transform: booleanAttribute });
   /** Shows the current-time line in the browser. */
   readonly showCurrentTime = input(true, { transform: booleanAttribute });
+  /**
+   * Shows the toolbar (Today, previous, next, the range title and the views). Without it, put the
+   * navigation in your own toolbar: call `page(-1)`, `page(1)` and `goToday()`, show `rangeTitle()`
+   * and set `view`. The range title stays in the page for screen readers as the name of the grid.
+   */
+  readonly showToolbar = input(true, { transform: booleanAttribute });
   readonly ariaLabel = input<string | null>(null);
 
   readonly slotSelect = output<StarSchedulerSlotSelect>();
@@ -954,7 +970,8 @@ export class StarScheduler {
       .filter((group) => group.occurrences.length > 0),
   );
 
-  protected readonly rangeTitle = computed(() => {
+  /** Title of the shown range, as in the toolbar: "March 2026", "2 – 8 March 2026". */
+  readonly rangeTitle = computed(() => {
     const locale = this.locale();
     const { days } = this.range();
     const view = this.view();
@@ -1024,6 +1041,7 @@ export class StarScheduler {
     this.scrollPending = true;
   }
 
+  /** Moves the anchor date to today. */
   goToday(): void {
     this.date.set(startOfDay(new Date()));
     this.scrollPending = true;
@@ -1122,7 +1140,7 @@ export class StarScheduler {
   protected eventLabel(occurrence: StarSchedulerOccurrence, timeShown: boolean): string {
     if (!timeShown) return this.eventName(occurrence);
     const parts = [
-      occurrence.event.title,
+      this.titleText(occurrence.event),
       this.timeSpan(occurrence),
       this.dayLabel(occurrence.start),
     ];
@@ -1135,7 +1153,7 @@ export class StarScheduler {
   /** Full name: "Team meeting, Tuesday 3 March, 10:00 to 11:00, Room A". */
   protected eventName(occurrence: StarSchedulerOccurrence): string {
     const parts = [
-      occurrence.event.title,
+      this.titleText(occurrence.event),
       this.whenText(
         occurrence.start,
         occurrence.end,
@@ -1147,6 +1165,11 @@ export class StarScheduler {
     return parts.join(', ');
   }
 
+  /** The title in an accessible name: "Day off (cancelled)" for a cancelled event. */
+  private titleText(event: StarSchedulerEvent): string {
+    return event.cancelled ? `${event.title} ${this.text.eventCancelled}` : event.title;
+  }
+
   /** A timed event of at most one slot shows its title and time on one line. */
   protected isShort(style: Record<string, string | number> | null): boolean {
     const length = style?.['--star-scheduler-length'];
@@ -1155,10 +1178,18 @@ export class StarScheduler {
     );
   }
 
+  private colorFor(event: StarSchedulerEvent): StarSchedulerColor | undefined {
+    return event.color ?? this.resources().find((r) => sameId(r.id, event.resourceId))?.color;
+  }
+
   protected colorOf(event: StarSchedulerEvent): string | null {
-    const color: StarSchedulerColor | undefined =
-      event.color ?? this.resources().find((r) => sameId(r.id, event.resourceId))?.color;
-    return color ? `var(--star-chart-${color})` : null;
+    const color = this.colorFor(event);
+    return color && color !== 'muted' ? `var(--star-chart-${color})` : null;
+  }
+
+  /** The neutral tone: `color: 'muted'` on the event, or on its resource. */
+  protected isMuted(event: StarSchedulerEvent): boolean {
+    return this.colorFor(event) === 'muted';
   }
 
   // Layout helpers used by the template
