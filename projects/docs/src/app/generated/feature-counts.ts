@@ -213,16 +213,16 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "afterNextRender": {
-      "uses": 3,
-      "files": 2
+      "uses": 5,
+      "files": 3
     },
     "afterEveryRender": {
       "uses": 0,
       "files": 0
     },
     "inject": {
-      "uses": 84,
-      "files": 28
+      "uses": 86,
+      "files": 29
     },
     "takeUntilDestroyed": {
       "uses": 1,

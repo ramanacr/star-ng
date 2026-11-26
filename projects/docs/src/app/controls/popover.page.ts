@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Injector,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import { StarPopover } from '@star-ng/ui/popover';
@@ -91,7 +99,7 @@ import { DOCS, DocsRow } from '../shared/docs';
           </star-button>
         </div>
         <star-popover #saved position="below-end" ariaLabel="Saved views">
-          <div class="docs-stack" style="gap: var(--star-space-2); min-width: 16rem">
+          <div #savedList class="docs-stack" style="gap: var(--star-space-2); min-width: 16rem">
             @for (view of savedViews(); track view) {
               <div class="docs-row" style="justify-content: space-between; flex-wrap: nowrap">
                 <star-button appearance="text" size="sm" (pressed)="saved.hide()">
@@ -103,13 +111,15 @@ import { DOCS, DocsRow } from '../shared/docs';
                   iconOnly
                   leadingIcon="ph-bold ph-trash"
                   [ariaLabel]="'Delete ' + view"
-                  (pressed)="deleteView(view)"
+                  data-delete
+                  (pressed)="deleteView(view, savedList)"
                 />
               </div>
             } @empty {
               <p class="docs-output">No saved views.</p>
             }
             <star-button
+              data-save
               variant="secondary"
               size="sm"
               leadingIcon="ph-bold ph-plus"
@@ -172,16 +182,40 @@ export class PopoverPage {
   protected readonly savedScript = `readonly savedViews = signal(['Open orders', 'Late shipments', 'This week']);
 private viewCount = 0;
 
-deleteView(view: string): void {
+private readonly injector = inject(Injector);
+
+// The deleted button leaves the DOM, so move the focus to the next delete
+// button, else the previous one, else to "Save current view".
+deleteView(view: string, list: HTMLElement): void {
+  const index = this.savedViews().indexOf(view);
   this.savedViews.update((views) => views.filter((v) => v !== view));
+  afterNextRender(
+    () => {
+      const buttons = list.querySelectorAll<HTMLElement>('[data-delete] button');
+      const next = buttons[Math.min(index, buttons.length - 1)];
+      (next ?? list.querySelector<HTMLElement>('[data-save] button'))?.focus();
+    },
+    { injector: this.injector },
+  );
 }
 
 saveView(): void {
   this.savedViews.update((views) => [...views, \`View \${++this.viewCount}\`]);
 }`;
 
-  protected deleteView(view: string): void {
+  private readonly injector = inject(Injector);
+
+  protected deleteView(view: string, list: HTMLElement): void {
+    const index = this.savedViews().indexOf(view);
     this.savedViews.update((views) => views.filter((v) => v !== view));
+    afterNextRender(
+      () => {
+        const buttons = list.querySelectorAll<HTMLElement>('[data-delete] button');
+        const next = buttons[Math.min(index, buttons.length - 1)];
+        (next ?? list.querySelector<HTMLElement>('[data-save] button'))?.focus();
+      },
+      { injector: this.injector },
+    );
   }
 
   protected saveView(): void {
