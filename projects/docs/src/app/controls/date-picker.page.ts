@@ -194,6 +194,34 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Fixed date pattern"
+        source="date-picker/date-pattern"
+        [script]="datePatternScript"
+        note="datePattern sets one fixed pattern for the shown text and for typed text, for example dd-MMM-yyyy (05-Nov-2026) with the short month name of the locale. It wins over dateFormat, displayFormat and inputFormat. With showTime the picker adds HH:mm (hh:mm a with hourFormat='12'). Typed text may use any case, the long name or the number of the month, and other separators: 05-nov-2026 09:26 is read too. Tokens: d, dd, M, MM, MMM, MMMM, yy, yyyy, H, HH, h, hh, mm, ss, a; text in single quotes is literal. Set it for the whole app with provideStarDatePickerDefaults({ datePattern: 'dd-MMM-yyyy' })."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="dispatchAt"
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            dataType="string"
+            showTime
+            ariaLabel="Dispatch time"
+          />
+          <star-date-range-picker
+            [(value)]="projectPhase"
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            ariaLabel="Project phase"
+          />
+          <p class="docs-output" role="status">
+            Dispatch: {{ dispatchAt() ?? 'none' }}. Phase:
+            {{ iso(projectPhase()?.start ?? null) }} to {{ iso(projectPhase()?.end ?? null) }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="ISO text values"
         source="date-picker/data-type"
         [script]="dataTypeScript"
@@ -562,6 +590,12 @@ export class DatePickerPageContent {
     end: '2026-11-30',
   });
 
+  protected readonly dispatchAt = signal<string | null>('2026-11-05T09:26');
+  protected readonly projectPhase = signal<StarDateRange | null>({
+    start: new Date(2026, 10, 5),
+    end: new Date(2026, 10, 20),
+  });
+
   protected readonly meeting = signal<Date | null>(new Date(2026, 10, 17, 9, 30));
   protected readonly shift = signal<StarDateRange | null>({
     start: new Date(2026, 10, 16, 8, 0),
@@ -617,6 +651,15 @@ readonly longFormat: Intl.DateTimeFormatOptions = {
   protected readonly displayFormatScript = `readonly dueDate = signal<Date | null>(new Date(2026, 11, 15));
 readonly displayLong: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
 readonly inputNumeric: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };`;
+  protected readonly datePatternScript = `readonly dispatchAt = signal<string | null>('2026-11-05T09:26');
+readonly projectPhase = signal<StarDateRange | null>({
+  start: new Date(2026, 10, 5),
+  end: new Date(2026, 10, 20),
+});
+readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
+
+// One pattern for the whole app, in app.config.ts:
+// providers: [provideStarDatePickerDefaults({ datePattern: 'dd-MMM-yyyy' })]`;
   protected readonly dataTypeScript = `readonly issuedOn = signal<string | null>('2026-11-17');
 readonly billingPeriod = signal<StarDateRange<string> | null>({
   start: '2026-11-01',
