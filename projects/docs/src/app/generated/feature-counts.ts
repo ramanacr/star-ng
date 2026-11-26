@@ -181,7 +181,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 977,
+      "uses": 979,
       "files": 125
     },
     "computed": {
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 260,
+  "specFiles": 261,
   "pages": 146
 } as const;
