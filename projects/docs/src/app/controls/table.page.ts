@@ -412,6 +412,13 @@ interface Login {
   status: 'Success' | 'Failed';
 }
 
+interface Leave {
+  id: number;
+  day: string;
+  kind: string;
+  state: 'Approved' | 'Pending' | 'Withdrawn';
+}
+
 // A failed sign-in gets the danger tone; the Status cell keeps the text.
 readonly loginTone = (row: Login): StarTableRowTone | null =>
   row.status === 'Failed' ? 'danger' : null;
