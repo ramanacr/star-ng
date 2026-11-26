@@ -1,0 +1,64 @@
+// Styles of the theme factory guide (not generated): the glass theme itself, and the preview.
+@use '../../../../star-ng/styles/themes/glass';
+
+// A fixed backdrop, so the preview (and its visual baseline) does not depend on the page: color
+// fields, stripes and large text, the kind of busy backdrop that tests the text contrast.
+.docs-glass-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-block-size: 22rem;
+  margin-block-start: var(--star-space-4);
+  padding: var(--star-space-6);
+  overflow: hidden;
+  border-radius: var(--star-radius-lg);
+  background:
+    radial-gradient(circle at 15% 25%, var(--star-chart-1) 0 18%, transparent 19%),
+    radial-gradient(circle at 80% 30%, var(--star-chart-2) 0 14%, transparent 15%),
+    radial-gradient(circle at 60% 85%, var(--star-chart-3) 0 20%, transparent 21%),
+    repeating-linear-gradient(45deg, var(--star-text-strong) 0 12px, var(--star-surface) 12px 24px);
+
+  &::before {
+    position: absolute;
+    inset-block-start: 40%;
+    inset-inline: 0;
+    content: 'BACKDROP BACKDROP BACKDROP';
+    color: var(--star-text-strong);
+    font: 800 4rem/1 var(--star-font-sans);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+}
+
+.docs-glass-layers {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--star-space-4);
+}
+.docs-glass-layers__title {
+  margin: 0 0 var(--star-space-1);
+  color: var(--star-text-strong);
+  font: var(--star-type-title-sm);
+}
+.docs-glass-layers__muted {
+  margin: 0;
+  color: var(--star-text-muted);
+}
+.docs-glass-layers__toast {
+  min-inline-size: 14rem;
+}
+
+.docs-glass-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--star-space-3) var(--star-space-6);
+  margin-block-end: var(--star-space-4);
+}
+.docs-glass-controls__row {
+  display: grid;
+  gap: var(--star-space-1);
+  font: var(--star-type-label);
+}

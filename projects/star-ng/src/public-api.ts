@@ -82,6 +82,7 @@ export * from '@star-ng/ui/table';
 export * from '@star-ng/ui/tabs';
 export * from '@star-ng/ui/tag';
 export * from '@star-ng/ui/theme';
+export * from '@star-ng/ui/theme-factory';
 export * from '@star-ng/ui/theme-switch';
 export * from '@star-ng/ui/tile-layout';
 export * from '@star-ng/ui/toast';

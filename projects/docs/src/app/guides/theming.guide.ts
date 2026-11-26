@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { DOCS, DocsRow } from '../shared/docs';
 
 const names = (prefix: string, items: readonly string[]) => items.map((item) => `${prefix}${item}`);
@@ -7,7 +8,7 @@ const names = (prefix: string, items: readonly string[]) => items.map((item) => 
   encapsulation: ViewEncapsulation.None,
   styleUrl: './theming.guide.scss',
   selector: 'docs-theming-guide',
-  imports: [DOCS],
+  imports: [DOCS, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -122,6 +123,10 @@ const names = (prefix: string, items: readonly string[]) => items.map((item) => 
       <p>
         The full list with the default values is in
         <code>@star-ng/ui/styles/_tokens.scss</code>.
+      </p>
+      <p>
+        To make a whole theme from a hue, with translucent floating layers, see
+        <a routerLink="/guides/theme-factory">Theme factory and glass</a>.
       </p>
     </docs-page>
   `,
