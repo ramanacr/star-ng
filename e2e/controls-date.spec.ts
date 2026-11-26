@@ -810,6 +810,29 @@ test.describe('date and time depth', () => {
     await expect(live.getByRole('status')).toHaveText('Due: none');
   });
 
+  test('a fixed date pattern shows and reads dd-MMM-yyyy text', async ({ page }) => {
+    await openPage(page, '/controls/date-picker', 'Date picker');
+    const live = example(page, 'Fixed date pattern');
+    const input = live.getByRole('textbox', { name: 'Dispatch time' });
+    await expect(input).toHaveValue('05-Nov-2026 09:26');
+    await expect(input).toHaveAttribute('placeholder', 'dd-MMM-yyyy HH:mm');
+    await input.fill('10-nov-2026 14:05');
+    await input.press('Tab');
+    await expect(input).toHaveValue('10-Nov-2026 14:05');
+    await expect(live.getByRole('status')).toContainText('Dispatch: 2026-11-10T14:05.');
+    // Text that is not a real date goes back to the text of the value.
+    await input.fill('31-Feb-2026 09:00');
+    await input.press('Tab');
+    await expect(input).toHaveValue('10-Nov-2026 14:05');
+
+    const range = live.getByRole('textbox', { name: 'Project phase' });
+    await expect(range).toHaveValue('05-Nov-2026 – 20-Nov-2026');
+    await range.fill('12-Nov-2026 - 02-nov-2026');
+    await range.press('Enter');
+    await expect(range).toHaveValue('02-Nov-2026 – 12-Nov-2026');
+    await expect(live.getByRole('status')).toContainText('Phase: 2026-11-02 to 2026-11-12');
+  });
+
   test('ISO text values round-trip', async ({ page }) => {
     await openPage(page, '/controls/date-picker', 'Date picker');
     const live = example(page, 'ISO text values');

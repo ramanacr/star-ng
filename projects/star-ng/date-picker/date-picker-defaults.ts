@@ -11,6 +11,7 @@ import { InjectionToken, Provider } from '@angular/core';
  * - `hourFormat`: `'24'` or `'12'` for the typed time.
  * - `showButtonBar`: the Today and Clear bar.
  * - `showWeek`: ISO 8601 week numbers.
+ * - `datePattern`: one fixed pattern of the text, for example `'dd-MMM-yyyy'` (see the input).
  *
  * Precedence: input in the template, then this token, then `provideStarNg`, then the built-in default.
  */
@@ -21,6 +22,7 @@ export interface StarDatePickerDefaults {
   readonly hourFormat?: '24' | '12';
   readonly showButtonBar?: boolean;
   readonly showWeek?: boolean;
+  readonly datePattern?: string | null;
 }
 
 /** Defaults of the date pickers. Set it with `provideStarDatePickerDefaults`. */

@@ -3,7 +3,7 @@
 export const FEATURE_COUNTS = {
   "lib": {
     "input": {
-      "uses": 1347,
+      "uses": 1348,
       "files": 129
     },
     "inputRequired": {
@@ -43,7 +43,7 @@ export const FEATURE_COUNTS = {
       "files": 90
     },
     "computed": {
-      "uses": 856,
+      "uses": 858,
       "files": 108
     },
     "linkedSignal": {
@@ -181,7 +181,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 987,
+      "uses": 991,
       "files": 126
     },
     "computed": {
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 263,
+  "specFiles": 264,
   "pages": 147
 } as const;
