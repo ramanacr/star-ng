@@ -2,7 +2,7 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
-## [Unreleased]
+## [0.8.0] - 2026-11-26
 
 ### Added
 
@@ -12,7 +12,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Chip
 
-- Chip: tones and a clickable body, for filter chips. Input `severity` (`StarChipSeverity`: `neutral`, `info`, `primary`, `success`, `warn`, `danger`, and `secondary`, the same as `neutral`); without it the chip keeps its accent look. The tones use the tag tokens `--star-tone` and `--star-tone-soft` and reach 4.5:1 in the light and dark themes. Input `clickable` and output `chipClick`: the icon, label and content become a real button (styling part `bodyButton`, class `star-chip__body`) with a focus ring, Enter and Space; its accessible name is the chip text. The remove button stays separate; without a `label` it is named "Remove" plus the projected text. The text keeps one line: a bold key before the value (`<b>Status:</b> Open`) stays and the value ends with an ellipsis at `--star-chip-max-width` (default `100%`), so long text does not push out the remove button. Size tokens `--star-chip-height`, `--star-chip-font`, `--star-chip-padding-inline`, `--star-chip-remove-size` and `--star-chip-remove-surface`; their defaults keep the current size. Classes `star-chip--tone`, `star-chip--<severity>`, `star-chip--clickable` and `star-chip__text`. Chips without the new options look and work as before ([#150](https://github.com/ramanacr/star-ng/issues/150)).
+- Chip: tones and a clickable body, for filter chips. Input `severity` (`StarChipSeverity`: `neutral`, `info`, `primary`, `success`, `warn`, `danger`, and `secondary`, the same as `neutral`); without it the chip keeps its accent look. The tones use the tag tokens `--star-tone` and `--star-tone-soft` and reach 4.5:1 in the light and dark themes. Input `clickable` and output `chipClick`: the icon, label and content become a real button (styling part `bodyButton`, class `star-chip__body`) with a focus ring, Enter and Space; its accessible name is the chip text. The remove button stays separate; without a `label` it is named "Remove" plus the projected text. The text keeps one line: a bold key before the value (`<b>Status:</b> Open`) stays and the value ends with an ellipsis at `--star-chip-max-width` (default `100%`), so long text does not push out the remove button. Size tokens `--star-chip-height`, `--star-chip-font`, `--star-chip-padding-inline`, `--star-chip-remove-size` and `--star-chip-remove-surface`; their defaults keep the current size. Classes `star-chip--tone`, `star-chip--<severity>`, `star-chip--clickable` and `star-chip__text`. Without the new options the chip keeps its look, except for the two changes under Changed ([#150](https://github.com/ramanacr/star-ng/issues/150)).
 
 #### Field
 
@@ -25,6 +25,20 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 #### Popover
 
 - Popover: the input `position` (`StarPopoverPosition`: `below-start`, the default, `below-end`, `above-start`, `above-end`; the same values as `StarMenuPosition`) sets where the panel opens next to its anchor. `start` and `end` follow the reading direction, so `below-end` lines up the right edges in a left-to-right page and the left edges in a right-to-left page. The panel keeps its gap of 8px to the anchor. When there is no room, it moves to the other edge, then to the other side of the anchor, and it is pushed inside the window. A change of `position` moves an open panel. The default positions do not change ([#158](https://github.com/ramanacr/star-ng/issues/158)).
+
+### Changed
+
+#### Chip
+
+- Chip: long text keeps one line and ends with an ellipsis at the width of the container (`--star-chip-max-width`, default `100%`). Before, it could wrap onto a second line ([#150](https://github.com/ramanacr/star-ng/issues/150)).
+- Chip: when a removable chip has no `label` (only projected content), the remove button is named "Remove" plus the projected text, for example "Remove Status: Open". Before, it was named "Remove" only. With a `label` the name does not change ([#150](https://github.com/ramanacr/star-ng/issues/150)).
+
+### Migrating from 0.7
+
+Read this list when you update from `0.7.x` to `0.8.0`. Each item is a change that can break tests or styles. The items are in the `Changed` section above.
+
+1. Chip: text no longer wraps. A layout that needs the full text of a long chip should give the chip more room or set `--star-chip-max-width`. A visual test of a page with long chips can change.
+2. Chip: a test that finds the remove button of a chip without a `label` by the exact name "Remove" must use the new name, "Remove" plus the chip text.
 
 ## [0.7.0] - 2026-11-25
 
