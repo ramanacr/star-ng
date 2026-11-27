@@ -50,6 +50,13 @@ export interface StarThemeFactoryOptions {
   angle?: number;
   /** Least contrast ratio of the text, 4.5 (WCAG AA, the floor) to 21. Default 4.5. */
   minContrast?: number;
+  /**
+   * Edge refraction of the dock and the toasts (Chromium only): the CSS gets the rules, and
+   * `provideStarGlassRefraction()` turns them on. Other browsers keep the plain glass. Off with
+   * reduced motion, reduced transparency, more contrast, forced colors and in the `solid`
+   * variant. Default false.
+   */
+  refraction?: boolean;
 }
 
 /** The options of a generated theme after defaults and clamping. */
@@ -107,6 +114,7 @@ const DEFAULTS = {
   radius: 1,
   angle: 135,
   minContrast: 4.5,
+  refraction: false,
 } as const;
 
 const RADIUS_SCALE: readonly [string, number][] = [
@@ -133,6 +141,9 @@ function finite(name: string, value: number | undefined, fallback: number): numb
 }
 
 function resolve(options: StarThemeFactoryOptions): StarThemeFactoryResolvedOptions {
+  if (options.refraction !== undefined && typeof options.refraction !== 'boolean') {
+    throw new Error('starCreateTheme: "refraction" must be a boolean.');
+  }
   if (!/^[a-z][a-z0-9-]*$/.test(options.name ?? '')) {
     throw new Error(
       'starCreateTheme: "name" must start with a lowercase letter and have only lowercase ' +
@@ -151,6 +162,7 @@ function resolve(options: StarThemeFactoryOptions): StarThemeFactoryResolvedOpti
       clamp(finite('minContrast', options.minContrast, DEFAULTS.minContrast), 4.5, 21),
       2,
     ),
+    refraction: options.refraction ?? DEFAULTS.refraction,
   };
 }
 
@@ -381,6 +393,11 @@ const rgba = (color: StarRgb, a: number) => cssColor(withAlpha(color, a));
  * the whole range and over the solid fallback. Only when no text color can pass does it raise the
  * surface opacity. Every check of the result passes.
  *
+ * Refraction (`refraction: true`) does not change the check: the displacement map only moves
+ * backdrop pixels (and mixes neighbors), so every color under the surface is still a backdrop
+ * color, inside the checked range. The map moves them only in bands along the edges; the middle,
+ * where the text is, is not displaced.
+ *
  * ```ts
  * const theme = starCreateTheme({ name: 'ocean', hue: 220, tint: 0.4 });
  * const css = starThemeCss(theme);
@@ -537,6 +554,18 @@ const GLASS_LAYERS = [
   '.star-dock__list',
 ];
 
+/** Id of the refraction filter for left to right; the right to left one adds `-rtl`. */
+export const REFRACTION_FILTER_ID = 'star-glass-refraction';
+/** Attribute on `<html>` while the browser renders the refraction filter. */
+export const REFRACTION_ATTRIBUTE = 'data-star-refraction';
+
+/**
+ * The layers that refract: few (each SVG filter costs GPU time) and of a steady size, so the map,
+ * which scales with the box, looks the same on each. The dock list is one of the glass layers; the
+ * toast has its own glass rule.
+ */
+const REFRACTED_LAYERS = { glass: '.star-dock__list', toast: '.star-toast' } as const;
+
 const block = (selector: string, declarations: Readonly<Record<string, string>>) =>
   `${selector} {\n${Object.entries(declarations)
     .map(([name, value]) => `  ${name}: ${value};`)
@@ -615,6 +644,7 @@ export function starThemeCss(theme: StarGeneratedTheme): string {
       '-webkit-backdrop-filter': filter,
       'backdrop-filter': filter,
     }),
+    ...(theme.options.refraction ? refractionCss(s, filter) : []),
     `@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {\n${indent(
       block(`${layers},\n${toast}`, { background: 'var(--star-glass-bg-solid)' }),
     )}}\n`,
@@ -642,6 +672,50 @@ export function starThemeCss(theme: StarGeneratedTheme): string {
     }),
   );
   return out.join('\n');
+}
+
+/**
+ * The refraction rules. `--star-glass-refraction-filter` is `none` unless all of these hold; then
+ * it is `url(#star-glass-refraction)` (`-rtl` in right to left):
+ *
+ * - `data-star-refraction` on `<html>`: `provideStarGlassRefraction()` sets it only in a browser
+ *   that renders the filter (Chromium), so other browsers never see the `url()` value;
+ * - no reduced motion (media query or `data-star-motion="reduced"`), no reduced transparency, no
+ *   contrast preference, no forced colors;
+ * - not the `solid` variant.
+ *
+ * The filter chain of a refracted layer puts the token first. It applies only where the token is
+ * not `none` (a container style query on the parent, which inherits the token), so the chain stays
+ * valid: with `none` the layer keeps the plain chain of the glass rules above.
+ */
+function refractionCss(s: string, filter: string): string[] {
+  const on = `:root[${REFRACTION_ATTRIBUTE}]:not([data-star-motion='reduced'])`;
+  const scope = (selectors: string) => `:is(${on}, ${on} *):is(${selectors})`;
+  const solid = `${s}[data-star-theme-variant='solid']`;
+  const token = '--star-glass-refraction-filter';
+  const media =
+    '(prefers-reduced-motion: no-preference) and (prefers-reduced-transparency: no-preference) ' +
+    'and (prefers-contrast: no-preference) and (forced-colors: none)';
+  // The same weight as the glass rule of each layer, which comes earlier.
+  const scoped = `:where(${s}:not([data-star-theme-variant='solid']))`;
+  const layers =
+    `${scoped} :where(${REFRACTED_LAYERS.glass}):not([data-star-unstyled]),\n` +
+    `${scoped} ${REFRACTED_LAYERS.toast}:not([data-star-unstyled])`;
+  const chain = `var(${token}) ${filter}`;
+  return [
+    `@media ${media} {\n${indent(
+      [
+        block(scope(s), { [token]: `url('#${REFRACTION_FILTER_ID}')` }),
+        block(scope(`[dir='rtl']${s}, [dir='rtl'] ${s}, ${s} [dir='rtl']`), {
+          [token]: `url('#${REFRACTION_FILTER_ID}-rtl')`,
+        }),
+        block(scope(`${solid}, ${solid} *`), { [token]: 'none' }),
+      ].join('\n'),
+    )}}\n`,
+    `@container not style(${token}: none) {\n${indent(
+      block(layers, { '-webkit-backdrop-filter': chain, 'backdrop-filter': chain }),
+    )}}\n`,
+  ];
 }
 
 const indent = (text: string) =>

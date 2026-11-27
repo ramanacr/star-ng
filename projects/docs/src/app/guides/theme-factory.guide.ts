@@ -2,14 +2,24 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  createEnvironmentInjector,
+  DestroyRef,
+  EnvironmentInjector,
   inject,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
+import { StarMenuItem } from '@star-ng/ui/menu';
 import { StarSelectButton } from '@star-ng/ui/select-button';
 import { StarSlider } from '@star-ng/ui/slider';
 import { StarThemeService } from '@star-ng/ui/theme';
-import { starCreateTheme, starThemeCss, StarThemeVariant } from '@star-ng/ui/theme-factory';
+import {
+  provideStarGlassRefraction,
+  starCreateTheme,
+  starThemeCss,
+  StarThemeVariant,
+} from '@star-ng/ui/theme-factory';
+import { StarDock } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 /**
@@ -44,7 +54,7 @@ const VARIANTS: readonly StarThemeVariant[] = ['clear', 'tinted', 'solid'];
 
 @Component({
   selector: 'docs-theme-factory-guide-content',
-  imports: [DOCS, StarSelectButton, StarSlider, DocsGlassLayers],
+  imports: [DOCS, StarDock, StarSelectButton, StarSlider, DocsGlassLayers],
   encapsulation: ViewEncapsulation.None,
   styleUrl: './theme-factory.guide-content.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -101,6 +111,69 @@ const VARIANTS: readonly StarThemeVariant[] = ['clear', 'tinted', 'solid'];
         The rules have the weight of one class. A class of your own on a layer (pass-through
         <code>pt</code>) wins, and a part in unstyled mode keeps no glass.
       </p>
+
+      <h2>Edge refraction</h2>
+      <p>
+        The dock and the toasts can bend the backdrop along their edges, like the rim of a lens.
+        This needs an SVG filter in <code>backdrop-filter</code>, which only Chromium renders
+        (Chrome, Edge, Opera). Firefox and Safari keep the plain glass: blur, contrast, saturation
+        and brightness, as above.
+      </p>
+      <p>
+        The glass theme has the rules (a theme of your own gets them with
+        <code>refraction: true</code>). Add <code>provideStarGlassRefraction()</code> to turn them
+        on. In the browser it puts one hidden SVG with the filters at the end of
+        <code>&lt;body&gt;</code> and sets <code>data-star-refraction</code> on
+        <code>&lt;html&gt;</code>, only in a browser that renders the filter. On the server it does
+        nothing. It adds no inline script and no <code>style</code> attribute, so it works under a
+        strict Content Security Policy. The filters use no image (no <code>data:</code> URL).
+      </p>
+      <docs-code [code]="refractionCode" label="Turn on refraction" />
+
+      <docs-example
+        heading="Edge refraction"
+        source="theme-factory/refraction"
+        note="This page turns refraction on. The preview lowers the blur (--star-glass-blur: 4px) so the bend shows. In Chromium the edges of the dock and the toast bend the stripes of the backdrop; in Firefox and Safari they show the plain glass. Reduced motion and the other preferences below turn it off."
+      >
+        <div class="docs-glass-stage docs-glass-stage--refraction" data-star-theme="glass">
+          <div class="docs-glass-layers">
+            <div class="star-toast docs-glass-layers__toast">
+              <div>
+                <p class="star-toast__summary">Order shipped</p>
+                <p class="star-toast__detail">Order 1042 left the warehouse in Lyon.</p>
+              </div>
+            </div>
+            <star-dock [items]="apps" ariaLabel="Apps" />
+          </div>
+        </div>
+      </docs-example>
+
+      <ul>
+        <li>
+          The displacement map is made of SVG filter primitives in units of the layer box
+          (<code>primitiveUnits="objectBoundingBox"</code>), so it scales with the box. It moves the
+          backdrop only in bands along the edges; the middle, where the text is, stays as it is.
+        </li>
+        <li>
+          The text contrast does not change: the map only moves backdrop pixels, so every color
+          under the surface is still a backdrop color, and the contrast check covers every backdrop
+          color.
+        </li>
+        <li>
+          The bands are wider on the start side and on the top, where the edge highlight is. Right
+          to left mirrors them (<code>#star-glass-refraction-rtl</code>).
+        </li>
+        <li>
+          Off with <code>prefers-reduced-motion</code> (and
+          <code>data-star-motion="reduced"</code>), <code>prefers-reduced-transparency</code>, a
+          contrast preference (<code>prefers-contrast: more</code>), <code>forced-colors</code> and
+          in the solid variant.
+        </li>
+        <li>
+          Each filter costs GPU time, so only the dock and the toasts refract: few layers, of a
+          steady size. Keep few of them on the screen at once.
+        </li>
+      </ul>
 
       <h2>Make your own theme</h2>
       <p>
@@ -222,6 +295,10 @@ const VARIANTS: readonly StarThemeVariant[] = ['clear', 'tinted', 'solid'];
           <code>--star-glass-duration</code> is <code>0s</code>.
         </li>
         <li>Right to left: the angle of the edge highlight is mirrored.</li>
+        <li>
+          Edge refraction: Chromium only; off with reduced motion, reduced transparency, a contrast
+          preference, forced colors and in the solid variant.
+        </li>
       </ul>
 
       <h2>Factory inputs</h2>
@@ -279,6 +356,23 @@ const VARIANTS: readonly StarThemeVariant[] = ['clear', 'tinted', 'solid'];
 export class ThemeFactoryGuideContent {
   private readonly scheme = inject(StarThemeService).theme;
 
+  constructor() {
+    // The docs turn refraction on for this page only; an application adds the provider at
+    // bootstrap.
+    const injector = createEnvironmentInjector(
+      [provideStarGlassRefraction()],
+      inject(EnvironmentInjector),
+    );
+    inject(DestroyRef).onDestroy(() => injector.destroy());
+  }
+
+  protected readonly apps: readonly StarMenuItem[] = [
+    { label: 'Inbox', icon: 'ph-bold ph-tray' },
+    { label: 'Calendar', icon: 'ph-bold ph-calendar-blank' },
+    { label: 'Reports', icon: 'ph-bold ph-chart-line' },
+    { label: 'Settings', icon: 'ph-bold ph-gear' },
+  ];
+
   protected readonly variants = VARIANTS;
   protected readonly variant = signal<StarThemeVariant>('tinted');
   protected readonly playVariant = signal<StarThemeVariant>('tinted');
@@ -305,9 +399,12 @@ export class ThemeFactoryGuideContent {
   /** The tokens of the current scheme and variant, as custom properties on the preview. */
   protected readonly previewStyle = computed(() => {
     const theme = this.theme();
-    // The angle stays with the theme CSS, which mirrors it in right to left.
+    // The angle and the refraction filter stay with the theme CSS, which switches them (right
+    // to left, refraction on or off).
     const shared = Object.fromEntries(
-      Object.entries(theme.shared).filter(([name]) => name !== '--star-glass-angle'),
+      Object.entries(theme.shared).filter(
+        ([name]) => name !== '--star-glass-angle' && name !== '--star-glass-refraction-filter',
+      ),
     );
     return { ...shared, ...theme.tokens[this.playVariant()][this.scheme()] };
   });
@@ -349,6 +446,13 @@ variant = signal<StarThemeVariant>('tinted');`;
 );
 css = computed(() => starThemeCss(this.theme()));`;
 
+  protected readonly refractionCode = `import { provideStarGlassRefraction } from '@star-ng/ui/theme-factory';
+
+bootstrapApplication(App, { providers: [provideStarGlassRefraction()] });
+
+// A theme of your own: the refraction rules come with refraction: true.
+const theme = starCreateTheme({ name: 'ocean', hue: 220, refraction: true });`;
+
   protected readonly createCode = `import { starCreateTheme, starThemeCss } from '@star-ng/ui/theme-factory';
 
 const theme = starCreateTheme({
@@ -376,6 +480,11 @@ writeFileSync('src/ocean-theme.css', starThemeCss(theme));`;
     { name: 'radius', description: 'Factor of the radius scale, 0 to 3. Default 1.' },
     { name: 'angle', description: 'Angle of the edge highlight in degrees. Default 135.' },
     { name: 'minContrast', description: 'Least text contrast, 4.5 to 21. Default 4.5.' },
+    {
+      name: 'refraction',
+      description:
+        'Edge refraction rules for the dock and the toasts (Chromium only); provideStarGlassRefraction() turns them on. Default false; the glass theme has them.',
+    },
   ];
 
   protected readonly tokens: readonly DocsRow[] = [
@@ -406,7 +515,8 @@ writeFileSync('src/ocean-theme.css', starThemeCss(theme));`;
     },
     {
       name: '--star-glass-refraction-filter',
-      description: 'Reserved for edge refraction (Chromium only, planned). none for now.',
+      description:
+        'url(#star-glass-refraction) (-rtl in right to left) while refraction is on, none otherwise. The refracted layers put it first in their backdrop filter only when it is not none.',
     },
   ];
 }

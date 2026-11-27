@@ -62,3 +62,11 @@
   gap: var(--star-space-1);
   font: var(--star-type-label);
 }
+
+// The refraction preview: a toast and the dock over the backdrop, one above the other, with a low
+// blur so the bend of the edges shows.
+.docs-glass-stage--refraction .docs-glass-layers {
+  --star-glass-blur: 4px;
+  flex-direction: column;
+  align-items: center;
+}

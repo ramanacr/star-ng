@@ -79,16 +79,16 @@ export const FEATURE_COUNTS = {
       "files": 6
     },
     "inject": {
-      "uses": 582,
-      "files": 135
+      "uses": 584,
+      "files": 136
     },
     "takeUntilDestroyed": {
       "uses": 7,
       "files": 6
     },
     "isPlatformBrowser": {
-      "uses": 22,
-      "files": 21
+      "uses": 23,
+      "files": 22
     },
     "toSignal": {
       "uses": 1,
@@ -221,7 +221,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "inject": {
-      "uses": 87,
+      "uses": 89,
       "files": 30
     },
     "takeUntilDestroyed": {
@@ -273,8 +273,8 @@ export const FEATURE_COUNTS = {
       "files": 155
     },
     "destroyRef": {
-      "uses": 24,
-      "files": 12
+      "uses": 26,
+      "files": 13
     },
     "booleanAttribute": {
       "uses": 0,
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 264,
+  "specFiles": 265,
   "pages": 147
 } as const;

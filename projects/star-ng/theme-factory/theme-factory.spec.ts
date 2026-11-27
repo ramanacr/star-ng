@@ -75,6 +75,7 @@ describe('starCreateTheme', () => {
       radius: 1,
       angle: 135,
       minContrast: 4.5,
+      refraction: false,
     });
     expect(starCreateTheme({ name: 'x', minContrast: 3 }).options.minContrast).toBe(4.5);
   });
@@ -224,6 +225,85 @@ describe('starThemeCss', () => {
     try {
       const value = getComputedStyle(host).getPropertyValue('--star-glass-angle').trim();
       expect(value).toBe('120deg');
+    } finally {
+      host.remove();
+      style.remove();
+    }
+  });
+});
+
+describe('starThemeCss with refraction', () => {
+  const plain = starThemeCss(starCreateTheme({ name: 'ocean' }));
+  const theme = starCreateTheme({ name: 'ocean', refraction: true });
+  const css = starThemeCss(theme);
+
+  it('is off by default and keeps the token none', () => {
+    expect(starCreateTheme({ name: 'ocean' }).options.refraction).toBe(false);
+    expect(theme.options.refraction).toBe(true);
+    expect(theme.shared['--star-glass-refraction-filter']).toBe('none');
+    expect(plain).not.toContain('url(');
+    expect(plain).not.toContain('@container');
+    expect(() => starCreateTheme({ name: 'x', refraction: 'yes' as never })).toThrowError(
+      /refraction/,
+    );
+  });
+
+  it('sets the url only under data-star-refraction, outside every preference', () => {
+    expect(css).toContain(
+      '@media (prefers-reduced-motion: no-preference) and (prefers-reduced-transparency: no-preference) and (prefers-contrast: no-preference) and (forced-colors: none)',
+    );
+    const on = ":root[data-star-refraction]:not([data-star-motion='reduced'])";
+    expect(css).toContain(`:is(${on}, ${on} *):is([data-star-theme='ocean']) {`);
+    expect(css).toMatch(
+      /:is\(\[data-star-theme='ocean'\]\) \{\s*--star-glass-refraction-filter: url\('#star-glass-refraction'\);/,
+    );
+    expect(css).toMatch(
+      /\[data-star-theme='ocean'\] \[dir='rtl'\]\) \{\s*--star-glass-refraction-filter: url\('#star-glass-refraction-rtl'\);/,
+    );
+    expect(css).toMatch(
+      /\[data-star-theme='ocean'\]\[data-star-theme-variant='solid'\] \*\) \{\s*--star-glass-refraction-filter: none;/,
+    );
+  });
+
+  it('puts the url first in the chain of the dock and the toast, only where it is not none', () => {
+    const rule =
+      /@container not style\(--star-glass-refraction-filter: none\) \{\s*([^{]*)\{([^}]*)\}/.exec(
+        css,
+      );
+    expect(rule).not.toBeNull();
+    const [, selector, body] = rule!;
+    expect(selector).toContain(
+      ":where([data-star-theme='ocean']:not([data-star-theme-variant='solid']))",
+    );
+    expect(selector).toContain(':where(.star-dock__list):not([data-star-unstyled])');
+    expect(selector).toContain("solid'])) .star-toast:not([data-star-unstyled])");
+    expect(selector).not.toContain('.star-popover');
+    expect(body).toContain(
+      'backdrop-filter: var(--star-glass-refraction-filter) blur(var(--star-glass-blur))',
+    );
+    expect(body).toContain('-webkit-backdrop-filter: var(--star-glass-refraction-filter) blur(');
+    // The plain chain comes first, so a layer keeps its blur wherever the rule does not apply.
+    expect(css.indexOf('backdrop-filter: blur(var(--star-glass-blur))')).toBeLessThan(
+      css.indexOf('@container'),
+    );
+  });
+
+  it('does not change the contrast check', () => {
+    const plainTheme = starCreateTheme({ name: 'ocean' });
+    expect(theme.contrast).toEqual(plainTheme.contrast);
+    expect(theme.tokens).toEqual(plainTheme.tokens);
+  });
+
+  it('keeps refraction off in a document without the attribute', () => {
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.append(style);
+    const host = document.createElement('div');
+    host.setAttribute('data-star-theme', 'ocean');
+    document.body.append(host);
+    try {
+      const value = getComputedStyle(host).getPropertyValue('--star-glass-refraction-filter');
+      expect(value.trim()).toBe('none');
     } finally {
       host.remove();
       style.remove();

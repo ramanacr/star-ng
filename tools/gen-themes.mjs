@@ -6,9 +6,10 @@
 //   node tools/gen-themes.mjs           writes the theme files
 //   node tools/gen-themes.mjs --check   fails when a written file is out of date (`lint` runs it)
 //
-// The factory is TypeScript without Angular imports. The tool transpiles its files with the
-// TypeScript compiler into a temporary folder and imports them, so the tool and the library run
-// the same code.
+// The factory (`theme-factory.ts`, `color.ts`) is TypeScript without Angular imports. The tool
+// transpiles the files of the folder with the TypeScript compiler into a temporary folder and
+// imports the factory file (not `index.ts`, which also exports the Angular provider of the
+// refraction), so the tool and the library run the same code.
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -23,7 +24,17 @@ export const themesDir = join(root, 'projects/star-ng/styles/themes');
 /** The themes of the package: factory inputs. */
 export const THEMES = [
   // Glass: translucent floating layers. A neutral name: no product or vendor name.
-  { name: 'glass', hue: 265, opacity: 0.55, blur: 20, tint: 0.3, radius: 1.25, angle: 135 },
+  // Refraction: the rules are in the theme; `provideStarGlassRefraction()` turns them on.
+  {
+    name: 'glass',
+    hue: 265,
+    opacity: 0.55,
+    blur: 20,
+    tint: 0.3,
+    radius: 1.25,
+    angle: 135,
+    refraction: true,
+  },
 ];
 
 /** Imports the theme factory from its TypeScript source. */
@@ -38,7 +49,7 @@ export async function loadFactory() {
       const js = outputText.replace(/from '\.\/([\w-]+)'/g, "from './$1.mjs'");
       writeFileSync(join(out, file.replace(/\.ts$/, '.mjs')), js);
     }
-    return await import(pathToFileURL(join(out, 'index.mjs')).href);
+    return await import(pathToFileURL(join(out, 'theme-factory.mjs')).href);
   } finally {
     rmSync(out, { recursive: true, force: true });
   }
