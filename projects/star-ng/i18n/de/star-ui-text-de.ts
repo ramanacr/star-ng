@@ -222,6 +222,10 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   holiday: 'Feiertag',
   event: 'Termin',
   specialDate: 'Besonderer Tag',
+  datePrecision: 'Genauigkeit',
+  precisionDay: 'Ganzes Datum',
+  precisionMonth: 'Monat und Jahr',
+  precisionYear: 'Nur Jahr',
 
   increase: 'Erhöhen',
   decrease: 'Verringern',

@@ -1,15 +1,18 @@
 import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
-import { form, FormField, required } from '@angular/forms/signals';
+import { form, FormField, required, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { StarFooterTemplate, StarHeaderTemplate } from '@star-ng/ui/core';
 import {
   isoDay,
   sameDay,
+  starComparePartialDates,
   StarDatePicker,
   StarDateRange,
   StarDateRangePicker,
   StarDateTemplate,
   StarMultiDatePicker,
+  StarPartialDate,
+  StarPartialDatePicker,
   StarSpecialDate,
 } from '@star-ng/ui/date-picker';
 import { StarField } from '@star-ng/ui/field';
@@ -23,6 +26,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     StarDatePicker,
     StarDateRangePicker,
     StarMultiDatePicker,
+    StarPartialDatePicker,
     StarDateTemplate,
     StarHeaderTemplate,
     StarFooterTemplate,
@@ -33,8 +37,8 @@ import { DOCS, DocsRow } from '../shared/docs';
   template: `
     <docs-page
       heading="Date picker"
-      lead="An input with a calendar popup. The user types a date or picks it in the calendar. There are three components: one date (star-date-picker), a range (star-date-range-picker) and several single days (star-multi-date-picker). Typed text follows the order of day, month and year of the locale."
-      importFrom="import { StarDatePicker, StarDateRangePicker, StarMultiDatePicker } from '@star-ng/ui/date-picker';"
+      lead="An input with a calendar popup. The user types a date or picks it in the calendar. There are four components: one date (star-date-picker), a range (star-date-range-picker), several single days (star-multi-date-picker) and a date that may be known only to the month or the year (star-partial-date-picker). Typed text follows the order of day, month and year of the locale."
+      importFrom="import { StarDatePicker, StarDateRangePicker, StarMultiDatePicker, StarPartialDatePicker } from '@star-ng/ui/date-picker';"
     >
       <docs-example
         heading="Single date"
@@ -397,6 +401,119 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Partial dates"
+        source="date-picker/partial"
+        [script]="partialScript"
+        note="star-partial-date-picker takes a full date, a month and year, or a year only, for a date that the user does not know to the day. The value keeps its precision: { year, month, day } with null for an unknown part (month is 1 to 12). Typed text sets the precision: 14-Apr-2026 is a full date, MAR-2026 a month and year, 1981 a year; ISO text (2026-04, 2026) is read too. The text shows only the known parts, never an invented day. In the popup, the Precision radio group chooses the day, month or year view, and opens on the precision of the value; a pick sets the value at that precision. precisions limits the choice: the second field takes a month and year or a year only."
+      >
+        <div class="docs-stack">
+          <star-partial-date-picker
+            [(value)]="firstNoticed"
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            showButtonBar
+            showClear
+            ariaLabel="First noticed"
+          />
+          <star-partial-date-picker
+            [(value)]="servicePeriod"
+            locale="en-GB"
+            [precisions]="['month', 'year']"
+            ariaLabel="Service month or year"
+          />
+          <p class="docs-output" role="status">
+            First noticed: {{ json(firstNoticed()) }}. Service: {{ json(servicePeriod()) }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Partial date states and limits"
+        source="date-picker/partial-states"
+        [script]="partialStatesScript"
+        note="An empty field, a value of each precision, a value with an impossible part (month 13: marked invalid and shown empty), a disabled and a read-only field. minDate and maxDate compare at the precision of the value: with minDate 15 March 2026, Mar-2026 is allowed and Feb-2026 is not. keepInvalid keeps typed text that is not a date (31-Apr-2026), marked invalid."
+      >
+        <div class="docs-stack">
+          <star-partial-date-picker locale="en-US" datePattern="dd-MMM-yyyy" ariaLabel="Empty" />
+          <star-partial-date-picker
+            [value]="fullDate"
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            ariaLabel="Full date"
+          />
+          <star-partial-date-picker
+            [value]="monthOnly"
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            ariaLabel="Month and year"
+          />
+          <star-partial-date-picker
+            [value]="yearOnly"
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            ariaLabel="Year only"
+          />
+          <star-partial-date-picker
+            [value]="impossible"
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            ariaLabel="Impossible month"
+          />
+          <star-partial-date-picker
+            [value]="monthOnly"
+            disabled
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            ariaLabel="Disabled partial date"
+          />
+          <star-partial-date-picker
+            [value]="monthOnly"
+            readonly
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            ariaLabel="Read-only partial date"
+          />
+          <star-partial-date-picker
+            [(value)]="limited"
+            [minDate]="partialMin"
+            [maxDate]="partialMax"
+            keepInvalid
+            locale="en-US"
+            datePattern="dd-MMM-yyyy"
+            ariaLabel="Between 15 March and 10 June 2026"
+          />
+          <p class="docs-output" role="status">Limited: {{ json(limited()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Start and stop with partial dates"
+        source="date-picker/partial-compare"
+        [script]="partialCompareScript"
+        note="starComparePartialDates(a, b) compares two partial dates at the coarser precision of the two: negative when a is before b, 0 when they are the same at that precision. So a start in 2026 and a stop on 14 April 2026 are in order, and a stop in February 2026 is before a start in March 2026. Here a Signal Forms validator on the stop uses it; star-field shows the error after the user leaves the field."
+      >
+        <div class="docs-stack">
+          <star-field label="Start" for="partial-start" [state]="period.start()">
+            <star-partial-date-picker
+              inputId="partial-start"
+              [formField]="period.start"
+              locale="en-US"
+              datePattern="dd-MMM-yyyy"
+            />
+          </star-field>
+          <star-field label="Stop" for="partial-stop" [state]="period.stop()">
+            <star-partial-date-picker
+              inputId="partial-stop"
+              [formField]="period.stop"
+              locale="en-US"
+              datePattern="dd-MMM-yyyy"
+            />
+          </star-field>
+          <p class="docs-output" role="status">Valid: {{ period().valid() }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Sizes and states"
         source="date-picker/states"
         note="size='sm' makes the control smaller. A disabled picker takes no focus. A read-only picker keeps its value and does not open. showClear adds a clear button while there is a value."
@@ -477,7 +594,12 @@ import { DOCS, DocsRow } from '../shared/docs';
       </p>
 
       <docs-api
-        [of]="['StarDatePicker', 'StarDateRangePicker', 'StarMultiDatePicker']"
+        [of]="[
+          'StarDatePicker',
+          'StarDateRangePicker',
+          'StarMultiDatePicker',
+          'StarPartialDatePicker',
+        ]"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -492,7 +614,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       <div class="docs-table-wrap">
         <table class="docs-table">
           <caption>
-            Exports of date-utils
+            Exports of date-utils and partial-date
           </caption>
           <thead>
             <tr>
@@ -613,6 +735,43 @@ export class DatePickerPageContent {
   protected readonly reportMonth = signal<Date | null>(new Date(2026, 10, 1));
   protected readonly reportYear = signal<Date | null>(new Date(2026, 0, 1));
 
+  protected readonly json = (value: StarPartialDate | null): string =>
+    value ? JSON.stringify(value) : 'none';
+  protected readonly firstNoticed = signal<StarPartialDate | null>({
+    year: 2026,
+    month: 3,
+    day: null,
+  });
+  protected readonly servicePeriod = signal<StarPartialDate | null>({
+    year: 2025,
+    month: null,
+    day: null,
+  });
+  protected readonly fullDate: StarPartialDate = { year: 2026, month: 4, day: 14 };
+  protected readonly monthOnly: StarPartialDate = { year: 2026, month: 3, day: null };
+  protected readonly yearOnly: StarPartialDate = { year: 1981, month: null, day: null };
+  protected readonly impossible: StarPartialDate = { year: 2026, month: 13, day: null };
+  protected readonly limited = signal<StarPartialDate | null>(null);
+  protected readonly partialMin = new Date(2026, 2, 15);
+  protected readonly partialMax = new Date(2026, 5, 10);
+  protected readonly periodModel = signal<{
+    start: StarPartialDate | null;
+    stop: StarPartialDate | null;
+  }>({
+    start: { year: 2026, month: 3, day: null },
+    stop: { year: 2026, month: 2, day: 10 },
+  });
+  protected readonly period = form(this.periodModel, (path) => {
+    required(path.start, { message: 'Enter the start.' });
+    validate(path.stop, ({ value, valueOf }) => {
+      const stop = value();
+      const start = valueOf(path.start);
+      return stop && start && starComparePartialDates(stop, start) < 0
+        ? { kind: 'stopBeforeStart', message: 'The stop is before the start.' }
+        : undefined;
+    });
+  });
+
   protected readonly orderModel = signal<{ deliveryDate: Date | null }>({ deliveryDate: null });
   protected readonly order = form(this.orderModel, (path) => {
     required(path.deliveryDate, { message: 'Choose a delivery date.' });
@@ -674,6 +833,32 @@ readonly companyDays: readonly StarSpecialDate[] = [
   { date: '2026-12-15', label: 'Invoice due', kind: 'event' },
 ];`;
   protected readonly secondsScript = `readonly invoiceSent = signal<Date | null>(new Date(2026, 10, 17, 14, 30, 15));`;
+  protected readonly partialScript = `// StarPartialDate: { year: number; month: number | null; day: number | null }
+readonly firstNoticed = signal<StarPartialDate | null>({ year: 2026, month: 3, day: null });
+readonly servicePeriod = signal<StarPartialDate | null>({ year: 2025, month: null, day: null });
+readonly json = (value: StarPartialDate | null) => (value ? JSON.stringify(value) : 'none');`;
+  protected readonly partialStatesScript = `readonly fullDate: StarPartialDate = { year: 2026, month: 4, day: 14 };
+readonly monthOnly: StarPartialDate = { year: 2026, month: 3, day: null };
+readonly yearOnly: StarPartialDate = { year: 1981, month: null, day: null };
+readonly impossible: StarPartialDate = { year: 2026, month: 13, day: null };
+readonly limited = signal<StarPartialDate | null>(null);
+readonly partialMin = new Date(2026, 2, 15);
+readonly partialMax = new Date(2026, 5, 10);`;
+  protected readonly partialCompareScript = `// starComparePartialDates comes from '@star-ng/ui/date-picker'.
+readonly periodModel = signal<{ start: StarPartialDate | null; stop: StarPartialDate | null }>({
+  start: { year: 2026, month: 3, day: null },
+  stop: { year: 2026, month: 2, day: 10 },
+});
+readonly period = form(this.periodModel, (path) => {
+  required(path.start, { message: 'Enter the start.' });
+  validate(path.stop, ({ value, valueOf }) => {
+    const stop = value();
+    const start = valueOf(path.start);
+    return stop && start && starComparePartialDates(stop, start) < 0
+      ? { kind: 'stopBeforeStart', message: 'The stop is before the start.' }
+      : undefined;
+  });
+});`;
   protected readonly formScript = `readonly orderModel = signal<{ deliveryDate: Date | null }>({ deliveryDate: null });
 readonly order = form(this.orderModel, (path) => {
   required(path.deliveryDate, { message: 'Choose a delivery date.' });
@@ -788,6 +973,11 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
       description: 'In a time column: the column on that side (hour, minute, am / pm).',
     },
     { name: 'Enter / Space', description: 'In a time column: chooses the focused hour or minute.' },
+    {
+      name: 'Arrow keys',
+      description:
+        'In the Precision radio group of star-partial-date-picker: the next or previous precision; the calendar changes to its view.',
+    },
   ];
 
   protected readonly helpers: readonly DocsRow[] = [
@@ -850,6 +1040,40 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
     {
       name: 'isoWeek(date)',
       description: 'ISO 8601 week number of a date (exported from the calendar).',
+    },
+    {
+      name: 'StarPartialDate, StarDatePrecision',
+      description:
+        "The value of star-partial-date-picker: { year; month: number | null; day: number | null }, month 1 to 12. StarDatePrecision is 'day', 'month' or 'year'.",
+    },
+    {
+      name: 'starPartialDatePrecision(value)',
+      description: "The precision of a partial date: 'day', 'month' or 'year'.",
+    },
+    {
+      name: 'starIsValidPartialDate(value)',
+      description:
+        'True for a real partial date: a year 1 to 9999, a month 1 to 12 or null, a day that the month has or null (not 31 April). A day needs a month.',
+    },
+    {
+      name: 'starComparePartialDates(a, b)',
+      description:
+        'Compares at the coarser precision of the two: negative when a is before b, 0 when they are the same at that precision (2026 and 14 April 2026), positive after.',
+    },
+    {
+      name: 'starParsePartialDate(text, options?)',
+      description:
+        'Reads typed text as a partial date, or null. Options: pattern (a full-date pattern such as dd-MMM-yyyy; its shorter forms are read too), locale, format (Intl options) and precisions.',
+    },
+    {
+      name: 'starFormatPartialDate(value, options?)',
+      description:
+        'Text of a partial date with only its known parts: 14-Apr-2026, Apr-2026 or 2026 for the pattern dd-MMM-yyyy. Same options as the parser, without precisions.',
+    },
+    {
+      name: 'starPartialDateFromDate(date, precision?), starPartialDateToDate(value)',
+      description:
+        'From a Date at a precision, and to the first day of a partial date as a Date (for sorting, not for display).',
     },
   ];
 }

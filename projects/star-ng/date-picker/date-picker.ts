@@ -82,6 +82,7 @@ import {
   StarSpecialDate,
   startOfDay,
 } from './date-utils';
+import type { StarDatePrecision } from './partial-date';
 import { StarTimeColumns } from './time-columns';
 
 const PANEL_POSITIONS: ConnectedPosition[] = [
@@ -331,6 +332,20 @@ export abstract class StarDateInputBase<TValue> {
   protected readonly calendarDates: () => readonly Date[] = () => [];
   /** Smallest unit the user chooses (the single picker's `view`). */
   protected readonly granularity: () => StarCalendarView = () => 'day';
+  /**
+   * The precision choice above the calendar (`star-partial-date-picker`). It shows when there
+   * are two or more options.
+   */
+  protected precisionOptions(): readonly {
+    readonly value: StarDatePrecision;
+    readonly label: string;
+    readonly checked: boolean;
+  }[] {
+    return [];
+  }
+  protected choosePrecision(precision: StarDatePrecision): void {
+    void precision;
+  }
 
   protected readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
   protected readonly control = viewChild.required<ElementRef<HTMLElement>>('control');

@@ -270,6 +270,11 @@ export interface StarUiText {
   readonly event: string;
   /** A special date without a kind. */
   readonly specialDate: string;
+  /** Name of the precision choice of `star-partial-date-picker`, and its three options. */
+  readonly datePrecision: string;
+  readonly precisionDay: string;
+  readonly precisionMonth: string;
+  readonly precisionYear: string;
   // Inputs
   readonly increase: string;
   readonly decrease: string;
@@ -1156,6 +1161,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   holiday: 'Holiday',
   event: 'Event',
   specialDate: 'Special date',
+  datePrecision: 'Precision',
+  precisionDay: 'Full date',
+  precisionMonth: 'Month and year',
+  precisionYear: 'Year only',
 
   increase: 'Increase',
   decrease: 'Decrease',

@@ -15989,6 +15989,434 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarPartialDatePicker": {
+    "kind": "component",
+    "selector": "star-partial-date-picker",
+    "entry": "@star-ng/ui/date-picker",
+    "description": "Partial date picker: a full date, a month and year, or a year only, for a date that the user does not know to the day. The value keeps its precision: `{ year, month, day }` with `null` for an unknown part (`month` 1–12), or `null` when empty. A `Date` cannot hold an unknown day.",
+    "inputs": [
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabledDates",
+        "type": "readonly Date[]",
+        "default": "[]",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabledDays",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dateDisabled",
+        "type": "((date: Date) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dateFormat",
+        "type": "Intl.DateTimeFormatOptions",
+        "default": "DEFAULT_DATE_FORMAT",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The shared default of `displayFormat` and `inputFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "displayFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field does not have the focus, for example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "datePattern",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "One fixed pattern of the shown text and of the typed text, for example `'dd-MMM-yyyy'` (`05-Nov-2026`), as one date format for a whole app. It wins over `dateFormat`, `displayFormat` and `inputFormat`, and is the placeholder unless `placeholder` is set. Default: `null`, the `Intl` formats. Not used for `view=\"month\"` and `view=\"year\"`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without it, such text goes back to the text of the value.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dataType",
+        "type": "'date' | 'string'",
+        "default": "'date'",
+        "required": false,
+        "description": "Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'` gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `showSeconds`) with `showTime`. The text that the picker writes is a local date and time, without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often has them, and shows that instant in local time. So a date-only value sent as UTC midnight (`2026-11-22T00:00:00Z`) shows the previous day west of UTC: send a date without a time (`2026-11-22`) for a calendar day.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touchUI",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not change; Escape and a click on the backdrop close it. While it is open, the page does not scroll (the scroll lock of `star-dialog`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page does not scroll.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "numberOfMonths",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Months shown side by side in the popup.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showWeek",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the ISO 8601 week number at the start of each week.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and the label are part of the accessible name of the day.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "hourFormat",
+        "type": "'24' | '12'",
+        "default": "'24'",
+        "required": false,
+        "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` / `maxDate`: the columns disable the other times, typed text outside them is not taken, and a picked day moves its time into them.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showButtonBar",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "readonlyInput",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Disables typing; the date can only be picked.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "precisions",
+        "type": "readonly StarDatePrecision[]",
+        "default": "PRECISIONS",
+        "required": false,
+        "description": "The precisions the user may choose or type, in any order: `'day'` (a full date), `'month'` (a month and year) and `'year'`. Default: all three. Typed text of another precision is not taken."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "StarPartialDate | null",
+        "default": "null",
+        "required": false,
+        "description": "The date: `{ year, month, day }` with `null` for an unknown month or day, or `null`."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dateSelect",
+        "type": "StarPartialDate",
+        "default": null,
+        "required": false,
+        "description": "The user chose a date in the calendar or with Today; the event is the new value."
+      }
+    ],
+    "parts": [
+      "root"
+    ]
+  },
   "StarPassword": {
     "kind": "component",
     "selector": "star-password",
@@ -24248,6 +24676,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/limits": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"slot\"\n    [minDate]=\"minDate\"\n    [maxDate]=\"maxDate\"\n    [disabledDays]=\"weekend\"\n    [disabledDates]=\"closedDays\"\n    [dateDisabled]=\"isMonthStart\"\n    locale=\"en-GB\"\n    ariaLabel=\"Pick-up date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Pick-up: {{ iso(slot()) }}</p>\n</div>",
   "date-picker/locale": "<div class=\"docs-stack\">\n  <star-date-picker\n    [value]=\"germanDate\"\n    locale=\"de-DE\"\n    [firstDayOfWeek]=\"1\"\n    showWeek\n    ariaLabel=\"Lieferdatum\"\n  />\n  <star-date-picker\n    [value]=\"americanDate\"\n    locale=\"en-US\"\n    [firstDayOfWeek]=\"0\"\n    [numberOfMonths]=\"2\"\n    ariaLabel=\"Delivery date (US)\"\n  />\n</div>",
   "date-picker/multiple": "<div class=\"docs-stack\">\n  <star-multi-date-picker\n    [(value)]=\"visits\"\n    [maxDates]=\"4\"\n    locale=\"en-GB\"\n    ariaLabel=\"Visit days\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Days: {{ visits().length }}</p>\n</div>",
+  "date-picker/partial": "<div class=\"docs-stack\">\n  <star-partial-date-picker\n    [(value)]=\"firstNoticed\"\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    showButtonBar\n    showClear\n    ariaLabel=\"First noticed\"\n  />\n  <star-partial-date-picker\n    [(value)]=\"servicePeriod\"\n    locale=\"en-GB\"\n    [precisions]=\"['month', 'year']\"\n    ariaLabel=\"Service month or year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    First noticed: {{ json(firstNoticed()) }}. Service: {{ json(servicePeriod()) }}\n  </p>\n</div>",
+  "date-picker/partial-compare": "<div class=\"docs-stack\">\n  <star-field label=\"Start\" for=\"partial-start\" [state]=\"period.start()\">\n    <star-partial-date-picker\n      inputId=\"partial-start\"\n      [formField]=\"period.start\"\n      locale=\"en-US\"\n      datePattern=\"dd-MMM-yyyy\"\n    />\n  </star-field>\n  <star-field label=\"Stop\" for=\"partial-stop\" [state]=\"period.stop()\">\n    <star-partial-date-picker\n      inputId=\"partial-stop\"\n      [formField]=\"period.stop\"\n      locale=\"en-US\"\n      datePattern=\"dd-MMM-yyyy\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ period().valid() }}</p>\n</div>",
+  "date-picker/partial-states": "<div class=\"docs-stack\">\n  <star-partial-date-picker locale=\"en-US\" datePattern=\"dd-MMM-yyyy\" ariaLabel=\"Empty\" />\n  <star-partial-date-picker\n    [value]=\"fullDate\"\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    ariaLabel=\"Full date\"\n  />\n  <star-partial-date-picker\n    [value]=\"monthOnly\"\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    ariaLabel=\"Month and year\"\n  />\n  <star-partial-date-picker\n    [value]=\"yearOnly\"\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    ariaLabel=\"Year only\"\n  />\n  <star-partial-date-picker\n    [value]=\"impossible\"\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    ariaLabel=\"Impossible month\"\n  />\n  <star-partial-date-picker\n    [value]=\"monthOnly\"\n    disabled\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    ariaLabel=\"Disabled partial date\"\n  />\n  <star-partial-date-picker\n    [value]=\"monthOnly\"\n    readonly\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    ariaLabel=\"Read-only partial date\"\n  />\n  <star-partial-date-picker\n    [(value)]=\"limited\"\n    [minDate]=\"partialMin\"\n    [maxDate]=\"partialMax\"\n    keepInvalid\n    locale=\"en-US\"\n    datePattern=\"dd-MMM-yyyy\"\n    ariaLabel=\"Between 15 March and 10 June 2026\"\n  />\n  <p class=\"docs-output\" role=\"status\">Limited: {{ json(limited()) }}</p>\n</div>",
   "date-picker/range": "<div class=\"docs-stack\">\n  <star-date-range-picker [(value)]=\"booking\" locale=\"en-GB\" ariaLabel=\"Booking range\" />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
   "date-picker/seconds": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"invoiceSent\"\n    locale=\"en-GB\"\n    showTime\n    showSeconds\n    [stepHour]=\"1\"\n    [stepMinute]=\"5\"\n    [stepSecond]=\"15\"\n    ariaLabel=\"Invoice sent at\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Sent: {{ iso(invoiceSent()) }} {{ clock(invoiceSent(), true) }}\n  </p>\n</div>",
   "date-picker/slots": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"payDate\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    showButtonBar\n    ariaLabel=\"Payment date\"\n  >\n    <ng-template starHeader> Invoices due in November 2026 </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter> A dot marks a due date: 5, 12 and 26 November. </ng-template>\n  </star-date-picker>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",

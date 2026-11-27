@@ -1,6 +1,6 @@
 /**
- * Template and host bindings shared by `star-date-picker`, `star-date-range-picker` and
- * `star-multi-date-picker` (see `StarDateInputBase`). Internal.
+ * Template and host bindings shared by `star-date-picker`, `star-date-range-picker`,
+ * `star-multi-date-picker` and `star-partial-date-picker` (see `StarDateInputBase`). Internal.
  */
 export const STAR_DATE_TEMPLATE = `
   <div data-star-part="controlPanel" #control class="star-date__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
@@ -95,6 +95,27 @@ export const STAR_DATE_TEMPLATE = `
         <div data-star-part="headerSlotPanel" class="star-panel__header">
           <ng-container *ngTemplateOutlet="header" />
         </div>
+      }
+      @if (precisionOptions(); as options) {
+        @if (options.length > 1) {
+          <!-- star-partial-date-picker: how much of the date the user knows. Native radio
+               buttons: the arrow keys move the choice, in both directions. -->
+          <div data-star-part="precisionPanel" class="star-date__precision" role="radiogroup" [attr.aria-label]="text.datePrecision">
+            @for (option of options; track option.value) {
+              <label data-star-part="precisionOption" class="star-date__precision-option">
+                <input data-star-part="precisionInput"
+                  type="radio"
+                  class="star-date__precision-radio"
+                  [name]="panelId + '-precision'"
+                  [value]="option.value"
+                  [checked]="option.checked"
+                  (change)="choosePrecision(option.value)"
+                />
+                <span data-star-part="precisionLabel">{{ option.label }}</span>
+              </label>
+            }
+          </div>
+        }
       }
       <star-calendar
         [mode]="mode"
