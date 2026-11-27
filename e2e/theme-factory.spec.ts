@@ -82,3 +82,79 @@ test('factory playground: inputs regenerate the theme and every check passes', a
   }
   await expect(live.locator('.docs-glass-stage')).toHaveAttribute('style', /--star-glass-bg:/);
 });
+
+/** Backdrop filters of the toast and the dock in the refraction example, and the html marker. */
+async function refraction(page: Page) {
+  const live = example(page, 'Edge refraction');
+  const filterOf = (selector: string) =>
+    live.locator(selector).evaluate((node) => {
+      const style = getComputedStyle(node);
+      return style.backdropFilter || style.getPropertyValue('-webkit-backdrop-filter');
+    });
+  return {
+    toast: await filterOf('.star-toast'),
+    dock: await filterOf('.star-dock__list'),
+    marked: await page.evaluate(() =>
+      document.documentElement.hasAttribute('data-star-refraction'),
+    ),
+    defs: await page.locator('svg#star-glass-refraction-defs filter').count(),
+  };
+}
+
+test('edge refraction: Chromium refracts the edges, other browsers keep the blur @cross-browser', async ({
+  page,
+  browserName,
+}) => {
+  const errors = collectErrors(page);
+  await open(page, 'light');
+  await expect(page.locator('svg#star-glass-refraction-defs')).toHaveCount(1);
+  const result = await refraction(page);
+  if (browserName === 'chromium') {
+    expect(result.marked).toBe(true);
+    expect(result.toast).toMatch(/^url\("#star-glass-refraction"\) blur\(\d+px\) contrast\(/);
+    expect(result.dock).toMatch(/^url\("#star-glass-refraction"\) blur\(\d+px\) contrast\(/);
+  } else {
+    // No url() value for a browser that does not render it: the whole chain, blur first, stays.
+    expect(result.marked).toBe(false);
+    expect(result.toast).toMatch(/^blur\(\d+px\) contrast\(/);
+    expect(result.dock).toMatch(/^blur\(\d+px\) contrast\(/);
+  }
+  expect(errors).toEqual([]);
+});
+
+test('edge refraction: one filter pair, only the dock and the toast, mirrored in right to left', async ({
+  page,
+}) => {
+  await open(page, 'dark', 'rtl');
+  const result = await refraction(page);
+  expect(result.defs).toBe(2);
+  expect(result.toast).toMatch(/^url\("#star-glass-refraction-rtl"\) blur\(/);
+  expect((await popover(page, 'Glass layers')).backdropFilter).toMatch(/^blur\(/);
+});
+
+for (const [name, media] of [
+  ['reduced motion', { reducedMotion: 'reduce' }],
+  ['more contrast', { contrast: 'more' }],
+  ['forced colors', { forcedColors: 'active' }],
+] as const) {
+  test(`edge refraction: off with ${name}`, async ({ page }) => {
+    await page.emulateMedia(media);
+    await open(page, 'light');
+    const result = await refraction(page);
+    expect(result.toast).not.toContain('url(');
+    expect(result.dock).not.toContain('url(');
+  });
+}
+
+test('edge refraction: off in the solid variant', async ({ page }) => {
+  await open(page, 'light');
+  const live = example(page, 'Glass layers');
+  const toast = live.locator('.docs-glass-stage .star-toast');
+  await expect
+    .poll(() => toast.evaluate((node) => getComputedStyle(node).backdropFilter))
+    .toMatch(/^url\(/);
+  await live.getByRole('radio', { name: 'solid' }).click();
+  await expect
+    .poll(() => toast.evaluate((node) => getComputedStyle(node).backdropFilter))
+    .not.toContain('url(');
+});

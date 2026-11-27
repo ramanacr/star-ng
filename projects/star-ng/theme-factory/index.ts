@@ -1,3 +1,4 @@
+export { provideStarGlassRefraction } from './refraction';
 export {
   STAR_THEME_SCHEMES,
   STAR_THEME_VARIANTS,

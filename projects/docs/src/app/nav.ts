@@ -50,7 +50,8 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
       {
         label: 'Theme factory and glass',
         path: 'guides/theme-factory',
-        keywords: 'glass translucent blur backdrop generator contrast variant theme factory',
+        keywords:
+          'glass translucent blur backdrop generator contrast variant theme factory refraction',
         load: () => import('./guides/theme-factory.guide').then((m) => m.ThemeFactoryGuide),
       },
       {
