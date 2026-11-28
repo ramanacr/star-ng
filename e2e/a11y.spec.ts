@@ -2163,6 +2163,20 @@ const STATES: readonly State[] = [
       await expect(live.locator('.star-diagram__handle').first()).toBeVisible();
     },
   },
+  // Select button.
+  {
+    name: 'select button pills with a count on the selected pill',
+    path: 'controls/select-button',
+    open: async (page) => {
+      const group = example(page, 'Pills with counts').getByRole('radiogroup', {
+        name: 'Order status',
+      });
+      const shipped = group.getByRole('radio', { name: 'Shipped, 12' });
+      await shipped.click();
+      await expect(shipped).toBeChecked();
+      await expect(shipped).toBeFocused();
+    },
+  },
 ];
 
 for (const theme of THEMES) {

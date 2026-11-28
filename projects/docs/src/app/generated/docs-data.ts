@@ -19257,7 +19257,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-select-button",
     "entry": "@star-ng/ui/select-button",
-    "description": "Segmented choice (PrimeNG `p-selectbutton`). Single mode is a radio group (Arrow keys move and select); `multiple` mode is a group of toggle buttons (`aria-pressed`).",
+    "description": "Segmented choice (PrimeNG `p-selectbutton`). Single mode is a radio group (Arrow keys move and select); `multiple` mode is a group of toggle buttons (`aria-pressed`). `look=\"pills\"` shows the options as separate pills (filter chips) that wrap onto more lines; `optionCount` adds a count after each label, in both looks.",
     "inputs": [
       {
         "name": "options",
@@ -19293,6 +19293,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "optionCount",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Key (or function) of a count shown after the label, for example the number of matches of a filter. No count when the value is `null` or `undefined`; `0` is shown. The count is part of the accessible name of the option: \"Label, count\"."
+      },
+      {
+        "name": "look",
+        "type": "'segmented' | 'pills'",
+        "default": "'segmented'",
+        "required": false,
+        "description": "`'segmented'`: one joined bar (default). `'pills'`: separate pills (filter chips) with gaps, the selected one filled with the primary color; they wrap onto more lines. Same roles and keyboard in both looks; with `multiple` the pills are toggle chips."
       },
       {
         "name": "multiple",
@@ -19396,7 +19410,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "item",
       "itemIcon",
-      "itemText"
+      "itemText",
+      "countText"
     ]
   },
   "StarSelectedTemplate": {
@@ -24954,6 +24969,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "scroll-top/target": "<div class=\"docs-scroll-box\">\n  <div #scroller class=\"docs-scroll-box__list\" tabindex=\"0\" aria-label=\"Order list\">\n    @for (row of rows; track row) {\n      <p class=\"docs-output\">Order {{ row }}</p>\n    }\n  </div>\n  <star-scroll-top [target]=\"scroller\" [threshold]=\"100\" />\n</div>",
   "select-button/multiple": "<star-select-button\n  [options]=\"['Bold', 'Italic', 'Underline']\"\n  [(value)]=\"styles\"\n  multiple\n  size=\"sm\"\n  ariaLabel=\"Text style\"\n/>\n<p class=\"docs-output\" role=\"status\">{{ stylesText() }}</p>",
   "select-button/objects": "<star-select-button\n  [options]=\"views\"\n  optionLabel=\"label\"\n  optionValue=\"id\"\n  optionIcon=\"icon\"\n  [(value)]=\"view\"\n  [allowEmpty]=\"false\"\n  ariaLabel=\"View\"\n/>",
+  "select-button/pills": "<star-select-button\n  look=\"pills\"\n  [options]=\"filters\"\n  optionLabel=\"label\"\n  optionValue=\"value\"\n  optionCount=\"count\"\n  [(value)]=\"filter\"\n  [allowEmpty]=\"false\"\n  ariaLabel=\"Order status\"\n/>\n<p class=\"docs-output\" role=\"status\">Status: {{ filter() || 'All' }}</p>",
+  "select-button/pills-wrap": "<div style=\"max-width: 15rem\">\n  <star-select-button\n    look=\"pills\"\n    [options]=\"filters\"\n    optionLabel=\"label\"\n    optionValue=\"value\"\n    optionCount=\"count\"\n    [(value)]=\"narrowFilter\"\n    [allowEmpty]=\"false\"\n    ariaLabel=\"Order status, narrow\"\n  />\n</div>\n<star-select-button\n  look=\"pills\"\n  size=\"sm\"\n  [options]=\"['Day', 'Week', 'Month', 'Quarter', 'Year']\"\n  [(value)]=\"range\"\n  ariaLabel=\"Range\"\n/>",
   "select-button/single": "<star-select-button\n  [options]=\"['Day', 'Week', 'Month']\"\n  [(value)]=\"period\"\n  ariaLabel=\"Period\"\n/>\n<p class=\"docs-output\" role=\"status\">Period: {{ period() }}</p>",
   "select-button/toggle": "<star-toggle-button\n  [(checked)]=\"pinned\"\n  onLabel=\"Pinned\"\n  offLabel=\"Pin\"\n  onIcon=\"ph-fill ph-push-pin\"\n  offIcon=\"ph-bold ph-push-pin\"\n/>\n<star-toggle-button [checked]=\"true\" disabled onLabel=\"Locked\" offLabel=\"Lock\" />",
   "select-button/toggle-icons": "<div class=\"docs-row\">\n  <star-toggle-button [(checked)]=\"pinToggle\" onLabel=\"Pinned\" offLabel=\"Pin\" iconPos=\"end\">\n    <ng-template starIcon=\"on\"><i class=\"ph-fill ph-push-pin\"></i></ng-template>\n    <ng-template starIcon=\"off\"><i class=\"ph-bold ph-push-pin\"></i></ng-template>\n  </star-toggle-button>\n  <star-toggle-button [(checked)]=\"muted\">\n    <ng-template starToggleButtonContent let-checked>\n      <i [class]=\"checked ? 'ph-bold ph-speaker-x' : 'ph-bold ph-speaker-high'\"></i>\n      {{ checked ? 'Muted' : 'Sound on' }}\n    </ng-template>\n  </star-toggle-button>\n</div>",
