@@ -22,6 +22,37 @@ class ChoiceHost {
   readonly on = signal(false);
 }
 
+interface Filter {
+  readonly label: string;
+  readonly value: string;
+  readonly count?: number | null;
+}
+
+@Component({
+  imports: [StarSelectButton],
+  template: `
+    <star-select-button
+      [look]="look()"
+      [options]="filters"
+      optionLabel="label"
+      optionValue="value"
+      optionCount="count"
+      [(value)]="filter"
+      ariaLabel="Filter"
+    />
+  `,
+})
+class PillsHost {
+  readonly look = signal<'segmented' | 'pills'>('pills');
+  readonly filters: readonly Filter[] = [
+    { label: 'All', value: '' },
+    { label: 'Open', value: 'open', count: 2 },
+    { label: 'Closed', value: 'closed', count: 0 },
+    { label: 'Draft', value: 'draft', count: null },
+  ];
+  readonly filter = signal<string | readonly string[] | null>('');
+}
+
 describe('Select button, toggle button', () => {
   it('select button: radio semantics, arrows move the choice; multiple uses aria-pressed', async () => {
     const fixture = TestBed.createComponent(ChoiceHost);
@@ -55,5 +86,76 @@ describe('Select button, toggle button', () => {
     expect(fixture.componentInstance.on()).toBe(true);
     expect(button.getAttribute('aria-pressed')).toBe('true');
     expect(button.textContent?.trim()).toBe('On');
+  });
+
+  it('default look keeps the segmented markup: no pill class, no count, no aria-label', async () => {
+    const fixture = TestBed.createComponent(ChoiceHost);
+    await fixture.whenStable();
+    const single = (fixture.nativeElement as HTMLElement).querySelector('star-select-button')!;
+    expect(single.className).toContain('star-segmented');
+    expect(single.classList.contains('star-select-button--pills')).toBe(false);
+    const button = single.querySelector('button')!;
+    expect(button.hasAttribute('aria-label')).toBe(false);
+    expect(button.querySelectorAll('span').length).toBe(1);
+    expect(button.querySelector('[data-star-part="countText"]')).toBeNull();
+  });
+
+  it('pills: host class, counts after the label (0 shown, null hidden), count in the name', async () => {
+    const fixture = TestBed.createComponent(PillsHost);
+    await fixture.whenStable();
+    const host = (fixture.nativeElement as HTMLElement).querySelector('star-select-button')!;
+    expect(host.classList).toContain('star-select-button--pills');
+    expect(host.classList).toContain('star-segmented');
+    expect(host.getAttribute('role')).toBe('radiogroup');
+    const [all, open, closed, draft] = host.querySelectorAll<HTMLButtonElement>('button');
+    expect(all.getAttribute('role')).toBe('radio');
+    expect(all.querySelector('.star-segmented__count')).toBeNull();
+    expect(all.hasAttribute('aria-label')).toBe(false);
+
+    const count = open.querySelector('[data-star-part="countText"]')!;
+    expect(count.classList).toContain('star-segmented__count');
+    expect(count.textContent?.trim()).toBe('2');
+    expect(count.hasAttribute('aria-hidden')).toBe(false);
+    expect(count.previousElementSibling?.textContent).toBe('Open');
+    expect(open.getAttribute('aria-label')).toBe('Open, 2');
+
+    expect(closed.querySelector('.star-segmented__count')?.textContent?.trim()).toBe('0');
+    expect(closed.getAttribute('aria-label')).toBe('Closed, 0');
+    expect(draft.querySelector('.star-segmented__count')).toBeNull();
+    expect(draft.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('pills: roving tabindex, arrows move and select (wrapping), Enter / Space click selects', async () => {
+    const fixture = TestBed.createComponent(PillsHost);
+    await fixture.whenStable();
+    const host = (fixture.nativeElement as HTMLElement).querySelector('star-select-button')!;
+    const buttons = host.querySelectorAll<HTMLButtonElement>('button');
+    expect([...buttons].map((b) => b.tabIndex)).toEqual([0, -1, -1, -1]);
+    key(buttons[0], 'ArrowRight');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.filter()).toBe('open');
+    expect(document.activeElement).toBe(buttons[1]);
+    expect(buttons[1].getAttribute('aria-checked')).toBe('true');
+    expect(buttons[1].classList).toContain('star-segmented__item--on');
+    expect(buttons[1].tabIndex).toBe(0);
+    key(buttons[1], 'ArrowLeft');
+    key(buttons[0], 'ArrowLeft');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.filter()).toBe('draft');
+    // Enter and Space activate a native button (a click).
+    buttons[2].click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.filter()).toBe('closed');
+  });
+
+  it('optionCount also works with the segmented look', async () => {
+    const fixture = TestBed.createComponent(PillsHost);
+    fixture.componentInstance.look.set('segmented');
+    await fixture.whenStable();
+    const host = (fixture.nativeElement as HTMLElement).querySelector('star-select-button')!;
+    expect(host.classList.contains('star-select-button--pills')).toBe(false);
+    const open = host.querySelectorAll('button')[1];
+    expect(open.querySelector('.star-segmented__count')?.textContent?.trim()).toBe('2');
+    expect(open.getAttribute('aria-label')).toBe('Open, 2');
   });
 });

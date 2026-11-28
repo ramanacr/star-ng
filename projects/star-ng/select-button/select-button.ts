@@ -31,9 +31,12 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
 
 /**
  * Segmented choice (PrimeNG `p-selectbutton`). Single mode is a radio group (Arrow keys move and
- * select); `multiple` mode is a group of toggle buttons (`aria-pressed`).
+ * select); `multiple` mode is a group of toggle buttons (`aria-pressed`). `look="pills"` shows the
+ * options as separate pills (filter chips) that wrap onto more lines; `optionCount` adds a count
+ * after each label, in both looks.
  *
  * `<star-select-button [options]="views" optionLabel="label" optionValue="id" [(value)]="view" ariaLabel="View" />`
+ * `<star-select-button look="pills" [options]="filters" optionCount="count" [(value)]="filter" ariaLabel="Filter" />`
  */
 @Component({
   selector: 'star-select-button',
@@ -51,6 +54,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     '[attr.aria-disabled]': 'disabled() || null',
     '[class.star-segmented--invalid]': 'invalid() && touched()',
     '[class.star-segmented--sm]': "size() === 'sm'",
+    '[class.star-select-button--pills]': "look() === 'pills'",
   },
   template: `
     @for (option of options(); track $index; let i = $index) {
@@ -62,6 +66,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
         [attr.aria-checked]="multiple() ? null : isSelected(option)"
         [attr.aria-pressed]="multiple() ? isSelected(option) : null"
         [attr.tabindex]="tabIndexFor(i)"
+        [attr.aria-label]="nameOf(option)"
         [class.star-segmented__item--on]="isSelected(option)"
         [disabled]="disabled() || isDisabled(option)"
         (click)="toggle(option)"
@@ -72,6 +77,9 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
           <i data-star-part="itemIcon" [class]="icon" aria-hidden="true"></i>
         }
         <span data-star-part="itemText">{{ labelOf(option) }}</span>
+        @if (countOf(option); as count) {
+          <span data-star-part="countText" class="star-segmented__count">{{ count.text }}</span>
+        }
       </button>
     }
   `,
@@ -91,6 +99,18 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
   readonly optionValue = input<StarOptionKey<TOption> | null>(null);
   readonly optionIcon = input<StarOptionKey<TOption> | null>(null);
   readonly optionDisabled = input<StarOptionKey<TOption> | null>(null);
+  /**
+   * Key (or function) of a count shown after the label, for example the number of matches of a
+   * filter. No count when the value is `null` or `undefined`; `0` is shown. The count is part of
+   * the accessible name of the option: "Label, count".
+   */
+  readonly optionCount = input<StarOptionKey<TOption> | null>(null);
+  /**
+   * `'segmented'`: one joined bar (default). `'pills'`: separate pills (filter chips) with gaps,
+   * the selected one filled with the primary color; they wrap onto more lines. Same roles and
+   * keyboard in both looks; with `multiple` the pills are toggle chips.
+   */
+  readonly look = input<'segmented' | 'pills'>('segmented');
   readonly multiple = input(false, { transform: booleanAttribute });
   /** Single mode: clicking the selected item clears it. */
   readonly allowEmpty = input(true, { transform: booleanAttribute });
@@ -130,6 +150,18 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
   protected iconOf(option: TOption): string | null {
     const key = this.optionIcon();
     return key ? ((readOption(option, key) as string) ?? null) : null;
+  }
+  /** The count of an option as text (`{ text }`, so a count of `0` still renders), else `null`. */
+  protected countOf(option: TOption): { readonly text: string } | null {
+    const key = this.optionCount();
+    if (!key) return null;
+    const count = readOption(option, key);
+    return count === null || count === undefined ? null : { text: String(count) };
+  }
+  /** Accessible name with the count ("Label, 2"); `null` (the content names it) without a count. */
+  protected nameOf(option: TOption): string | null {
+    const count = this.countOf(option);
+    return count ? `${this.labelOf(option)}, ${count.text}` : null;
   }
   protected isDisabled(option: TOption): boolean {
     const key = this.optionDisabled();
