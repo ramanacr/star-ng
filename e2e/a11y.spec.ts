@@ -444,6 +444,30 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'partial date picker popup with the precision choice',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      await example(page, 'Partial dates')
+        .getByRole('button', { name: 'Choose date' })
+        .first()
+        .click();
+      await expect(page.getByRole('radiogroup', { name: 'Precision' })).toBeVisible();
+      await page.getByRole('radio', { name: 'Month and year' }).focus();
+    },
+  },
+  {
+    name: 'partial date picker with kept invalid text',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      const input = example(page, 'Partial date states and limits').getByRole('textbox', {
+        name: 'Between 15 March and 10 June 2026',
+      });
+      await input.fill('31-Apr-2026');
+      await input.press('Tab');
+      await expect(input).toHaveAttribute('aria-invalid', 'true');
+    },
+  },
+  {
     name: 'month view of the date picker',
     path: 'controls/date-picker',
     open: async (page) => {

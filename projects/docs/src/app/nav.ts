@@ -290,7 +290,7 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         label: 'Date picker',
         path: 'controls/date-picker',
         keywords:
-          'datepicker date range multiple calendar input format locale min max time month year',
+          'datepicker date range multiple partial precision calendar input format locale min max time month year',
         load: () => import('./controls/date-picker.page').then((m) => m.DatePickerPage),
       },
       {

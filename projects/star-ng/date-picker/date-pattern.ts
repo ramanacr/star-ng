@@ -96,6 +96,36 @@ export function starTimePattern(
   return hourFormat === '12' ? `${pattern} hh:mm${sec} a` : `${pattern} HH:mm${sec}`;
 }
 
+/**
+ * The pattern with only the tokens whose letter is in `letters`, for example `MMM-yyyy` and
+ * `yyyy` from `dd-MMM-yyyy`. Each left-out token takes one literal next to it (the literal after
+ * it, else the one before it) with it, so `yyyy-MM-dd` gives `yyyy-MM`. Literal text with a
+ * letter or a quote is quoted again.
+ */
+export function starReducePattern(pattern: string, letters: string): string {
+  const parts = [...patternParts(pattern)];
+  for (let index = 0; index < parts.length;) {
+    const token = parts[index].token;
+    if (!token || letters.includes(token[0])) {
+      index++;
+      continue;
+    }
+    if (parts[index + 1]?.text !== undefined) parts.splice(index, 2);
+    else if (parts[index - 1]?.text !== undefined) parts.splice(--index, 2);
+    else parts.splice(index, 1);
+  }
+  // A separator left at either end goes too.
+  while (parts[0]?.text !== undefined && SEPARATOR.test(parts[0].text)) parts.shift();
+  while (parts.at(-1)?.text !== undefined && SEPARATOR.test(parts.at(-1)!.text!)) parts.pop();
+  return parts
+    .map((part) => {
+      if (part.token) return part.token;
+      const text = part.text ?? '';
+      return /[\p{L}']/u.test(text) ? `'${text.replace(/'/g, "''")}'` : text;
+    })
+    .join('');
+}
+
 /** Placeholder of a pattern: the pattern without the quotes of its literal text. */
 export function starPatternHint(pattern: string): string {
   return patternParts(pattern)

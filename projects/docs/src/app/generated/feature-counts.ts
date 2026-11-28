@@ -3,24 +3,24 @@
 export const FEATURE_COUNTS = {
   "lib": {
     "input": {
-      "uses": 1348,
-      "files": 129
+      "uses": 1349,
+      "files": 130
     },
     "inputRequired": {
       "uses": 86,
       "files": 46
     },
     "model": {
-      "uses": 146,
-      "files": 67
+      "uses": 147,
+      "files": 68
     },
     "modelRequired": {
       "uses": 1,
       "files": 1
     },
     "output": {
-      "uses": 262,
-      "files": 91
+      "uses": 263,
+      "files": 92
     },
     "viewChild": {
       "uses": 94,
@@ -39,16 +39,16 @@ export const FEATURE_COUNTS = {
       "files": 58
     },
     "signal": {
-      "uses": 333,
-      "files": 90
+      "uses": 334,
+      "files": 91
     },
     "computed": {
-      "uses": 858,
-      "files": 108
+      "uses": 870,
+      "files": 109
     },
     "linkedSignal": {
-      "uses": 30,
-      "files": 19
+      "uses": 31,
+      "files": 20
     },
     "resource": {
       "uses": 3,
@@ -95,23 +95,23 @@ export const FEATURE_COUNTS = {
       "files": 1
     },
     "formValueControl": {
-      "uses": 55,
-      "files": 24
+      "uses": 57,
+      "files": 25
     },
     "formCheckboxControl": {
       "uses": 6,
       "files": 3
     },
     "signalForms": {
-      "uses": 27,
-      "files": 27
+      "uses": 28,
+      "files": 28
     },
     "if": {
-      "uses": 838,
+      "uses": 840,
       "files": 108
     },
     "for": {
-      "uses": 253,
+      "uses": 254,
       "files": 77
     },
     "switch": {
@@ -123,12 +123,12 @@ export const FEATURE_COUNTS = {
       "files": 27
     },
     "host": {
-      "uses": 169,
-      "files": 122
+      "uses": 170,
+      "files": 123
     },
     "onPush": {
-      "uses": 168,
-      "files": 123
+      "uses": 169,
+      "files": 124
     },
     "destroyRef": {
       "uses": 117,
@@ -181,7 +181,7 @@ export const FEATURE_COUNTS = {
       "files": 0
     },
     "signal": {
-      "uses": 991,
+      "uses": 997,
       "files": 126
     },
     "computed": {
@@ -285,6 +285,6 @@ export const FEATURE_COUNTS = {
       "files": 0
     }
   },
-  "specFiles": 265,
+  "specFiles": 267,
   "pages": 147
 } as const;

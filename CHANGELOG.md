@@ -2,6 +2,14 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
+## [Unreleased]
+
+### Added
+
+#### Date picker
+
+- Date picker: partial dates, for a date that is known only to the month or the year. New component `star-partial-date-picker` (`StarPartialDatePicker`, a Signal Forms `FormValueControl`) with the value type `StarPartialDate` (`{ year: number; month: number | null; day: number | null }`, `month` 1–12, or `null` when empty), so the value keeps its precision (`StarDatePrecision`: `'day'`, `'month'` or `'year'`). Typed text sets the precision: with `datePattern="dd-MMM-yyyy"`, `14-APR-2026` is `{ year: 2026, month: 4, day: 14 }`, `MAR-2026` is `{ year: 2026, month: 3, day: null }` and `1981` is `{ year: 1981, month: null, day: null }`; the shorter forms come from the pattern (`MMM-yyyy`, `yyyy`) or, without one, from the locale's order (`04/2026` in en-GB), and ISO `yyyy-mm-dd`, `yyyy-mm` and `yyyy` are read too. The text shows only the known parts (`Mar-2026`, `2026`), never an invented day. In the popup, a Precision radio group (native radio buttons) above the calendar chooses the day, month or year view of `star-calendar`; it opens on the precision of the value, and a pick sets the value at that precision. Input `precisions` (`readonly StarDatePrecision[]`, default all three) limits the choice and the typed forms. `minDate` and `maxDate` compare at the precision of the value; impossible parts (month 13, 31 April) are invalid (`aria-invalid`), as typed text and as a value. It shares the inputs, keyboard, slots, `pt` and unstyled mode of `star-date-picker`. Exported helpers: `starComparePartialDates` (compares at the coarser precision of the two, for a check such as "the stop is not before the start"), `starIsValidPartialDate`, `starPartialDatePrecision`, `starParsePartialDate`, `starFormatPartialDate`, `starPartialDateFromDate` and `starPartialDateToDate`. New UI texts `datePrecision`, `precisionDay`, `precisionMonth` and `precisionYear` (also in German and Spanish); styling parts `precisionPanel`, `precisionOption`, `precisionInput` and `precisionLabel` ([#178](https://github.com/ramanacr/star-ng/issues/178)).
+
 ## [0.9.0] - 2026-11-27
 
 ### Added
